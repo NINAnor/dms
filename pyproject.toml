@@ -1,0 +1,178 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[project]
+authors = [
+  {name = "Niccolò Cantù", email = "niccolo.cantu@nina.no"}
+]
+dependencies = [
+  "django>=5.1.6",
+  "python-slugify>=8.0.1",
+  "Pillow==11.1.0",
+  "argon2-cffi",
+  "psycopg[binary]>=3.2.4",
+  "backoff",
+  "requests",
+  # django-utils
+  "django-health-check",
+  "django-probes",
+  "django-environ",
+  "django-model-utils",
+  "django-appconf>=1.0.6",
+  "django-cors-headers>=4.3.1",
+  "django-lifecycle",
+  "django-postgres-extra",
+  "django-polymorphic>=3.1.0",
+  "rules>=3.3",
+  "django-filter>=24.2",
+  "django-widget-tweaks",
+  # django-utils-app
+  "django-solo",
+  "django-treebeard>=4.7",
+  "django-countries-plus",
+  "django-languages-plus",
+  # auth
+  "django-allauth",
+  "django-allauth-ui",
+  # ui
+  "django-crispy-forms",
+  "fontawesomefree",
+  "slippers",
+  "crispy-tailwind",
+  "django-tailwind",
+  "django-tables2",
+  "django-leaflet",
+  # rest
+  "django-rest-framework>=0.1.0",
+  "drf-spectacular>=0.27.2",
+  "drf-nested-routers",
+  "dj-rest-auth",
+  "drf-standardized-errors[openapi]",
+  "djangorestframework-simplejwt",
+  # gis
+  "pygeometa",
+  "gdal==3.10.1",
+  "pyproj",
+  # queue
+  "procrastinate[django]>=3.0.0",
+  "setuptools>=75.8.0"
+]
+description = "Add your description here"
+license = {text = "GPLv3"}
+name = "catalog"
+readme = "README.md"
+requires-python = ">=3.12"
+version = "0.1.0"
+
+[project.optional-dependencies]
+dev = [
+  "Werkzeug[watchdog]",
+  "ipdb",
+  "pre-commit",
+  "django-debug-toolbar",
+  "django-extensions",
+  "ruff"
+]
+prod = [
+  "gunicorn",
+  "sentry-sdk>=1.40.5"
+]
+test = [
+  "pytest",
+  "pytest-sugar",
+  "pytest-django",
+  "coverage",
+  "factory-boy",
+  "django-coverage-plugin"
+]
+
+[project.scripts]
+catalog = "catalog.manage:main"
+"manage.py" = "catalog.manage:main"
+
+# ==== Coverage ====
+[tool.coverage.run]
+include = ["metadata_catalogue/**"]
+omit = ["*/migrations/*", "*/tests/*"]
+plugins = ["django_coverage_plugin"]
+
+[tool.django-stubs]
+django_settings_module = "config.settings.test"
+
+# ==== djLint ====
+[tool.djlint]
+blank_line_after_tag = "load,extends"
+close_void_tags = true
+format_css = true
+format_js = true
+# TODO: remove T002 when fixed https://github.com/Riverside-Healthcare/djLint/issues/687
+ignore = "H006,H030,H031,T002"
+include = "H017,H035"
+indent = 2
+max_line_length = 119
+profile = "django"
+
+[tool.djlint.css]
+indent_size = 2
+
+[tool.djlint.js]
+indent_size = 2
+
+# ==== mypy ====
+[tool.mypy]
+check_untyped_defs = true
+ignore_missing_imports = true
+plugins = ["mypy_django_plugin.main"]
+python_version = "3.11"
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+ignore_errors = true
+# Django migrations should not produce any errors:
+module = "*.migrations.*"
+
+[tool.pylint]
+
+[tool.pylint.DESIGN]
+max-parents = 13
+
+[tool.pylint.FORMAT]
+max-line-length = 119
+
+# ==== PyLint ====
+[tool.pylint.MASTER]
+django-settings-module = "config.settings.local"
+load-plugins = ["pylint_django"]
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = ["missing-docstring", "invalid-name"]
+
+[tool.pylint.TYPECHECK]
+generated-members = [
+  "REQUEST",
+  "acl_users",
+  "aq_parent",
+  "[a-zA-Z]+_set{1,2}",
+  "save",
+  "delete"
+]
+
+# ==== pytest ====
+[tool.pytest.ini_options]
+addopts = "--ds=config.settings.test --reuse-db"
+minversion = "6.0"
+python_files = ["tests.py", "test_*.py"]
+
+[tool.ruff]
+fix = true
+
+[tool.ruff.lint]
+ignore = ["COM812"]
+select = ["E", "W", "I", "F", "UP", "S", "B", "A", "COM", "LOG", "PTH", "Q"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/migrations/*.py" = ["E501", "ANN"]
+"**/tests/*.py" = ["S101"]

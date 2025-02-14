@@ -1,0 +1,68 @@
+{% load static i18n tailwind_tags %}
+
+<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <title>
+      {% block title %}
+      {% endblock title %}
+    </title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="msapplication-TileColor" content="#ffffff" />
+    <meta name="theme-color" content="#ffffff" />
+    {% block seo %}
+      <meta name="description"
+            content="{% block description %}{% endblock description %}" />
+      <meta name="author" content="NINA" />
+    {% endblock seo %}
+    <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}" />
+    <link href="{% static 'fontawesomefree/css/fontawesome.css' %}"
+          rel="stylesheet"
+          type="text/css" />
+    <link href="{% static 'fontawesomefree/css/solid.css' %}"
+          rel="stylesheet"
+          type="text/css" />
+    {% tailwind_css %}
+    {% block css %}
+    {% endblock css %}
+    {% block head_javascript %}
+    {% endblock head_javascript %}
+  </head>
+  <body class="flex h-screen overflow-hidden bg-slate-50">
+    {% block body %}
+      <div class="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+        {% include 'core/partials/navigation.html' %}
+        <main>
+          <div class="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
+            {% if messages %}
+              {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}"
+                     x-data="{ show: true }"
+                     x-show="show">
+                  <div>{{ message }}</div>
+                  <div>
+                    <button type="button" @click.prevent="show = false" aria-label="Close">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+              {% endfor %}
+            {% endif %}
+            {% block content %}
+            {% endblock content %}
+          </div>
+        </main>
+      </div>
+    {% endblock body %}
+    {% block modal %}
+    {% endblock modal %}
+    {% block body_javascript %}
+      <script src="//unpkg.com/alpinejs" defer></script>
+      <script src="{% static 'js/app.js' %}"></script>
+    {% endblock body_javascript %}
+  </body>
+</html>

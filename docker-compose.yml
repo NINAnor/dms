@@ -1,0 +1,129 @@
+volumes:
+  pgdata: {}
+  statics: {}
+
+x-django-env: &django-env
+  DATABASE_URL: "postgis://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres?sslmode=disable"
+  DJANGO_SETTINGS_MODULE: catalog.core.settings.production
+  USE_DOCKER: "yes"
+  OIDC_PROVIDER_ID: nina
+  OIDC_CLIENT_ID: "${OIDC_CLIENT_ID}"
+  OIDC_SECRET: "${OIDC_SECRET}"
+  OIDC_PROVIDER_URL: "${OIDC_PROVIDER_URL}"
+  OIDC_PROVIDER_NAME: NINA
+
+
+x-django-prod-env: &django-prod-env
+  <<: *django-env
+  DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY}"
+  DJANGO_SERVER_EMAIL: ""
+  DJANGO_ADMIN_URL: admin/
+  DJANGO_SECURE_SSL_REDIRECT: False
+  WEB_CONCURRENCY: 4
+  DJANGO_ALLOWED_HOSTS: "localhost,django"
+
+x-django-dev-env: &django-dev-env
+  <<: *django-env
+  DJANGO_SETTINGS_MODULE: catalog.core.settings.local
+
+
+x-django: &django
+  build: .
+  #   target: django
+  depends_on:
+    - postgres
+  environment:
+    <<: *django-env
+
+
+x-django-prod: &django-prod
+  <<: *django
+  depends_on:
+    - postgres
+  profiles:
+    - prod
+  command: uv run gunicorn catalog.core.wsgi --bind 0.0.0.0:8000 --chdir=/app
+
+x-django-dev: &django-dev
+  <<: *django
+  # build:
+    # target: dev
+  profiles:
+    - dev
+  environment:
+    <<: *django-dev-env
+  volumes:
+    - ./src:/app/src
+    - ./media:/app/media
+  command: uv run manage.py runserver 0.0.0.0:8000
+
+services:
+  django:
+    <<: *django-prod
+    environment:
+      <<: *django-prod-env
+      DJANGO_COLLECTSTATIC: 1
+      DJANGO_MIGRATE: 1
+    volumes:
+      - statics:/app/staticfiles
+
+  django-dev:
+    <<: *django-dev
+    tty: true
+    stdin_open: true
+    hostname: django
+    environment:
+      <<: *django-dev-env
+      DJANGO_MIGRATE: 1
+
+  queue:
+    <<: *django-prod
+    environment:
+      <<: *django-prod-env
+      WAIT_FOR_HTTP: http://django:8000/ht/
+    command: uv run manage.py procrastinate worker
+
+  queue-dev:
+    <<: *django-dev
+    environment:
+      <<: *django-dev-env
+      WAIT_FOR_HTTP: http://django:8000/ht/
+    command: uv run manage.py procrastinate worker
+
+  tailwind:
+    <<: *django-dev
+    tty: true
+    stdin_open: true
+    command: uv run manage.py tailwind start
+    environment:
+      <<: *django-dev-env
+      DJANGO_TAILWIND: 1
+
+  postgres:
+    image: postgis/postgis:16-3.4
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - 5432:5432
+
+  caddy:
+    image: caddy:2.9.1
+    volumes:
+      - statics:/statics
+      - ./media:/media_files
+      - ./caddy:/etc/caddy
+    ports:
+      - 8000:80
+
+  # frontend:
+  #   profiles:
+  #     - dev
+  #   build:
+  #     target: frontend
+  #   command: npm run dev -- --host 0.0.0.0 --cors
+  #   ports:
+  #     - 5173:5173
+  #   volumes:
+  #     - ./src/frontend/src:/app/src

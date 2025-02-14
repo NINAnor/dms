@@ -1,0 +1,49 @@
+{% load i18n %}
+
+<div class="relative"
+     x-data="{ dropdownOpen: false }"
+     @click.outside="dropdownOpen = false">
+  <a class="flex items-center gap-4"
+     href="#"
+     @click.prevent="dropdownOpen = ! dropdownOpen">
+    <span class="hidden text-right lg:block">
+      <span class="block text-sm font-medium text-black dark:text-white">{{ user }}</span>
+    </span>
+    <span class="h-12 w-12 rounded-full bg-red"></span>
+    <i :class="dropdownOpen ? 'fa-angle-up' : 'fa-angle-down'"
+       class="hidden fill-current sm:block fas"></i>
+  </a>
+  <!-- Dropdown Start -->
+  <div x-cloak
+       x-show="dropdownOpen"
+       class="absolute right-0 mt-4 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+    <ul class="flex flex-col border-b border-stroke dark:border-strokedark">
+      {% comment %}
+      <li>
+        <a href="" class="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+          <i class="fas fa-user"></i>
+          My Profile
+        </a>
+      </li>
+      {% endcomment %}
+      {% if user.is_staff %}
+        <li>
+          <a href="{% url 'admin:index' %}"
+             class="flex items-center gap-3.5 px-6 border-b py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+            <span>
+              <i class="fas fa-cog"></i>
+              {% trans 'Admin' %}
+            </span>
+          </a>
+        </li>
+      {% endif %}
+      <li>
+        <a href="{% url 'account_logout' %}"
+           class="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+          {% trans 'Log Out' %}
+        </a>
+      </li>
+    </ul>
+  </div>
+  <!-- Dropdown End -->
+</div>

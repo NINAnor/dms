@@ -1,0 +1,6 @@
+http:// {
+    root /static/* /statics
+    root /media/* /media_files
+    try_files {path} http://django:8000{path}
+    reverse_proxy http://django:8000
+}
