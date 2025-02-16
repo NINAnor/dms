@@ -1,6 +1,7 @@
 volumes:
   pgdata: {}
   statics: {}
+  kestra-data: {}
 
 x-django-env: &django-env
   DATABASE_URL: "postgis://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres?sslmode=disable"
@@ -11,7 +12,6 @@ x-django-env: &django-env
   OIDC_SECRET: "${OIDC_SECRET}"
   OIDC_PROVIDER_URL: "${OIDC_PROVIDER_URL}"
   OIDC_PROVIDER_NAME: NINA
-
 
 x-django-prod-env: &django-prod-env
   <<: *django-env
@@ -26,7 +26,6 @@ x-django-dev-env: &django-dev-env
   <<: *django-env
   DJANGO_SETTINGS_MODULE: catalog.core.settings.local
 
-
 x-django: &django
   build: .
   #   target: django
@@ -34,7 +33,6 @@ x-django: &django
     - postgres
   environment:
     <<: *django-env
-
 
 x-django-prod: &django-prod
   <<: *django
@@ -47,7 +45,7 @@ x-django-prod: &django-prod
 x-django-dev: &django-dev
   <<: *django
   # build:
-    # target: dev
+  # target: dev
   profiles:
     - dev
   environment:
@@ -127,3 +125,47 @@ services:
   #     - 5173:5173
   #   volumes:
   #     - ./src/frontend/src:/app/src
+
+  kestra:
+    image: kestra/kestra:latest
+    pull_policy: always
+    # Note that this setup with a root user is intended for development purpose.
+    # Our base image runs without root, but the Docker Compose implementation needs root to access the Docker socket
+    # To run Kestra in a rootless mode in production, see: https://kestra.io/docs/installation/podman-compose
+    user: "root"
+    command: server standalone
+    volumes:
+      - kestra-data:/app/storage
+      - ${DOCKER_SOCKET_PATH}:/var/run/docker.sock
+      - /tmp/kestra-wd:/tmp/kestra-wd
+    environment:
+      KESTRA_CATALOG_PSQL: postgres://postgres:${POSTGRES_PASSWORD}@${HOSTNAME}:5432/postgres?sslmode=disable
+      KESTRA_UBW_MSSQL: ${UBW_MSSQL}
+      KESTRA_CONFIGURATION: |
+        datasources:
+          postgres:
+            url: jdbc:postgresql://postgres:5432/kestra
+            driverClassName: org.postgresql.Driver
+            username: postgres
+            password: ${POSTGRES_PASSWORD}
+        kestra:
+          server:
+            basicAuth:
+              enabled: false
+              username: "admin@kestra.io" # it must be a valid email address
+              password: ${KESTRA_PASSWORD}
+          repository:
+            type: postgres
+          storage:
+            type: local
+            local:
+              basePath: "/app/storage"
+          queue:
+            type: postgres
+          tasks:
+            tmpDir:
+              path: /tmp/kestra-wd/tmp
+          url: http://localhost:8080/
+    ports:
+      - "8080:8080"
+      - "8081:8081"

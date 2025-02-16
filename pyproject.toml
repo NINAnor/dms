@@ -3,9 +3,7 @@ build-backend = "hatchling.build"
 requires = ["hatchling"]
 
 [project]
-authors = [
-  {name = "Niccolò Cantù", email = "niccolo.cantu@nina.no"}
-]
+authors = [{name = "Niccolò Cantù", email = "niccolo.cantu@nina.no"}]
 dependencies = [
   "django>=5.1.6",
   "python-slugify>=8.0.1",
@@ -74,10 +72,7 @@ dev = [
   "django-extensions",
   "ruff"
 ]
-prod = [
-  "gunicorn",
-  "sentry-sdk>=1.40.5"
-]
+prod = ["gunicorn", "sentry-sdk>=1.40.5"]
 test = [
   "pytest",
   "pytest-sugar",

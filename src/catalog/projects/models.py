@@ -30,13 +30,43 @@ class ProjectMembership(models.Model):
         return f"{self.project_id} {self.user} - {self.get_role_display()}"
 
 
+class Category(models.Model):
+    text = models.CharField()
+
+    def __str__(self):
+        return self.text
+
+
+class Section(models.Model):
+    id = models.CharField(primary_key=True)
+    text = models.CharField()
+
+    def __str__(self):
+        return self.text
+
+
 class Project(models.Model):
     number = models.CharField(primary_key=True)
     name = models.CharField(null=True, blank=True)
+    description = models.TextField(blank=True, null=True)
     memberships = models.ManyToManyField(
         "users.User", through="ProjectMembership", blank=True
     )
-    active = models.BooleanField(default=True)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField(blank=True, null=True)
+    status = models.CharField(null=True, blank=True)
+    category = models.ForeignKey(
+        "Category",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_constraint=False,
+    )
+    section = models.ForeignKey(
+        "Section", on_delete=models.SET_NULL, null=True, blank=True, db_constraint=False
+    )
+    customer = models.CharField(null=True, blank=True)
+    budget = models.DecimalField(decimal_places=2, max_digits=16, null=True, blank=True)
 
     def __str__(self) -> str:
         if self.name:

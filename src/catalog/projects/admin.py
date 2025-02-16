@@ -13,8 +13,11 @@ class ProjectMembershipInline(admin.TabularInline):
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     search_fields = ["number", "name"]
-    list_filter = ["active"]
-    list_display = ["number", "name", "active"]
+    list_filter = []
+    list_display = [
+        "number",
+        "name",
+    ]
 
     inlines = [ProjectMembershipInline]
 
