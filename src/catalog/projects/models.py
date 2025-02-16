@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.urls import reverse
 
 User = get_user_model()
 
@@ -73,3 +74,6 @@ class Project(models.Model):
             return f"{self.number} {self.name}"
 
         return self.number
+
+    def get_absolute_url(self):
+        return reverse("projects:project-detail", kwargs={"pk": self.pk})

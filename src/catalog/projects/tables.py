@@ -1,0 +1,23 @@
+import django_tables2 as tables
+from django_tables2.utils import A
+
+from .models import Project
+
+
+class ProjectTable(tables.Table):
+    number = tables.LinkColumn("projects:project-detail", kwargs={"pk": A("number")})
+    end_date = tables.DateColumn(format="d/m/Y")
+    start_date = tables.DateColumn(format="d/m/Y")
+
+    class Meta:
+        model = Project
+        fields = (
+            "number",
+            "name",
+            "status",
+            "start_date",
+            "end_date",
+            "section",
+            "category",
+        )
+        template_name = "django_tables2/bootstrap.html"

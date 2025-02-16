@@ -1,16 +1,17 @@
-{% load i18n %}
+{% load i18n static %}
 
 <header class="sticky top-0 z-999 flex w-full navbar bg-white drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none">
   <div class="flex flex-grow items-center justify-between px-4 py-4 shadow-2 md:px-6 2xl:px-11">
-    <div>
-      <a class="navbar-brand fw-bolder" href="{% url 'home' %}">
-        {% block navigation_title %}
-          {{ PROJECT_NAME }}
-        {% endblock navigation_title %}
+    <div class="text-2xl font-bold uppercase">
+      <a class="navbar-brand fw-bolder no-underline" href="{% url 'home' %}">
+        <img src="{% static 'images/logo.png' %}" style="max-width: 100px" />
       </a>
     </div>
-    <div class="flex items-center gap-3 2xsm:gap-7">
+    <div class="flex items-center gap-8 2xsm:gap-7 text-sm font-bold">
       {% if user.is_authenticated %}
+        <div>
+          <a href="{% url 'projects:project-list' %}">Projects</a>
+        </div>
         {% include 'core/partials/user-dropdown.html' %}
       {% else %}
         <a href="{% url 'account_login' %}">Login</a>

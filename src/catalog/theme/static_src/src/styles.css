@@ -5,3 +5,27 @@
 [x-cloak] {
     display: none !important;
 }
+
+.pagination {
+    @apply join gap-1;
+}
+
+.pagination>li {
+    @apply join-item;
+}
+
+.pagination li a {
+    @apply btn;
+}
+
+.pagination>li.active a {
+    @apply btn-active;
+}
+
+a {
+    @apply link link-primary;
+}
+
+.navbar a {
+    @apply no-underline;
+}
