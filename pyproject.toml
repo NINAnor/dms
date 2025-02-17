@@ -54,7 +54,8 @@ dependencies = [
   "pyproj",
   # queue
   "procrastinate[django]>=3.0.0",
-  "setuptools>=75.8.0"
+  "setuptools>=75.8.0",
+  "django-storages[s3]>=1.14.5"
 ]
 description = "Add your description here"
 license = {text = "GPLv3"}
