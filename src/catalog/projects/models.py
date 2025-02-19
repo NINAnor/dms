@@ -12,9 +12,11 @@ class ProjectMembership(models.Model):
         MEMBER = "member", "Member"
 
     project = models.ForeignKey(
-        "Project", on_delete=models.CASCADE, related_name="members"
+        "Project", on_delete=models.CASCADE, related_name="members", db_constraint=False
     )
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="memberships")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="memberships", db_constraint=False
+    )
     role = models.CharField(
         choices=Role,
         default=Role.MEMBER,

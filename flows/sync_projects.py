@@ -56,6 +56,21 @@ config = {
                     on npo.Prosjektnr = npb.Prosjekt
             """,
         },
+        "membership": {
+            "mode": "incremental",
+            "primary_key": ["project_id", "user_id"],
+            "object": "public.projects_projectmembership",
+            "sql": """
+                select
+                    prosjektID as project_id
+                    , ansattID as user_id
+                    , case
+                        when ansattID = ansvarlig then 'owner'
+                        else 'member'
+                    end as role
+                from dbo.NINA_Prosjekt_Ressurser
+            """,
+        },
     },
     "env": {"SLING_LOGGING": "JSON"},
 }
