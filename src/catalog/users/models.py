@@ -10,12 +10,8 @@ class User(AbstractUser):
     Default custom user model for Catalog.
     """
 
-    email = EmailField(_("email address"), unique=True)
-    username = None  # type: ignore
+    email = EmailField(_("email address"), unique=True, null=True, blank=True)
     first_name = CharField(max_length=200)
     last_name = CharField(max_length=200)
-
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
 
     objects = UserManager()
