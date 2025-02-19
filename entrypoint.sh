@@ -14,6 +14,15 @@ else
   uv run manage.py wait_for_http "$WAIT_FOR_HTTP"
 fi
 
+# Connecting to LDAPS may require custom CA certificates installed
+if [[ -z "${INSTALL_CERTS}" ]]
+then
+  echo "CA cert not installed"
+else
+  update-ca-certificates
+fi
+
+
 if [[ -z "${DJANGO_MIGRATE}" ]]
 then
   echo "Skip migration and setup"
