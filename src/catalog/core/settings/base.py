@@ -343,13 +343,13 @@ LOGGING = {
 # ------------------------------------------------------------------------------
 ACCOUNT_ALLOW_REGISTRATION = True
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_LOGIN_METHODS = {"email"}
+ACCOUNT_LOGIN_METHODS = {"username"}
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_EMAIL_REQUIRED = True
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_USERNAME_REQUIRED = False
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_EMAIL_VERIFICATION = "none"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
@@ -426,3 +426,51 @@ TAILWIND_APP_NAME = "catalog.theme"
 
 # Django Tables
 DJANGO_TABLES2_TEMPLATE = "django_tables2/tailwind.html"
+
+
+# django-auth-ldap
+# ------------------------------------------------------------------------------
+AUTH_LDAP_SERVER_URI = env("AUTH_LDAP_SERVER_URI", default=None)
+
+if AUTH_LDAP_SERVER_URI:
+    import functools
+
+    import ldap
+    from django_auth_ldap.config import (
+        ActiveDirectoryGroupType,
+        LDAPGroupQuery,
+        LDAPSearch,
+    )
+
+    AUTH_LDAP_BIND_DN = env("AUTH_LDAP_BIND_DN", default="")
+    AUTH_LDAP_BIND_PASSWORD = env("AUTH_LDAP_BIND_PASSWORD", default="")
+
+    AUTH_LDAP_UID = env("AUTH_LDAP_UID")
+    AUTH_LDAP_USER_SEARCH_BASE = env("AUTH_LDAP_USER_SEARCH_BASE")
+
+    AUTH_LDAP_USER_SEARCH = LDAPSearch(
+        AUTH_LDAP_USER_SEARCH_BASE,
+        ldap.SCOPE_SUBTREE,
+        f"({AUTH_LDAP_UID}=%(user)s)",
+    )
+
+    AUTH_LDAP_USER_ATTR_MAP = env.json("AUTH_LDAP_USER_ATTR_MAP", default={})
+
+    if groups := env("AUTH_LDAP_REQUIRE_GROUPS", default=""):
+        AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+            env("AUTH_LDAP_GROUP_SEARCH_BASE"),
+            ldap.SCOPE_SUBTREE,
+        )
+        AUTH_LDAP_GROUP_TYPE = ActiveDirectoryGroupType()
+        groups_list = groups.split("|")
+        AUTH_LDAP_REQUIRE_GROUP = functools.reduce(
+            lambda g1, g2: g1 or g2, map(lambda g: LDAPGroupQuery(g), groups_list)
+        )
+
+        # this expects the DN to be CN=group_name
+        AUTH_LDAP_MIRROR_GROUPS = list(
+            map(lambda x: ldap.dn.str2dn(x)[0][0][1], groups_list)
+        )
+
+    AUTHENTICATION_BACKENDS += ("django_auth_ldap.backend.LDAPBackend",)
+    LOGGING["loggers"]["django_auth_ldap"] = {"level": "DEBUG", "handlers": ["console"]}

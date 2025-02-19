@@ -16,6 +16,12 @@ x-django-env: &django-env
   DJANGO_AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY}
   DJANGO_AWS_STORAGE_BUCKET_NAME: ${S3_BUCKET}
   DJANGO_AWS_S3_ENDPOINT_URL: http://${HOSTNAME}:9090
+  AUTH_LDAP_SERVER_URI: ${AUTH_LDAP_SERVER_URI}
+  AUTH_LDAP_BIND_DN: ${AUTH_LDAP_BIND_DN}
+  AUTH_LDAP_BIND_PASSWORD: ${AUTH_LDAP_BIND_PASSWORD}
+  AUTH_LDAP_USER_SEARCH_BASE: ${AUTH_LDAP_USER_SEARCH_BASE}
+  AUTH_LDAP_UID: ${AUTH_LDAP_UID}
+  AUTH_LDAP_USER_ATTR_MAP: ${AUTH_LDAP_USER_ATTR_MAP}
 
 x-django-prod-env: &django-prod-env
   <<: *django-env
@@ -57,6 +63,8 @@ x-django-dev: &django-dev
   volumes:
     - ./src:/app/src
     - ./media:/app/media
+    - ./certs/:/usr/local/share/ca-certificates/
+    - ./uv.lock:/app/uv.lock
   command: uv run manage.py runserver 0.0.0.0:8000
 
 services:
@@ -66,8 +74,10 @@ services:
       <<: *django-prod-env
       DJANGO_COLLECTSTATIC: 1
       DJANGO_MIGRATE: 1
+      # INSTALL_CERTS: 1
     volumes:
       - statics:/app/staticfiles
+      # - ./certs/:/usr/local/share/ca-certificates/
 
   django-dev:
     <<: *django-dev
@@ -77,6 +87,7 @@ services:
     environment:
       <<: *django-dev-env
       DJANGO_MIGRATE: 1
+      INSTALL_CERTS: 1
 
   queue:
     <<: *django-prod

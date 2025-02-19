@@ -73,6 +73,7 @@ dev = [
   "django-extensions",
   "ruff"
 ]
+ldap = ["python-ldap", "django-auth-ldap"]
 prod = ["gunicorn", "sentry-sdk>=1.40.5"]
 test = [
   "pytest",
