@@ -55,7 +55,11 @@ dependencies = [
   # queue
   "procrastinate[django]>=3.0.0",
   "setuptools>=75.8.0",
-  "django-storages[s3]>=1.14.5"
+  "django-storages[s3]>=1.14.5",
+  "django-taggit>=6.1.0",
+  "django-autocomplete-light>=3.11.0",
+  "django-view-breadcrumbs>=2.5.1",
+  "django-auditlog>=3.0.0"
 ]
 description = "Add your description here"
 license = {text = "GPLv3"}

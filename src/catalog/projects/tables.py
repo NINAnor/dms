@@ -19,5 +19,7 @@ class ProjectTable(tables.Table):
             "end_date",
             "section",
             "category",
+            "customer",
+            "topics",
         )
         template_name = "django_tables2/bootstrap.html"

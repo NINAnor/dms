@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
+from taggit.managers import TaggableManager
 
 User = get_user_model()
 
@@ -48,6 +49,13 @@ class Section(models.Model):
         return self.text
 
 
+class Topic(models.Model):
+    text = models.CharField()
+
+    def __str__(self):
+        return self.text
+
+
 class Project(models.Model):
     number = models.CharField(primary_key=True)
     name = models.CharField(null=True, blank=True)
@@ -70,6 +78,11 @@ class Project(models.Model):
     )
     customer = models.CharField(null=True, blank=True)
     budget = models.DecimalField(decimal_places=2, max_digits=16, null=True, blank=True)
+
+    description = models.TextField(blank=True, null=True)
+    topics = models.ManyToManyField("Topic", blank=True)
+
+    tags = TaggableManager()
 
     def __str__(self) -> str:
         if self.name:

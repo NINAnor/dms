@@ -11,6 +11,9 @@ urlpatterns = [
     # User management
     path("accounts/", include("allauth.urls")),
     path("ht/", include("health_check.urls")),
+    path(
+        "autocomplete/", include("catalog.core.autocomplete", namespace="autocomplete")
+    ),
     path("", include("catalog.projects.urls", namespace="projects")),
     path("", HomeView.as_view(), name="home"),
 ]

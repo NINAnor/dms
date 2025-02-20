@@ -15,3 +15,6 @@ class User(AbstractUser):
     last_name = CharField(max_length=200)
 
     objects = UserManager()
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"

@@ -114,6 +114,9 @@ THIRD_PARTY_APPS = [
     "fontawesomefree",
     "leaflet",
     "procrastinate.contrib.django",
+    "taggit",
+    "dal",
+    "dal_select2",
 ]
 
 LOCAL_APPS = [

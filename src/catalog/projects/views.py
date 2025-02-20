@@ -14,7 +14,12 @@ class ProjectListView(LoginRequiredMixin, SingleTableMixin, FilterView):
     filterset_class = ProjectFilter
 
     def get_queryset(self):
-        return super().get_queryset()
+        return (
+            super()
+            .get_queryset()
+            .select_related("category", "section")
+            .prefetch_related("topics")
+        )
 
 
 class ProjectDetailView(LoginRequiredMixin, DetailView):

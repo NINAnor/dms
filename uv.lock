@@ -123,6 +123,8 @@ dependencies = [
     { name = "django-allauth" },
     { name = "django-allauth-ui" },
     { name = "django-appconf" },
+    { name = "django-auditlog" },
+    { name = "django-autocomplete-light" },
     { name = "django-cors-headers" },
     { name = "django-countries-plus" },
     { name = "django-crispy-forms" },
@@ -140,8 +142,10 @@ dependencies = [
     { name = "django-solo" },
     { name = "django-storages", extra = ["s3"] },
     { name = "django-tables2" },
+    { name = "django-taggit" },
     { name = "django-tailwind" },
     { name = "django-treebeard" },
+    { name = "django-view-breadcrumbs" },
     { name = "django-widget-tweaks" },
     { name = "djangorestframework-simplejwt" },
     { name = "drf-nested-routers" },
@@ -198,7 +202,9 @@ requires-dist = [
     { name = "django-allauth" },
     { name = "django-allauth-ui" },
     { name = "django-appconf", specifier = ">=1.0.6" },
+    { name = "django-auditlog", specifier = ">=3.0.0" },
     { name = "django-auth-ldap", marker = "extra == 'ldap'" },
+    { name = "django-autocomplete-light", specifier = ">=3.11.0" },
     { name = "django-cors-headers", specifier = ">=4.3.1" },
     { name = "django-countries-plus" },
     { name = "django-coverage-plugin", marker = "extra == 'test'" },
@@ -219,8 +225,10 @@ requires-dist = [
     { name = "django-solo" },
     { name = "django-storages", extras = ["s3"], specifier = ">=1.14.5" },
     { name = "django-tables2" },
+    { name = "django-taggit", specifier = ">=6.1.0" },
     { name = "django-tailwind" },
     { name = "django-treebeard", specifier = ">=4.7" },
+    { name = "django-view-breadcrumbs", specifier = ">=2.5.1" },
     { name = "django-widget-tweaks" },
     { name = "djangorestframework-simplejwt" },
     { name = "drf-nested-routers" },
@@ -501,6 +509,19 @@ wheels = [
 ]
 
 [[package]]
+name = "django-auditlog"
+version = "3.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+    { name = "python-dateutil" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/44/df/6cbc296b2fdd808bd710671409a1a838c9741670933f170930cb7b9c5804/django-auditlog-3.0.0.tar.gz", hash = "sha256:9de49f80a4911135d136017123cd73461f869b4947eec14d5e76db4b88182f3f", size = 65475 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bd/49/d62c4728cd80f42e5061b3ae9e12fd28b460bd1cd5754c4d34232d18aab2/django_auditlog-3.0.0-py3-none-any.whl", hash = "sha256:92db1cf4a51ceca5c26b3ff46997d9e3305a02da1bd435e2efb5b8b6d300ce1f", size = 35493 },
+]
+
+[[package]]
 name = "django-auth-ldap"
 version = "5.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -512,6 +533,15 @@ sdist = { url = "https://files.pythonhosted.org/packages/91/e4/2e8781840cc54f719
 wheels = [
     { url = "https://files.pythonhosted.org/packages/11/47/f3492884addbb17672cc9a6053381162010d6e40ccd8440dedf22f72bc7f/django_auth_ldap-5.1.0-py3-none-any.whl", hash = "sha256:a5f7bdb54b2ab80e4e9eb080cd3e06e89e4c9d2d534ddb39b66cd970dd6d3536", size = 20833 },
 ]
+
+[[package]]
+name = "django-autocomplete-light"
+version = "3.11.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ec/32/004073fb1bc55770bc9111bac42f17f481e17d4d20bbab2b5a8b921b95a6/django-autocomplete-light-3.11.0.tar.gz", hash = "sha256:212576a17e3308ef7ca77e280b86684167916d2091d4b73640f38845d9516328", size = 173786 }
 
 [[package]]
 name = "django-cors-headers"
@@ -756,6 +786,18 @@ wheels = [
 ]
 
 [[package]]
+name = "django-taggit"
+version = "6.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/34/a6/f1beaf8f552fe90c153cc039316ebab942c23dfbc88588dde081fefca816/django_taggit-6.1.0.tar.gz", hash = "sha256:c4d1199e6df34125dd36db5eb0efe545b254dec3980ce5dd80e6bab3e78757c3", size = 38151 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6b/34/4185c345530b91d05cb82e05d07148f481a5eb5dc2ac44e092b3daa6f206/django_taggit-6.1.0-py3-none-any.whl", hash = "sha256:ab776264bbc76cb3d7e49e1bf9054962457831bd21c3a42db9138b41956e4cf0", size = 75749 },
+]
+
+[[package]]
 name = "django-tailwind"
 version = "3.8.0"
 source = { registry = "https://pypi.org/simple" }
@@ -777,6 +819,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/bb/24/eaccbce17355380cb3a8fe6ad92a85b76453dc1f0ecd04f48bfe8929065b/django-treebeard-4.7.1.tar.gz", hash = "sha256:846e462904b437155f76e04907ba4e48480716855f88b898df4122bdcfbd6e98", size = 294139 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/87/79/259966820614746cc4d81762edf97a53bf1e3b8e74797c010d310c6f4a8f/django_treebeard-4.7.1-py3-none-any.whl", hash = "sha256:995c7120153ab999898fe3043bbdcd8a0fc77cc106eb94de7350e9d02c885135", size = 93210 },
+]
+
+[[package]]
+name = "django-view-breadcrumbs"
+version = "2.5.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a7/96/25123c58f6f4a5dc207f285a0c0ddaad106792b603bdd7687e2dedc39ea5/django-view-breadcrumbs-2.5.1.tar.gz", hash = "sha256:b214c3758f6159d1ad8d76a21e7430a9f208be52fc79ba021e13a2ee675dbb3b", size = 47740 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/95/c9/71dd2ed51e24a236b8267ddfa1ab2863647468f7a720aaa6151c336057a5/django_view_breadcrumbs-2.5.1-py3-none-any.whl", hash = "sha256:0405af06d416c661edfea8d0b5023b37ec016edfb9ce8646c6b4a39127d48620", size = 25774 },
 ]
 
 [[package]]
