@@ -1,0 +1,35 @@
+{% load static i18n tailwind_tags %}
+{% load view_breadcrumbs %}
+
+<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <title>
+      {% block title %}
+      {% endblock title %}
+    </title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="msapplication-TileColor" content="#ffffff" />
+    <meta name="theme-color" content="#ffffff" />
+    {% block seo %}
+      <meta name="description"
+            content="{% block description %}{% endblock description %}" />
+      <meta name="author" content="NINA" />
+    {% endblock seo %}
+    <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}" />
+    {% block css %}
+    {% endblock css %}
+    {% block head_javascript %}
+    {% endblock head_javascript %}
+  </head>
+  <body >
+    {% block body %}
+    {% endblock body %}
+    {% block body_javascript %}
+    {% endblock body_javascript %}
+  </body>
+</html>

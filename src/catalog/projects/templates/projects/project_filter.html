@@ -1,31 +1,3 @@
-{% extends 'app.html' %}
+{% extends 'base_filter.html' %}
 
-{% load render_table from django_tables2 %}
-{% load crispy_forms_tags %}
-{% load static %}
-
-{% block article %}
-  <div>
-    <div class="flex my-5 justify-between items-center">
-      <h1 class="font-bold text-4xl">Projects</h1>
-      <div class="flex">
-      </div>
-    </div>
-    {% if filter %}
-    <form method="get" class="py-3 px-4 border mb-3 ">
-      <div class="flex flex-wrap gap-4">
-          {{ filter.form | crispy }}
-      </div>
-        <button class="btn bg-primary" type="submit">Search</button>
-    </form>
-    {% endif %}
-    {% render_table table %}
-  </div>
-{% endblock article %}
-
-
-{% block body_javascript %}
-{{ block.super }}
-<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
-{{ filter.form.media }}
-{% endblock body_javascript %}
+{% block page-title %}Projects{% endblock %}

@@ -126,6 +126,7 @@ LOCAL_APPS = [
     "catalog.users",
     "catalog.theme",
     "catalog.projects",
+    "catalog.surveys",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
