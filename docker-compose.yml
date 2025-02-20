@@ -101,6 +101,7 @@ services:
     environment:
       <<: *django-dev-env
       WAIT_FOR_HTTP: http://django:8000/ht/
+      INSTALL_CERTS: 1
     command: uv run manage.py procrastinate worker
 
   tailwind:
