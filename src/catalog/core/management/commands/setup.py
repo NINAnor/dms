@@ -11,7 +11,7 @@ User = get_user_model()
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        if not User.objects.all().exists():
+        if not User.objects.filter(is_superuser=True).exists():
             call_command("loaddata", "users.json")
 
         if not Country.objects.all().exists():
