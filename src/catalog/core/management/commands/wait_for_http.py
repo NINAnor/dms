@@ -1,6 +1,7 @@
 """
 Django management command ``wait_for_http``
 """
+
 import backoff
 import requests
 from django.core.management.base import BaseCommand, CommandError
@@ -16,7 +17,7 @@ from django.core.management.base import BaseCommand, CommandError
     max_time=60,
 )
 def run_request(url):
-    response = requests.get(url=url)
+    response = requests.get(url=url, timeout=10)
     response.raise_for_status()
 
 
@@ -49,7 +50,8 @@ class Command(BaseCommand):
             default=180,
             metavar="SECONDS",
             action="store",
-            help="how long to wait for the http service before " "timing out (seconds), default: 180",
+            help="how long to wait for the http service before "
+            "timing out (seconds), default: 180",
         )
         parser.add_argument(
             "--stable",
@@ -58,7 +60,8 @@ class Command(BaseCommand):
             default=5,
             metavar="SECONDS",
             action="store",
-            help="how long to observe whether connection " "is stable (seconds), default: 5",
+            help="how long to observe whether connection "
+            "is stable (seconds), default: 5",
         )
         parser.add_argument(
             "--wait-when-down",
@@ -67,7 +70,7 @@ class Command(BaseCommand):
             default=2,
             metavar="SECONDS",
             action="store",
-            help="delay between checks when http service is " "down (seconds), default: 2",
+            help="delay between checks when http service is down (seconds), default: 2",
         )
         parser.add_argument(
             "--wait-when-alive",
@@ -76,7 +79,7 @@ class Command(BaseCommand):
             default=1,
             metavar="SECONDS",
             action="store",
-            help="delay between checks when http service is " "up (seconds), default: 1",
+            help="delay between checks when http service is up (seconds), default: 1",
         )
 
     def handle(self, *args, **options):
