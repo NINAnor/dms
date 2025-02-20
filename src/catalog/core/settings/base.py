@@ -118,6 +118,7 @@ THIRD_PARTY_APPS = [
     "dal",
     "dal_select2",
     "view_breadcrumbs",
+    "rules",
 ]
 
 LOCAL_APPS = [
@@ -138,6 +139,7 @@ MIGRATION_MODULES = {"sites": "catalog.core.contrib.sites.migrations"}
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
 AUTHENTICATION_BACKENDS = [
+    "rules.permissions.ObjectPermissionBackend",
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]

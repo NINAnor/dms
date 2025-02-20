@@ -66,7 +66,9 @@
             {% endfor %}
         </tbody>
     </table>
-
+</div>
+<div class="flex mt-5">
+    <a class="btn btn-primary" href="{% url 'projects:project_update' pk=project.number %}">Edit</a>
 </div>
 
 {% endblock article %}

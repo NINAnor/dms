@@ -1,7 +1,11 @@
+import rules
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
+from rules.contrib.models import RulesModel
 from taggit.managers import TaggableManager
+
+from .rules import project_role_is
 
 User = get_user_model()
 
@@ -56,7 +60,7 @@ class Topic(models.Model):
         return self.text
 
 
-class Project(models.Model):
+class Project(RulesModel):
     number = models.CharField(primary_key=True)
     name = models.CharField(null=True, blank=True)
     description = models.TextField(blank=True, null=True)
@@ -92,3 +96,11 @@ class Project(models.Model):
 
     def get_absolute_url(self):
         return reverse("projects:project_detail", kwargs={"pk": self.pk})
+
+    class Meta:
+        rules_permissions = {
+            "add": rules.is_staff,
+            "read": rules.is_authenticated,
+            "change": project_role_is(ProjectMembership.Role.OWNER),
+            "delete": rules.is_staff,
+        }

@@ -85,3 +85,7 @@ ol.breadcrumb>li+ ::before {
 .select2-container .select2-selection--single {
   height: 3.2rem !important;
 }
+
+.z-999 {
+  z-index: 999;
+}
