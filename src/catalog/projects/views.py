@@ -5,6 +5,7 @@ from rules.contrib.views import PermissionRequiredMixin
 from view_breadcrumbs import (
     DetailBreadcrumbMixin,
     ListBreadcrumbMixin,
+    UpdateBreadcrumbMixin,
 )
 
 from .filters import ProjectFilter
@@ -35,7 +36,7 @@ class ProjectDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailVi
     permission_required = "projects.read_project"
 
 
-class ProjectUpdate(PermissionRequiredMixin, UpdateView):
+class ProjectUpdate(PermissionRequiredMixin, UpdateBreadcrumbMixin, UpdateView):
     permission_required = "projects.change_project"
     model = Project
     form_class = ProjectForm
