@@ -2,13 +2,19 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import DetailView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
+from view_breadcrumbs import (
+    DetailBreadcrumbMixin,
+    ListBreadcrumbMixin,
+)
 
 from .filters import ProjectFilter
 from .models import Project
 from .tables import ProjectTable
 
 
-class ProjectListView(LoginRequiredMixin, SingleTableMixin, FilterView):
+class ProjectListView(
+    LoginRequiredMixin, ListBreadcrumbMixin, SingleTableMixin, FilterView
+):
     model = Project
     table_class = ProjectTable
     filterset_class = ProjectFilter
@@ -22,5 +28,5 @@ class ProjectListView(LoginRequiredMixin, SingleTableMixin, FilterView):
         )
 
 
-class ProjectDetailView(LoginRequiredMixin, DetailView):
+class ProjectDetailView(LoginRequiredMixin, DetailBreadcrumbMixin, DetailView):
     model = Project

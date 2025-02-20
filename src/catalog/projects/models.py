@@ -8,7 +8,7 @@ User = get_user_model()
 
 class ProjectMembership(models.Model):
     class Role(models.TextChoices):
-        OWNER = "owner", "Owner"
+        OWNER = "owner", "Leader"
         MANAGER = "manager", "Manager"
         MEMBER = "member", "Member"
 
@@ -91,4 +91,4 @@ class Project(models.Model):
         return self.number
 
     def get_absolute_url(self):
-        return reverse("projects:project-detail", kwargs={"pk": self.pk})
+        return reverse("projects:project_detail", kwargs={"pk": self.pk})

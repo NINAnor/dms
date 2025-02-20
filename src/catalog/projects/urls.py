@@ -5,6 +5,6 @@ from .views import ProjectDetailView, ProjectListView
 app_name = "projects"
 
 urlpatterns = [
-    path("projects/", ProjectListView.as_view(), name="project-list"),
-    path("projects/<int:pk>/", ProjectDetailView.as_view(), name="project-detail"),
+    path("projects/", ProjectListView.as_view(), name="project_list"),
+    path("projects/<int:pk>/", ProjectDetailView.as_view(), name="project_detail"),
 ]

@@ -1,4 +1,5 @@
 {% load static i18n tailwind_tags %}
+{% load view_breadcrumbs %}
 
 <!DOCTYPE html>
 {% get_current_language as LANGUAGE_CODE %}
@@ -52,6 +53,11 @@
                 </div>
               {% endfor %}
             {% endif %}
+
+            {% block breadcrumbs %}
+              {% render_breadcrumbs %}
+            {% endblock %}
+
             {% block content %}
             {% endblock content %}
           </div>

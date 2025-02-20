@@ -1,11 +1,10 @@
 import django_tables2 as tables
-from django_tables2.utils import A
 
 from .models import Project
 
 
 class ProjectTable(tables.Table):
-    number = tables.LinkColumn("projects:project-detail", kwargs={"pk": A("number")})
+    number = tables.LinkColumn()
     end_date = tables.DateColumn(format="d/m/Y")
     start_date = tables.DateColumn(format="d/m/Y")
 

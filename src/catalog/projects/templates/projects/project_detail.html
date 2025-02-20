@@ -1,0 +1,72 @@
+{% extends 'app.html' %}
+
+{% block article %}
+<div class="prose">
+    <h1>{{ project.name }}</h1>
+    <p>{{ project.description|default_if_none:'No description provided' }}</p>
+
+    <h2>Additional info</h2>
+    <table class="table table-zebra table-pin-cols table-lg">
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Topics</td>
+                <td>{{ project.topics.all }}</td>
+            </tr>
+            <tr>
+                <td>Category</td>
+                <td>{{ project.category }}</td>
+            </tr>
+            <tr>
+                <td>Customer</td>
+                <td>{{ project.customer }}</td>
+            </tr>
+            <tr>
+                <td>Start date</td>
+                <td>{{ project.start_date }}</td>
+            </tr>
+            <tr>
+                <td>End date</td>
+                <td>{{ project.end_date }}</td>
+            </tr>
+            <tr>
+                <td>Budget</td>
+                <td>{{ project.budget }} NOK</td>
+            </tr>
+            <tr>
+                <td>Department</td>
+                <td>{{ project.section }}</td>
+            </tr>
+            <tr>
+                <td>Leader</td>
+                <td>{{ project.get_leader }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Involved</h2>
+    <table class="table table-zebra table-pin-cols table-lg">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in project.members.all %}
+            <tr>
+                <td>{{ member.user }}</td>
+                <td>{{ member.get_role_display }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock article %}

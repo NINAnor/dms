@@ -117,6 +117,7 @@ THIRD_PARTY_APPS = [
     "taggit",
     "dal",
     "dal_select2",
+    "view_breadcrumbs",
 ]
 
 LOCAL_APPS = [
