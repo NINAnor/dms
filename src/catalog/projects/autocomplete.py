@@ -16,13 +16,24 @@ class ProjectAutocomplete(autocomplete.Select2QuerySetView):
     ]
 
 
-class TopicAutocomplete(ProjectAutocomplete):
+class TopicAutocomplete(autocomplete.Select2QuerySetView):
     model = Topic
+    create_field = "text"
+    validate_create = True
+    search_fields = [
+        "text",
+    ]
 
 
-class SectionAutocomplete(ProjectAutocomplete):
+class SectionAutocomplete(autocomplete.Select2QuerySetView):
     model = Section
+    search_fields = [
+        "text",
+    ]
 
 
-class CategoryAutocomplete(ProjectAutocomplete):
+class CategoryAutocomplete(autocomplete.Select2QuerySetView):
     model = Category
+    search_fields = [
+        "text",
+    ]
