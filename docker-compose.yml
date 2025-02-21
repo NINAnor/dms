@@ -123,11 +123,23 @@ services:
       - 5432:5432
 
   caddy:
-    image: caddy:2.9.1
+    build:
+      context: ./caddy
+    profiles:
+      - prod
     volumes:
-      - statics:/statics
-      - ./media:/media_files
-      - ./caddy:/etc/caddy
+      - statics:/django/statics
+      - ./media:/django/media
+    ports:
+      - 8000:80
+  caddy-dev:
+    profiles:
+      - dev
+    build:
+      context: ./caddy
+    volumes:
+      - ./media:/django/media
+      - ./caddy/Caddyfile.dev:/etc/caddy/Caddyfile
     ports:
       - 8000:80
 
@@ -139,7 +151,7 @@ services:
   #   command: npm run dev -- --host 0.0.0.0 --cors
   #   ports:
   #     - 5173:5173
-  #   volumes:
+  #   volumes:S
   #     - ./src/frontend/src:/app/src
 
   minio:
@@ -161,7 +173,8 @@ services:
     # Our base image runs without root, but the Docker Compose implementation needs root to access the Docker socket
     # To run Kestra in a rootless mode in production, see: https://kestra.io/docs/installation/podman-compose
     user: "root"
-    command: server standalone
+    # command: server standalone
+    command: bash
     volumes:
       - kestra-data:/app/storage
       - ${DOCKER_SOCKET_PATH}:/var/run/docker.sock
