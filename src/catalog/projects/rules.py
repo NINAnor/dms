@@ -4,7 +4,10 @@ import rules
 def project_role_is(role):
     @rules.predicate
     def has_role_in_project(user, project):
-        return project.members.filter(user=user, role=role).exists()
+        if project:
+            return project.members.filter(user=user, role=role).exists()
+
+        return True
 
     return has_role_in_project
 
