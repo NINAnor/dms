@@ -3,11 +3,24 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
 from rules.contrib.models import RulesModel
+from solo.models import SingletonModel
 from taggit.managers import TaggableManager
 
 from .rules import project_role_is
 
 User = get_user_model()
+
+
+class ProjectsConfiguration(SingletonModel):
+    dmp_survey_config = models.ForeignKey(
+        "surveys.Survey", on_delete=models.PROTECT, null=True, blank=True
+    )
+
+    def __str__(self):
+        return self._meta.verbose_name
+
+    class Meta:
+        verbose_name = "Projects Configuration"
 
 
 class ProjectMembership(models.Model):
@@ -83,10 +96,11 @@ class Project(RulesModel):
     customer = models.CharField(null=True, blank=True)
     budget = models.DecimalField(decimal_places=2, max_digits=16, null=True, blank=True)
 
-    description = models.TextField(blank=True, null=True)
     topics = models.ManyToManyField("Topic", blank=True)
 
     tags = TaggableManager()
+
+    dmp = models.JSONField(null=True, blank=True)
 
     def __str__(self) -> str:
         if self.name:
@@ -100,7 +114,7 @@ class Project(RulesModel):
     class Meta:
         rules_permissions = {
             "add": rules.is_staff,
-            "read": rules.is_authenticated,
+            "view": rules.is_authenticated,
             "change": project_role_is(ProjectMembership.Role.OWNER),
             "delete": rules.is_staff,
         }

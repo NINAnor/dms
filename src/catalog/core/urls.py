@@ -14,6 +14,7 @@ urlpatterns = [
     path(
         "autocomplete/", include("catalog.core.autocomplete", namespace="autocomplete")
     ),
+    path("api/v1/", include("catalog.core.router", namespace="api_v1")),
     path("surveys/", include("catalog.surveys.urls", namespace="surveys")),
     path("", include("catalog.projects.urls", namespace="projects")),
     path("", HomeView.as_view(), name="home"),

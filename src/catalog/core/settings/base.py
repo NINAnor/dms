@@ -417,8 +417,8 @@ REST_AUTH = {
 
 # DRF Spectacular
 SPECTACULAR_SETTINGS = {
-    "TITLE": "GenLab Bestilling System API",
-    "DESCRIPTION": "APIs for GenLab Bestilling System project",
+    "TITLE": "Catalog API",
+    "DESCRIPTION": "APIs for interacting with the catalog",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
 }

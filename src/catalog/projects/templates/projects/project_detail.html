@@ -50,6 +50,10 @@
                 <td>Leader</td>
                 <td>{{ project.get_leader }}</td>
             </tr>
+            <tr>
+                <td>Has DMP</td>
+                <td>{% if project.dmp %}Yes{% else %}No{% endif %}</td>
+            </tr>
         </tbody>
     </table>
 
@@ -63,17 +67,23 @@
         </thead>
         <tbody>
             {% for member in project.members.all %}
+            {% if member.user %}
             <tr>
                 <td>{{ member.user }}</td>
                 <td>{{ member.get_role_display }}</td>
             </tr>
+            {% endif %}
             {% endfor %}
         </tbody>
     </table>
 </div>
-<div class="flex mt-5">
+<div class="flex mt-5 gap-4">
+    {% if project.dmp %}
+        <a class="btn btn-secondary" href="">Preview DMP</a>
+    {% endif %}
     {% if can_edit_project %}
     <a class="btn btn-primary" href="{% url 'projects:project_update' pk=project.number %}">Edit</a>
+    <a class="btn btn-secondary" href="{% url 'projects:project_dmp' pk=project.number %}">DMP</a>
     {% endif %}
 </div>
 
