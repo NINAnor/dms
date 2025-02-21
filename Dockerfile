@@ -48,6 +48,8 @@ RUN uv run manage.py tailwind install
 RUN uv run manage.py tailwind build
 
 FROM app AS django
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --extra ldap --extra prod
 COPY --from=production /app .
 COPY --from=translation /app/src/catalog/locale /app/src/catalog/locale
 COPY --from=source /app .
