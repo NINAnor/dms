@@ -121,21 +121,20 @@ services:
     ports:
       - 5432:5432
 
-  caddy:
+  proxy:
     build:
-      context: ./caddy
+      context: ./nginx
     profiles:
       - prod
     volumes:
-      - statics:/django/statics
-      - ./media:/django/media
+      - statics:/statics
+      - ./media:/media
     ports:
       - 8000:80
-  caddy-dev:
+  caddy:
     profiles:
       - dev
-    build:
-      context: ./caddy
+    image: caddy:2.9.1
     volumes:
       - ./media:/django/media
       - ./caddy/Caddyfile.dev:/etc/caddy/Caddyfile
