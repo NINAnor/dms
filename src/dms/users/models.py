@@ -7,7 +7,7 @@ from .managers import UserManager
 
 class User(AbstractUser):
     """
-    Default custom user model for Catalog.
+    Default custom user model for dms.
     """
 
     email = EmailField(_("email address"), unique=True, null=True, blank=True)

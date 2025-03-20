@@ -1,5 +1,5 @@
 id: sync_project_v2
-namespace: nina.miljodata.catalog
+namespace: nina.miljodata.dms
 
 tasks:
   - id: run_script
@@ -12,5 +12,5 @@ tasks:
       include:
         - sync_projects.py
     env:
-      PSQL: "{{envs.catalog_psql}}"
+      PSQL: "{{envs.dms_psql}}"
       MSSQL: "{{envs.ubw_mssql}}"

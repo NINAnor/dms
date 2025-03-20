@@ -63,7 +63,7 @@ dependencies = [
 ]
 description = "Add your description here"
 license = {text = "GPLv3"}
-name = "catalog"
+name = "dms"
 readme = "README.md"
 requires-python = ">=3.12"
 version = "0.1.0"
@@ -89,12 +89,12 @@ test = [
 ]
 
 [project.scripts]
-catalog = "catalog.manage:main"
-"manage.py" = "catalog.manage:main"
+dms = "dms.manage:main"
+"manage.py" = "dms.manage:main"
 
 # ==== Coverage ====
 [tool.coverage.run]
-include = ["metadata_catalogue/**"]
+include = ["metadata_dmsue/**"]
 omit = ["*/migrations/*", "*/tests/*"]
 plugins = ["django_coverage_plugin"]
 

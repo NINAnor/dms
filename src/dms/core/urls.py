@@ -11,12 +11,10 @@ urlpatterns = [
     # User management
     path("accounts/", include("allauth.urls")),
     path("ht/", include("health_check.urls")),
-    path(
-        "autocomplete/", include("catalog.core.autocomplete", namespace="autocomplete")
-    ),
-    path("api/v1/", include("catalog.core.router", namespace="api_v1")),
-    path("surveys/", include("catalog.surveys.urls", namespace="surveys")),
-    path("", include("catalog.projects.urls", namespace="projects")),
+    path("autocomplete/", include("dms.core.autocomplete", namespace="autocomplete")),
+    path("api/v1/", include("dms.core.router", namespace="api_v1")),
+    path("surveys/", include("dms.surveys.urls", namespace="surveys")),
+    path("", include("dms.projects.urls", namespace="projects")),
     path("", HomeView.as_view(), name="home"),
 ]
 

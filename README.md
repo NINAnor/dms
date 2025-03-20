@@ -1,4 +1,4 @@
-# Catalog
+# NINA Data Management System (DMS)
 
 
 ## Requirements
@@ -21,7 +21,7 @@ mindmap
       UBW
       DMP
     Datasets
-      Catalog
+      dms
       Metadata
       DOI
       Sharing

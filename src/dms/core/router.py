@@ -6,7 +6,7 @@ from drf_spectacular.views import (
 )
 from rest_framework_nested import routers
 
-from catalog.projects.api import views as projects_views
+from dms.projects.api import views as projects_views
 
 router = routers.DefaultRouter()
 router.register("projects", projects_views.ProjectModelViewSet, basename="projects")

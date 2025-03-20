@@ -1,5 +1,5 @@
 """
-WSGI config for catalog project.
+WSGI config for dms project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "catalog.core.settings.base")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dms.core.settings.base")
 
 application = get_wsgi_application()

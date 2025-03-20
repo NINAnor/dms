@@ -3,13 +3,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import path
 from taggit.models import Tag
 
-from catalog.projects.autocomplete import (
+from dms.projects.autocomplete import (
     CategoryAutocomplete,
     ProjectAutocomplete,
     SectionAutocomplete,
     TopicAutocomplete,
 )
-from catalog.users.autocomplete import UserAutocomplete
+from dms.users.autocomplete import UserAutocomplete
 
 
 class TagAutocomplete(LoginRequiredMixin, autocomplete.Select2QuerySetView):

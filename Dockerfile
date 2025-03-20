@@ -1,4 +1,4 @@
-ARG TESTING_MODULE="catalog.core.settings.test"
+ARG TESTING_MODULE="dms.core.settings.test"
 
 FROM ghcr.io/osgeo/gdal:ubuntu-full-3.10.1 AS base
 ENV UV_LINK_MODE=copy
@@ -17,7 +17,7 @@ RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
 
 FROM base AS app
 COPY pyproject.toml uv.lock entrypoint.sh README.md .
-COPY src/catalog/manage.py src/catalog/__init__.py src/catalog/
+COPY src/dms/manage.py src/dms/__init__.py src/dms/
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
 
@@ -34,7 +34,7 @@ FROM production AS translation
 COPY --from=source /app .
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
-ENV DJANGO_SETTINGS_MODULE="catalog.core.settings.test"
+ENV DJANGO_SETTINGS_MODULE="dms.core.settings.test"
 ENV DATABASE_URL=""
 RUN uv run manage.py compilemessages -l no
 
@@ -42,7 +42,7 @@ FROM production AS tailwind
 COPY --from=source /app .
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
-ENV DJANGO_SETTINGS_MODULE="catalog.core.settings.test"
+ENV DJANGO_SETTINGS_MODULE="dms.core.settings.test"
 ENV DATABASE_URL=""
 RUN uv run manage.py tailwind install
 RUN uv run manage.py tailwind build
@@ -51,9 +51,9 @@ FROM app AS django
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --extra ldap --extra prod
 COPY --from=production /app .
-COPY --from=translation /app/src/catalog/locale /app/src/catalog/locale
+COPY --from=translation /app/src/dms/locale /app/src/dms/locale
 COPY --from=source /app .
-COPY --from=tailwind /app/src/catalog/theme/static /app/src/catalog/theme/static
+COPY --from=tailwind /app/src/dms/theme/static /app/src/dms/theme/static
 RUN mkdir media
 ENTRYPOINT ["./entrypoint.sh"]
 
@@ -62,6 +62,6 @@ COPY --from=production /app .
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --all-extras
 COPY --from=django /app/src src
-COPY --from=translation /app/src/catalog/locale /app/src/catalog/locale
+COPY --from=translation /app/src/dms/locale /app/src/dms/locale
 COPY --from=django /app/entrypoint.sh .
 ENTRYPOINT ["./entrypoint.sh"]

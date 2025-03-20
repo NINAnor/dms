@@ -4,7 +4,7 @@ import django.contrib.auth.validators
 import django.utils.timezone
 from django.db import migrations, models
 
-import catalog.users.managers
+import dms.users.managers
 
 
 class Migration(migrations.Migration):
@@ -120,7 +120,7 @@ class Migration(migrations.Migration):
                 "abstract": False,
             },
             managers=[
-                ("objects", catalog.users.managers.UserManager()),
+                ("objects", dms.users.managers.UserManager()),
             ],
         ),
     ]

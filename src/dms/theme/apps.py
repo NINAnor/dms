@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class ThemeConfig(AppConfig):
-    name = "catalog.theme"
+    name = "dms.theme"

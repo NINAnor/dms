@@ -77,4 +77,4 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 
 # ALLAUTH
 # ------------------------------------------------------------------------------
-SOCIALACCOUNT_ADAPTER = "catalog.users.adapters.SocialAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "dms.users.adapters.SocialAccountAdapter"

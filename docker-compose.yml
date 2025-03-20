@@ -1,11 +1,10 @@
 volumes:
   pgdata: {}
   statics: {}
-  kestra-data: {}
 
 x-django-env: &django-env
   DATABASE_URL: "postgis://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres?sslmode=disable"
-  DJANGO_SETTINGS_MODULE: catalog.core.settings.production
+  DJANGO_SETTINGS_MODULE: dms.core.settings.production
   USE_DOCKER: "yes"
   OIDC_PROVIDER_ID: nina
   OIDC_CLIENT_ID: "${OIDC_CLIENT_ID}"
@@ -34,7 +33,7 @@ x-django-prod-env: &django-prod-env
 
 x-django-dev-env: &django-dev-env
   <<: *django-env
-  DJANGO_SETTINGS_MODULE: catalog.core.settings.local
+  DJANGO_SETTINGS_MODULE: dms.core.settings.local
 
 x-django: &django
   build: .
@@ -50,7 +49,7 @@ x-django-prod: &django-prod
     - postgres
   profiles:
     - prod
-  command: uv run gunicorn catalog.core.wsgi --bind 0.0.0.0:8000 --chdir=/app
+  command: uv run gunicorn dms.core.wsgi --bind 0.0.0.0:8000 --chdir=/app
 
 x-django-dev: &django-dev
   <<: *django
