@@ -21,14 +21,17 @@ mindmap
       UBW
       DMP
     Datasets
-      dms
+      Catalog
       Metadata
       DOI
       Sharing
         GBIF
         GeoNorge
+      Storage
         Zenodo
+        IPT
+        NINA S3
     Maps
-        internal
-        public
+        Internal
+        Public
 ```
