@@ -22,3 +22,6 @@ class ProjectTable(tables.Table):
             "tags",
         )
         template_name = "django_tables2/bootstrap.html"
+
+    def render_tags(self, value, record):
+        return ", ".join(value.all().values_list("name", flat=True))

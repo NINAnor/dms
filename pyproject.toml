@@ -59,7 +59,8 @@ dependencies = [
   "django-taggit>=6.1.0",
   "django-autocomplete-light>=3.11.0",
   "django-view-breadcrumbs>=2.5.1",
-  "django-auditlog>=3.0.0"
+  "django-auditlog>=3.0.0",
+  "django-import-export>=4.3.7"
 ]
 description = "Add your description here"
 license = {text = "GPLv3"}

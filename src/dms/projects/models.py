@@ -6,6 +6,8 @@ from rules.contrib.models import RulesModel
 from solo.models import SingletonModel
 from taggit.managers import TaggableManager
 
+from dms.core.models import GenericStringTaggedItem
+
 from .rules import project_role_is
 
 User = get_user_model()
@@ -89,7 +91,7 @@ class Project(RulesModel):
     customer = models.CharField(null=True, blank=True)
     budget = models.DecimalField(decimal_places=2, max_digits=16, null=True, blank=True)
 
-    tags = TaggableManager()
+    tags = TaggableManager(through=GenericStringTaggedItem)
 
     dmp = models.JSONField(null=True, blank=True)
 

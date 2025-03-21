@@ -1,4 +1,9 @@
+import logging
+import traceback
+
 from django.contrib import admin
+from import_export import fields, resources
+from import_export.admin import ImportExportModelAdmin
 from solo.admin import SingletonModelAdmin
 
 from .models import (
@@ -8,6 +13,30 @@ from .models import (
     ProjectsConfiguration,
     Section,
 )
+
+
+class ProjectResource(resources.ModelResource):
+    topics = fields.Field(
+        attribute="topics",
+    )
+
+    def save_instance(self, instance, is_create, row, **kwargs):
+        super().save_instance(instance, is_create, row, **kwargs)
+
+        try:
+            if row["topics"] and not is_create:
+                instance.tags.add(*row["topics"].split(","))
+        except Exception:
+            logging.error(traceback.format_exc())
+
+    class Meta:
+        model = Project
+        fields = (
+            "number",
+            "description",
+            "topics",
+        )
+        import_id_fields = ["number"]
 
 
 @admin.register(Category)
@@ -25,7 +54,7 @@ class ProjectMembershipInline(admin.TabularInline):
 
 
 @admin.register(Project)
-class ProjectAdmin(admin.ModelAdmin):
+class ProjectAdmin(ImportExportModelAdmin):
     search_fields = ["number", "name"]
     list_filter = []
     list_display = [
@@ -34,6 +63,7 @@ class ProjectAdmin(admin.ModelAdmin):
     ]
 
     inlines = [ProjectMembershipInline]
+    resource_classes = [ProjectResource]
 
 
 @admin.register(ProjectMembership)

@@ -119,6 +119,7 @@ THIRD_PARTY_APPS = [
     "dal_select2",
     "view_breadcrumbs",
     "rules",
+    "import_export",
 ]
 
 LOCAL_APPS = [

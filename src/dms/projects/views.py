@@ -29,7 +29,7 @@ class ProjectListView(
             super()
             .get_queryset()
             .select_related("category", "section")
-            .prefetch_related("topics")
+            .prefetch_related("tags")
         )
 
 
@@ -42,7 +42,7 @@ class ProjectDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailVi
             super()
             .get_queryset()
             .select_related("category", "section")
-            .prefetch_related("topics", Prefetch("members__user"))
+            .prefetch_related("tags", Prefetch("members__user"))
         )
 
 

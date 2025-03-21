@@ -1,6 +1,7 @@
 import django_filters as filters
 from dal import autocomplete
 from django.contrib.auth import get_user_model
+from taggit.models import Tag
 
 from . import models
 
@@ -21,6 +22,11 @@ class ProjectFilter(filters.FilterSet):
         widget=autocomplete.ModelSelect2(url="autocomplete:user"),
         method="filter_by_leader",
         label="Leader",
+    )
+    tags = filters.ModelMultipleChoiceFilter(
+        queryset=Tag.objects.all(),
+        widget=autocomplete.ModelSelect2Multiple(url="autocomplete:tag"),
+        method="filter_tags",
     )
 
     def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
@@ -44,6 +50,11 @@ class ProjectFilter(filters.FilterSet):
             )
         return queryset
 
+    def filter_tags(self, queryset, name, value):
+        if value:
+            return queryset.filter(tags__name__in=value).distinct()
+        return queryset
+
     class Meta:
         model = models.Project
         fields = {
@@ -54,4 +65,5 @@ class ProjectFilter(filters.FilterSet):
             "section": ["exact"],
             "start_date": ["gte"],
             "end_date": ["lte"],
+            "tags": ["exact"],
         }
