@@ -107,7 +107,7 @@ class Project(RulesModel):
     class Meta:
         rules_permissions = {
             "add": rules.is_staff,
-            "view": rules.is_authenticated,
+            "view": rules.always_allow,
             "change": project_role_is(ProjectMembership.Role.OWNER),
             "delete": rules.is_staff,
         }

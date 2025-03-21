@@ -8,10 +8,10 @@
       </a>
     </div>
     <div class="flex items-center gap-8 2xsm:gap-7 text-sm font-bold">
+      <div>
+        <a href="{% url 'projects:project_list' %}">Projects</a>
+      </div>
       {% if user.is_authenticated %}
-        <div>
-          <a href="{% url 'projects:project_list' %}">Projects</a>
-        </div>
         {% include 'core/partials/user-dropdown.html' %}
       {% else %}
         <a href="{% url 'account_login' %}">Login</a>
