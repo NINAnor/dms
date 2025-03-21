@@ -8,6 +8,25 @@ from . import models
 User = get_user_model()
 
 
+class DMPFilter(filters.FilterSet):
+    project = filters.ModelChoiceFilter(
+        queryset=models.Project.objects.all(),
+        widget=autocomplete.ModelSelect2(url="autocomplete:project"),
+        method="filter_by_project",
+        label="Project",
+        to_field_name="project",
+    )
+
+    def filter_by_project(self, queryset, name, value):
+        if value:
+            return queryset.filter(project=value)
+        return queryset
+
+    class Meta:
+        model = models.DMP
+        fields = {"name": ["icontains"]}
+
+
 class ProjectFilter(filters.FilterSet):
     participant = filters.ModelChoiceFilter(
         queryset=User.objects.all(),

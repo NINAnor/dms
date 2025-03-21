@@ -15,3 +15,8 @@ def project_role_is(role):
 @rules.predicate
 def is_project_participant(user, project):
     return project.memberships.filter(user=user).exists()
+
+
+@rules.predicate
+def is_owner(user, instance):
+    return instance.owner == user

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from ..models import Project
+from ..models import DMP, Project
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -15,14 +15,14 @@ class ProjectSerializer(serializers.ModelSerializer):
             "category",
             "section",
             "customer",
-            "dmp",
         ]
 
 
-class ProjectUpdateSerializer(serializers.ModelSerializer):
+class DMPSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Project
+        model = DMP
         fields = [
-            "description",
-            "dmp",
+            "id",
+            "name",
+            "data",
         ]

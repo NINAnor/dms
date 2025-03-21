@@ -1,0 +1,9 @@
+{% extends 'base_filter.html' %}
+
+{% block page-title %}DMPs{% endblock %}
+
+{% block page-actions %}
+<div class="flex">
+    <a class="btn btn-primary" href="{% url 'projects:dmp_create' %}">Create</a>
+</div>
+{% endblock page-actions %}

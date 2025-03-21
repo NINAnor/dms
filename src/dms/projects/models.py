@@ -8,7 +8,7 @@ from taggit.managers import TaggableManager
 
 from dms.core.models import GenericStringTaggedItem
 
-from .rules import project_role_is
+from .rules import is_owner, project_role_is
 
 User = get_user_model()
 
@@ -68,6 +68,31 @@ class Section(models.Model):
         return self.text
 
 
+class DMP(RulesModel):
+    name = models.CharField()
+    data = models.JSONField(null=True, blank=True)
+    project = models.OneToOneField(
+        "Project", null=True, blank=True, on_delete=models.SET_NULL
+    )
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def get_absolute_url(self):
+        return reverse("projects:dmp_detail", kwargs={"pk": self.pk})
+
+    class Meta:
+        rules_permissions = {
+            "add": rules.is_authenticated,
+            "view": rules.always_allow,
+            "change": is_owner,
+            "delete": is_owner,
+        }
+
+    def __str__(self):
+        return self.name
+
+
 class Project(RulesModel):
     number = models.CharField(primary_key=True)
     name = models.CharField(null=True, blank=True)
@@ -92,8 +117,6 @@ class Project(RulesModel):
     budget = models.DecimalField(decimal_places=2, max_digits=16, null=True, blank=True)
 
     tags = TaggableManager(through=GenericStringTaggedItem)
-
-    dmp = models.JSONField(null=True, blank=True)
 
     def __str__(self) -> str:
         if self.name:

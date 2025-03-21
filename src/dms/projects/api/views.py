@@ -3,8 +3,8 @@ from rest_framework.viewsets import GenericViewSet, mixins
 from rules.contrib.rest_framework import AutoPermissionViewSetMixin
 
 from ..filters import ProjectFilter
-from ..models import Project
-from .serializers import ProjectSerializer, ProjectUpdateSerializer
+from ..models import DMP, Project
+from .serializers import DMPSerializer, ProjectSerializer
 
 
 class ProjectModelViewSet(
@@ -24,7 +24,18 @@ class ProjectModelViewSet(
 
         return qs
 
-    def get_serializer_class(self):
-        if self.action in ["update", "partial_update"]:
-            return ProjectUpdateSerializer
-        return super().get_serializer_class()
+
+class DMPModelViewSet(
+    mixins.UpdateModelMixin,
+    AutoPermissionViewSetMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    GenericViewSet,
+):
+    queryset = DMP.objects.all()
+    serializer_class = DMPSerializer
+    pagination_class = LimitOffsetPagination
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.filter(owner=self.request.user)

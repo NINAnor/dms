@@ -1,5 +1,5 @@
 const url = document
-  .getElementById("project_api_url")
+  .getElementById("dmp_api_url")
   .textContent.replaceAll('"', "");
 const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
@@ -11,7 +11,7 @@ function save(survey) {
       "X-CSRFToken": csrftoken,
     },
     mode: "same-origin",
-    body: JSON.stringify({ dmp: survey.data }),
+    body: JSON.stringify({ data: survey.data }),
   })
     .then((response) => {
       if (response.ok) {

@@ -79,11 +79,10 @@
 </div>
 <div class="flex mt-5 gap-4">
     {% if project.dmp %}
-        <a class="btn btn-secondary" href="">Preview DMP</a>
+    <a class="btn btn-secondary" href="{% url 'projects:dmp_detail' pk=project.dmp_id %}">DMP</a>
     {% endif %}
     {% if can_edit_project %}
     <a class="btn btn-primary" href="{% url 'projects:project_update' pk=project.number %}">Edit</a>
-    <a class="btn btn-secondary" href="{% url 'projects:project_dmp' pk=project.number %}">DMP</a>
     {% endif %}
 </div>
 

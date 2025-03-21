@@ -1,6 +1,6 @@
 import django_tables2 as tables
 
-from .models import Project
+from .models import DMP, Project
 
 
 class ProjectTable(tables.Table):
@@ -25,3 +25,18 @@ class ProjectTable(tables.Table):
 
     def render_tags(self, value, record):
         return ", ".join(value.all().values_list("name", flat=True))
+
+
+class DMPTable(tables.Table):
+    name = tables.LinkColumn()
+    created_at = tables.DateColumn(format="d/m/Y")
+    modified_at = tables.DateColumn(format="d/m/Y")
+
+    class Meta:
+        model = DMP
+        fields = (
+            "name",
+            "created_at",
+            "modified_at",
+        )
+        template_name = "django_tables2/bootstrap.html"

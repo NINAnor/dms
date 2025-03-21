@@ -1,7 +1,7 @@
 import json
 
 from django.contrib.auth.decorators import login_required
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import (
     CreateView,
@@ -49,5 +49,5 @@ def survey_update_view(request, pk):
         survey.config = json.loads(request.body.decode("utf-8"))
         survey.save()
         return HttpResponse()
-    except Survey.DoesNotExist:
-        return Http404()
+    except Survey.DoesNotExist as e:
+        raise HttpResponse() from e

@@ -1,0 +1,49 @@
+{% extends 'app.html' %}
+{% load rules %}
+
+{% block article %}
+
+{% has_perm 'projects.change_dmp' request.user dmp as can_edit %}
+
+<div class="prose">
+    <h1>{{ dmp.name }}</h1>
+
+    <h2>Additional info</h2>
+    <table class="table table-zebra table-pin-cols table-lg">
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Owner</td>
+                <td>{{ dmp.owner }}</td>
+            </tr>
+            <tr>
+                <td>Project</td>
+                <td>{{ dmp.project|default_if_none:"" }}</td>
+            </tr>
+            <tr>
+                <td>Created at</td>
+                <td>{{ dmp.created_at }}</td>
+            </tr>
+            <tr>
+                <td>Last modified</td>
+                <td>{{ dmp.updated_at }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="flex mt-5 gap-4">
+    {% if dmp.data %}
+        <a class="btn btn-secondary" href="">Preview DMP</a>
+    {% endif %}
+    {% if can_edit %}
+    <a class="btn btn-primary" href="{% url 'projects:dmp_update' pk=dmp.id %}">Edit</a>
+    <a class="btn btn-secondary" href="{% url 'projects:dmp_edit_survey' pk=dmp.id %}">Edit DMP data</a>
+    {% endif %}
+</div>
+
+{% endblock article %}
