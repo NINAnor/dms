@@ -28,19 +28,19 @@ class DMPFilter(filters.FilterSet):
 
 
 class ProjectFilter(filters.FilterSet):
-    participant = filters.ModelChoiceFilter(
-        queryset=User.objects.all(),
-        widget=autocomplete.ModelSelect2(url="autocomplete:user"),
-        method="filter_by_participant",
-        label="Participant",
-        to_field_name="username",
-    )
     leader = filters.ModelChoiceFilter(
         queryset=User.objects.all(),
         to_field_name="username",
         widget=autocomplete.ModelSelect2(url="autocomplete:user"),
         method="filter_by_leader",
         label="Leader",
+    )
+    participant = filters.ModelChoiceFilter(
+        queryset=User.objects.all(),
+        widget=autocomplete.ModelSelect2(url="autocomplete:user"),
+        method="filter_by_participant",
+        label="Participant",
+        to_field_name="username",
     )
     tags = filters.ModelMultipleChoiceFilter(
         queryset=Tag.objects.all(),
@@ -84,5 +84,4 @@ class ProjectFilter(filters.FilterSet):
             "section": ["exact"],
             "start_date": ["gte"],
             "end_date": ["lte"],
-            "tags": ["exact"],
         }
