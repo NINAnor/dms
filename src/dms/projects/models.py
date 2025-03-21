@@ -72,7 +72,7 @@ class DMP(RulesModel):
     name = models.CharField()
     data = models.JSONField(null=True, blank=True)
     project = models.OneToOneField(
-        "Project", null=True, blank=True, on_delete=models.SET_NULL
+        "Project", null=True, blank=True, on_delete=models.SET_NULL, related_name="dmp"
     )
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -126,6 +126,13 @@ class Project(RulesModel):
 
     def get_absolute_url(self):
         return reverse("projects:project_detail", kwargs={"pk": self.pk})
+
+    @property
+    def leaders(self):
+        return User.objects.filter(
+            memberships__role=ProjectMembership.Role.OWNER,
+            memberships__project_id=self.number,
+        )
 
     class Meta:
         rules_permissions = {

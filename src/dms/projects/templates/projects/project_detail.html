@@ -5,8 +5,8 @@
 
 {% has_perm 'projects.change_project' request.user project as can_edit_project %}
 
-<div class="prose">
-    <h1>{{ project.name }}</h1>
+<div class="prose-xl">
+    <h1 class="font-bold">{{ project.name }}</h1>
     <p>{{ project.description|default_if_none:'No description provided' }}</p>
 
     <h2>Additional info</h2>
@@ -48,11 +48,14 @@
             </tr>
             <tr>
                 <td>Leader</td>
-                <td>{{ project.get_leader }}</td>
+                <td>{{ project.leaders|join:', ' }}</td>
             </tr>
             <tr>
                 <td>Has DMP</td>
-                <td>{% if project.dmp %}Yes{% else %}No{% endif %}</td>
+                <td>{% if project.dmp %}
+                    <a href="{% url 'projects:dmp_detail' object.dmp.id %}">Yes</a>
+                    {% else %}No{% endif %}
+                </td>
             </tr>
         </tbody>
     </table>
@@ -79,7 +82,7 @@
 </div>
 <div class="flex mt-5 gap-4">
     {% if project.dmp %}
-    <a class="btn btn-secondary" href="{% url 'projects:dmp_detail' pk=project.dmp_id %}">DMP</a>
+    <a class="btn btn-secondary" href="{% url 'projects:dmp_detail' pk=project.dmp.id %}">DMP</a>
     {% endif %}
     {% if can_edit_project %}
     <a class="btn btn-primary" href="{% url 'projects:project_update' pk=project.number %}">Edit</a>
