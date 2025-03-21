@@ -31,9 +31,6 @@ class ProjectFilter(filters.FilterSet):
         self.filters["section"].extra["widget"] = autocomplete.ModelSelect2(
             url="autocomplete:section"
         )
-        self.filters["topics"].extra["widget"] = autocomplete.ModelSelect2Multiple(
-            url="autocomplete:topic"
-        )
 
     def filter_by_participant(self, queryset, name, value):
         if value:
@@ -57,5 +54,4 @@ class ProjectFilter(filters.FilterSet):
             "section": ["exact"],
             "start_date": ["gte"],
             "end_date": ["lte"],
-            "topics": ["exact"],
         }

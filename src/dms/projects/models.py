@@ -66,13 +66,6 @@ class Section(models.Model):
         return self.text
 
 
-class Topic(models.Model):
-    text = models.CharField()
-
-    def __str__(self):
-        return self.text
-
-
 class Project(RulesModel):
     number = models.CharField(primary_key=True)
     name = models.CharField(null=True, blank=True)
@@ -95,8 +88,6 @@ class Project(RulesModel):
     )
     customer = models.CharField(null=True, blank=True)
     budget = models.DecimalField(decimal_places=2, max_digits=16, null=True, blank=True)
-
-    topics = models.ManyToManyField("Topic", blank=True)
 
     tags = TaggableManager()
 

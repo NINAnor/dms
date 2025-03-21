@@ -16,7 +16,6 @@ class ProjectSerializer(serializers.ModelSerializer):
             "section",
             "customer",
             "dmp",
-            "topics",
         ]
 
 

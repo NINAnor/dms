@@ -4,7 +4,6 @@ from .models import (
     Category,
     Project,
     Section,
-    Topic,
 )
 
 
@@ -13,15 +12,6 @@ class ProjectAutocomplete(autocomplete.Select2QuerySetView):
     search_fields = [
         "name",
         "number",
-    ]
-
-
-class TopicAutocomplete(autocomplete.Select2QuerySetView):
-    model = Topic
-    create_field = "text"
-    validate_create = True
-    search_fields = [
-        "text",
     ]
 
 

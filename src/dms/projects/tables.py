@@ -19,6 +19,6 @@ class ProjectTable(tables.Table):
             "section",
             "category",
             "customer",
-            "topics",
+            "tags",
         )
         template_name = "django_tables2/bootstrap.html"

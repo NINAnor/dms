@@ -7,7 +7,6 @@ from dms.projects.autocomplete import (
     CategoryAutocomplete,
     ProjectAutocomplete,
     SectionAutocomplete,
-    TopicAutocomplete,
 )
 from dms.users.autocomplete import UserAutocomplete
 
@@ -25,11 +24,6 @@ urlpatterns = [
     path("category/", CategoryAutocomplete.as_view(), name="category"),
     path("section/", SectionAutocomplete.as_view(), name="section"),
     path("project/", ProjectAutocomplete.as_view(), name="project"),
-    path(
-        "topic/",
-        TopicAutocomplete.as_view(),
-        name="topic",
-    ),
     path("user/", UserAutocomplete.as_view(), name="user"),
     path("tag/", TagAutocomplete.as_view(), name="tag"),
 ]

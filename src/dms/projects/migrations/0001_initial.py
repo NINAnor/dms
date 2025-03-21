@@ -42,21 +42,6 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name="Topic",
-            fields=[
-                (
-                    "id",
-                    models.BigAutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                ("text", models.CharField()),
-            ],
-        ),
-        migrations.CreateModel(
             name="Project",
             fields=[
                 ("number", models.CharField(primary_key=True, serialize=False)),
@@ -156,11 +141,6 @@ class Migration(migrations.Migration):
                 on_delete=django.db.models.deletion.SET_NULL,
                 to="projects.section",
             ),
-        ),
-        migrations.AddField(
-            model_name="project",
-            name="topics",
-            field=models.ManyToManyField(blank=True, to="projects.topic"),
         ),
         migrations.AddConstraint(
             model_name="projectmembership",
