@@ -1,5 +1,4 @@
 from django.db.models import Prefetch
-from django.utils.functional import cached_property
 from django.views.generic import CreateView, DetailView, UpdateView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
@@ -71,10 +70,10 @@ class DMPDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailView):
     model = DMP
     permission_required = "projects.view_dmp"
 
-    def get_queryset(self):
-        if self.request.user.is_authenticated:
-            return super().get_queryset()
-        return super().get_queryset().none()
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["projects_config"] = ProjectsConfiguration.get_solo()
+        return ctx
 
 
 class DMPCreateView(PermissionRequiredMixin, CreateBreadcrumbMixin, CreateView):
@@ -97,18 +96,3 @@ class DMPUpdateView(PermissionRequiredMixin, UpdateBreadcrumbMixin, UpdateView):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
         return kwargs
-
-
-class DMPSurveyView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailView):
-    model = DMP
-    permission_required = "projects.change_dmp"
-    template_name_suffix = "_edit_json"
-
-    @cached_property
-    def crumbs(self):
-        return super().crumbs + [("DMP", "")]
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx["projects_config"] = ProjectsConfiguration.get_solo()
-        return ctx

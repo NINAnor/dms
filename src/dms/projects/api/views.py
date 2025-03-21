@@ -35,7 +35,3 @@ class DMPModelViewSet(
     queryset = DMP.objects.all()
     serializer_class = DMPSerializer
     pagination_class = LimitOffsetPagination
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        return qs.filter(owner=self.request.user)

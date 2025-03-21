@@ -1,49 +1,68 @@
 {% extends 'app.html' %}
 {% load rules %}
+{% load static %}
 
 {% block article %}
 
 {% has_perm 'projects.change_dmp' request.user dmp as can_edit %}
 
-<div class="prose">
-    <h1>{{ dmp.name }}</h1>
+<div class="flex items-center justify-between">
+    <div>
+        <h1 class="text-3xl font-bold">{{ dmp.name }}</h1>
+        <p class="text-sm text-gray-700">Created by: {{dmp.owner}} &bull;
+            Created at: {{dmp.created_at}} &bull;
+            Last Modified: {{dmp.updated_at}}
+        </p>
+    </div>
+    <div class="flex gap-4">
+        {% if dmp.project %}
+        <a class="btn btn-primary" href="{% url 'projects:project_detail' pk=dmp.project_id %}">Project</a>
+        {% endif %}
+        {% if can_edit %}
+        <a class="btn btn-primary" href="{% url 'projects:dmp_update' pk=dmp.id %}">Edit</a>
+        {% endif %}
+    </div>
+</div>
 
-    <h2>Additional info</h2>
-    <table class="table table-zebra table-pin-cols table-lg">
-        <thead>
-            <tr>
-                <th>Field</th>
-                <th>Value</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Owner</td>
-                <td>{{ dmp.owner }}</td>
-            </tr>
-            <tr>
-                <td>Project</td>
-                <td>{{ dmp.project|default_if_none:"" }}</td>
-            </tr>
-            <tr>
-                <td>Created at</td>
-                <td>{{ dmp.created_at }}</td>
-            </tr>
-            <tr>
-                <td>Last modified</td>
-                <td>{{ dmp.updated_at }}</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-<div class="flex mt-5 gap-4">
-    {% if dmp.data %}
-        <a class="btn btn-secondary" href="">Preview DMP</a>
-    {% endif %}
-    {% if can_edit %}
-    <a class="btn btn-primary" href="{% url 'projects:dmp_update' pk=dmp.id %}">Edit</a>
-    <a class="btn btn-secondary" href="{% url 'projects:dmp_edit_survey' pk=dmp.id %}">Edit DMP data</a>
+<div class="mt-5">
+    {% if projects_config.dmp_survey_config %}
+    <div id="surveyContainer"></div>
+    {% csrf_token %}
+    {% else %}
+    <div class="prose">
+        <p>DMP template is not configured</p>
+    </div>
     {% endif %}
 </div>
+
+<script>
+    window.readOnly = {% if can_edit %}false{% else %}true{% endif %};
+</script>
+
 
 {% endblock article %}
+
+
+{% block css %}
+<link href="https://unpkg.com/survey-core/survey-core.min.css" type="text/css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+{% endblock %}
+
+
+{% block body_javascript %}
+{{ block.super }}
+{% if projects_config.dmp_survey_config %}
+
+{% url 'api_v1:dmps-detail' pk=dmp.id as dmp_api_url %}
+{{ dmp_api_url|safe|json_script:"dmp_api_url" }}
+
+{{ projects_config.dmp_survey_config.config|json_script:"dmp-config" }}
+{{ project.dmp|json_script:"dmp" }}
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script type="text/javascript" src="https://unpkg.com/survey-core/survey.core.min.js"></script>
+<script type="text/javascript" src="https://unpkg.com/survey-js-ui/survey-js-ui.min.js"></script>
+<script src="https://unpkg.com/survey-core/survey.i18n.min.js"></script>
+
+<script src="{% static 'projects/dmp.js' %}"></script>
+{% endif %}
+{% endblock body_javascript %}

@@ -43,6 +43,7 @@ function save(survey) {
 
 const config = JSON.parse(document.getElementById("dmp-config").textContent);
 const survey = new Survey.Model(config);
+survey.readOnly = window.readOnly;
 try {
   const dmp = JSON.parse(document.getElementById("dmp").textContent);
   survey.data = dmp;

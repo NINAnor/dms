@@ -7,6 +7,7 @@ from import_export.admin import ImportExportModelAdmin
 from solo.admin import SingletonModelAdmin
 
 from .models import (
+    DMP,
     Category,
     Project,
     ProjectMembership,
@@ -46,6 +47,11 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Section)
 class SectionAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(DMP)
+class DMPAdmin(admin.ModelAdmin):
     pass
 
 
