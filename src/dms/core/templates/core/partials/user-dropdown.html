@@ -16,7 +16,7 @@
   <!-- Dropdown Start -->
   <div x-cloak
        x-show="dropdownOpen"
-       class="absolute right-0 mt-4 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+       class="absolute right-0 mt-4 flex w-[200px] flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
     <ul class="flex flex-col border-b border-stroke dark:border-strokedark">
       {% comment %}
       <li>
@@ -26,6 +26,24 @@
         </a>
       </li>
       {% endcomment %}
+      <li>
+        <a href="{% url 'projects:dmp_list' %}"
+           class="flex items-center gap-3.5 px-6 border-b py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+          <span>
+            <i class="fas fa-file-shield"></i>
+            {% trans 'My DMPs' %}
+          </span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'projects:project_list' %}?participant={{request.user.username}}"
+           class="flex items-center gap-3.5 px-6 border-b py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+          <span>
+            <i class="fas fa-people-group"></i>
+            {% trans 'My Projects' %}
+          </span>
+        </a>
+      </li>
       {% if user.is_staff %}
         <li>
           <a href="{% url 'admin:index' %}"
@@ -40,7 +58,8 @@
       <li>
         <a href="{% url 'account_logout' %}"
            class="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
-          {% trans 'Log Out' %}
+           <i class="fas fa-right-from-bracket"></i>
+           {% trans 'Log Out' %}
         </a>
       </li>
     </ul>
