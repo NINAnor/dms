@@ -1,7 +1,9 @@
 const creatorOptions = {
   showLogicTab: true,
   isAutoSave: true,
+  showTranslationTab: true,
 };
+
 const creator = new SurveyCreator.SurveyCreator(creatorOptions);
 creator.text = JSON.stringify(
   JSON.parse(document.getElementById("survey-config").textContent)
