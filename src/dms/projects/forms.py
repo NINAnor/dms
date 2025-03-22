@@ -41,7 +41,7 @@ class DMPForm(forms.ModelForm):
         self.user = user
         self.fields["project"].queryset = Project.objects.filter(
             number__in=user.memberships.filter(
-                role=ProjectMembership.Role.MANAGER
+                role=ProjectMembership.Role.OWNER
             ).values_list("project")
         )
 
