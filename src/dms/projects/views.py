@@ -86,6 +86,12 @@ class DMPCreateView(PermissionRequiredMixin, CreateBreadcrumbMixin, CreateView):
         kwargs["user"] = self.request.user
         return kwargs
 
+    def get_initial(self):
+        initial = super().get_initial()
+        if project_id := self.request.GET.get("project"):
+            initial["project"] = project_id
+        return initial
+
 
 class DMPUpdateView(PermissionRequiredMixin, UpdateBreadcrumbMixin, UpdateView):
     permission_required = "projects.change_dmp"
