@@ -1,5 +1,6 @@
 import django_filters as filters
 from dal import autocomplete
+from django import forms
 from django.contrib.auth import get_user_model
 from taggit.models import Tag
 
@@ -55,6 +56,13 @@ class ProjectFilter(filters.FilterSet):
         )
         self.filters["section"].extra["widget"] = autocomplete.ModelSelect2(
             url="autocomplete:section"
+        )
+
+        self.filters["start_date__gte"].extra["widget"] = forms.DateInput(
+            format="%Y-%m-%d", attrs={"type": "date"}
+        )
+        self.filters["end_date__lte"].extra["widget"] = forms.DateInput(
+            format="%Y-%m-%d", attrs={"type": "date"}
         )
 
     def filter_by_participant(self, queryset, name, value):
