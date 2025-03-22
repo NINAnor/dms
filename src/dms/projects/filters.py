@@ -15,7 +15,6 @@ class DMPFilter(filters.FilterSet):
         widget=autocomplete.ModelSelect2(url="autocomplete:project"),
         method="filter_by_project",
         label="Project",
-        to_field_name="project",
     )
 
     def filter_by_project(self, queryset, name, value):
@@ -25,7 +24,7 @@ class DMPFilter(filters.FilterSet):
 
     class Meta:
         model = models.DMP
-        fields = {"name": ["icontains"]}
+        fields = {"name": ["icontains"], "project": ["exact"]}
 
 
 class ProjectFilter(filters.FilterSet):
