@@ -1,0 +1,37 @@
+{# djlint:off H006 #}
+{% load i18n %}
+{% load static %}
+{% load allauth_ui %}
+{% load tailwind_tags %}
+
+<!DOCTYPE html>
+<html data-theme="{% allauth_ui_theme %}">
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>
+            {% block head_title %}
+            {% endblock head_title %}
+        </title>
+        {% block extra_head %}
+            <link rel="stylesheet" href="{% static 'allauth_ui/output.css' %}">
+            {% tailwind_css %}
+        {% endblock extra_head %}
+    </head>
+    <body class="min-h-screen bg-base-300">
+        {% block body %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div role="alert"
+                         class="text-sm md:text-base alert alert-{{ message.tags }}">
+                        <span><strong>{{ message }}</strong></span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% block content %}
+            {% endblock content %}
+        {% endblock body %}
+        {% block extra_body %}
+        {% endblock extra_body %}
+    </body>
+</html>
