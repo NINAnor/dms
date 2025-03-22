@@ -94,6 +94,12 @@ class DMP(RulesModel):
 
 
 class Project(RulesModel):
+    class Status(models.TextChoices):
+        ACTIVE = "N", "Active"
+        COMPLETED = "T", "Completed"
+        PARKED = "P", "Parked"
+        ACTIVE2 = "C", "Active"
+
     number = models.CharField(primary_key=True)
     name = models.CharField(null=True, blank=True)
     description = models.TextField(blank=True, null=True)
@@ -102,7 +108,7 @@ class Project(RulesModel):
     )
     start_date = models.DateTimeField()
     end_date = models.DateTimeField(blank=True, null=True)
-    status = models.CharField(null=True, blank=True)
+    status = models.CharField(null=True, blank=True, choices=Status.choices)
     category = models.ForeignKey(
         "Category",
         on_delete=models.SET_NULL,

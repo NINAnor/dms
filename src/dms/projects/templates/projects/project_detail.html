@@ -19,6 +19,10 @@
         </thead>
         <tbody>
             <tr>
+                <td>Status</td>
+                <td>{{ project.get_status_display }}</td>
+            </tr>
+            <tr>
                 <td>Tags</td>
                 <td>{{ project.tags.all|join:", " }}</td>
             </tr>
