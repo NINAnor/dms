@@ -53,9 +53,9 @@ try {
 survey.showCompleteButton = false;
 survey.onValueChanged.add(save);
 
-// survey.onComplete.add((survey) => {
-//   save(survey.data);
-// });
+survey.onTextMarkdown.add((_, options) => {
+  options.html = DOMPurify.sanitize(marked.parse(options.text));
+});
 
 document.addEventListener("DOMContentLoaded", function () {
   survey.render(document.getElementById("surveyContainer"));
