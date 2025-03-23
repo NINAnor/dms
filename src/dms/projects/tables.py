@@ -8,6 +8,9 @@ class ProjectTable(tables.Table):
     end_date = tables.DateColumn(format="d/m/Y")
     start_date = tables.DateColumn(format="d/m/Y")
 
+    def render_status(self, value, record):
+        return record.get_status_display()
+
     class Meta:
         model = Project
         fields = (
