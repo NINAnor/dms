@@ -89,3 +89,24 @@ ol.breadcrumb>li+ ::before {
 .z-999 {
   z-index: 999;
 }
+
+table.table thead th.orderable a {
+  text-decoration-line: none;
+}
+
+table.table thead th.orderable a::after {
+  display: inline-block;
+  text-rendering: auto;
+  margin-left: 2px;
+  -webkit-font-smoothing: antialiased;
+  font: var(--fa-font-solid);
+  content: '\f0dc';
+}
+
+table.table thead th.desc.orderable a::after {
+  content: '\f0dd';
+}
+
+table.table thead th.asc.orderable a::after {
+  content: '\f0de';
+}
