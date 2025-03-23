@@ -4,6 +4,8 @@ import rules
 def project_role_is(role):
     @rules.predicate
     def has_role_in_project(user, project):
+        if not user.is_authenticated:
+            return False
         if project:
             return project.members.filter(user=user, role=role).exists()
 
@@ -14,9 +16,13 @@ def project_role_is(role):
 
 @rules.predicate
 def is_project_participant(user, project):
+    if not user.is_authenticated:
+        return False
     return project.memberships.filter(user=user).exists()
 
 
 @rules.predicate
 def is_owner(user, instance):
+    if not user.is_authenticated:
+        return False
     return instance.owner == user
