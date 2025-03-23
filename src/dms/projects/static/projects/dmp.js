@@ -60,3 +60,7 @@ survey.onTextMarkdown.add((_, options) => {
 document.addEventListener("DOMContentLoaded", function () {
   survey.render(document.getElementById("surveyContainer"));
 });
+
+function setLocale(localeVal) {
+  survey.locale = localeVal;
+}

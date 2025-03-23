@@ -1,10 +1,13 @@
 {% extends 'app.html' %}
 {% load rules %}
 {% load static %}
-
+{% load language_tags %}
+{% load i18n %}
 {% block article %}
 
 {% has_perm 'projects.change_dmp' request.user dmp as can_edit %}
+
+{% get_current_language as current_language %}
 
 <div class="flex items-center justify-between">
     <div>
@@ -15,6 +18,13 @@
         </p>
     </div>
     <div class="flex gap-4">
+        <select id="language-select" name="language" x-data @change="setLocale($event.target.value)">
+            {% get_current_language as current_language %}
+            {% get_languages as languages %}
+            {% for code, name in languages %}
+            <option value="{{ code }}" {% if current_language == code %}selected{% endif %}>{{ name }}</option>
+            {% endfor %}
+        </select>
         {% if dmp.project %}
         <a class="btn btn-primary" href="{% url 'projects:project_detail' pk=dmp.project_id %}">Project</a>
         {% endif %}
@@ -64,6 +74,8 @@
 <script src="https://unpkg.com/survey-core/survey.i18n.min.js"></script>
 <script src="https://unpkg.com/dompurify@3.2.4/dist/purify.min.js"></script>
 <script src="https://unpkg.com/marked@15.0.7/marked.min.js"></script>
+
+
 
 <script src="{% static 'projects/dmp.js' %}"></script>
 {% endif %}
