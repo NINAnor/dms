@@ -1,10 +1,12 @@
 from django.db.models import Prefetch
-from django.views.generic import CreateView, DetailView, UpdateView
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, DeleteView, DetailView, UpdateView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 from rules.contrib.views import PermissionRequiredMixin
 from view_breadcrumbs import (
     CreateBreadcrumbMixin,
+    DeleteBreadcrumbMixin,
     DetailBreadcrumbMixin,
     ListBreadcrumbMixin,
     UpdateBreadcrumbMixin,
@@ -102,3 +104,9 @@ class DMPUpdateView(PermissionRequiredMixin, UpdateBreadcrumbMixin, UpdateView):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
         return kwargs
+
+
+class DMPDeleteView(PermissionRequiredMixin, DeleteBreadcrumbMixin, DeleteView):
+    permission_required = "projects.delete_dmp"
+    model = DMP
+    success_url = reverse_lazy("projects:dmp_list")

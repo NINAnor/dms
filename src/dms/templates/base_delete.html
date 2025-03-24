@@ -1,0 +1,21 @@
+{% extends 'app.html' %}
+
+{% load render_table from django_tables2 %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block article %}
+  <div>
+    <div class="flex my-5 justify-between items-center">
+      <h1 class="font-bold text-4xl">{% block page-title %}Delete {{object}}{% endblock %}</h1>
+      {% block page-actions %}{% endblock page-actions %}
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <p>Are you sure you want to delete "{{ object }}"?</p>
+        {{ form }}
+        <input class="btn btn-error mt-5" type="submit" value="Confirm">
+    </form>
+    {% block after-table %}{% endblock %}
+  </div>
+{% endblock article %}

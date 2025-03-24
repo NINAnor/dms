@@ -6,6 +6,7 @@
 {% block article %}
 
 {% has_perm 'projects.change_dmp' request.user dmp as can_edit %}
+{% has_perm 'projects.delete_dmp' request.user dmp as can_delete %}
 
 {% get_current_language as current_language %}
 
@@ -30,6 +31,9 @@
         {% endif %}
         {% if can_edit %}
         <a class="btn btn-primary" href="{% url 'projects:dmp_update' pk=dmp.id %}">Edit</a>
+        {% endif %}
+        {% if can_delete %}
+        <a class="btn btn-error" href="{% url 'projects:dmp_delete' pk=dmp.id %}">Delete</a>
         {% endif %}
     </div>
 </div>
