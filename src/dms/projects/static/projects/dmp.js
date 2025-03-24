@@ -54,7 +54,12 @@ survey.showCompleteButton = false;
 survey.onValueChanged.add(save);
 
 survey.onTextMarkdown.add((_, options) => {
-  options.html = DOMPurify.sanitize(marked.parse(options.text));
+  const sanitized = DOMPurify.sanitize(marked.parse(options.text));
+  if (sanitized.startsWith("<p>")) {
+    options.html = sanitized.substring(3, sanitized.length - 5);
+  } else {
+    options.html = sanitized;
+  }
 });
 
 document.addEventListener("DOMContentLoaded", function () {
