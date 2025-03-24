@@ -71,7 +71,7 @@
 {{ dmp_api_url|safe|json_script:"dmp_api_url" }}
 
 {{ projects_config.dmp_survey_config.config|json_script:"dmp-config" }}
-{{ project.dmp|json_script:"dmp" }}
+{{ dmp.data|json_script:"dmp" }}
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script type="text/javascript" src="https://unpkg.com/survey-core/survey.core.min.js"></script>
 <script type="text/javascript" src="https://unpkg.com/survey-js-ui/survey-js-ui.min.js"></script>
