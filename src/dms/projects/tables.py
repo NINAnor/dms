@@ -40,7 +40,7 @@ class DMPTable(tables.Table):
         fields = (
             "name",
             "created_at",
-            "modified_at",
+            "updated_at",
             "project",
         )
         template_name = "django_tables2/bootstrap.html"
