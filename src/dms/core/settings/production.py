@@ -1,5 +1,3 @@
-import logging
-
 from .base import *  # noqa
 from .base import env
 
@@ -79,40 +77,3 @@ EMAIL_SUBJECT_PREFIX = env(
 ADMIN_URL = env("DJANGO_ADMIN_URL", default="/admin")
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-
-SENTRY_DSN = env("SENTRY_DSN", default=None)
-if SENTRY_DSN:
-    import sentry_sdk
-    from sentry_sdk.integrations.django import DjangoIntegration
-    from sentry_sdk.integrations.logging import LoggingIntegration
-
-    SENTRY_LOG_LEVEL = env.int("DJANGO_SENTRY_LOG_LEVEL", logging.INFO)
-
-    sentry_logging = LoggingIntegration(
-        level=SENTRY_LOG_LEVEL,  # Capture info and above as breadcrumbs
-        event_level=logging.ERROR,  # Send errors as events
-    )
-
-    integrations = [sentry_logging, DjangoIntegration()]
-
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        integrations=integrations,
-        environment=env("SENTRY_ENVIRONMENT", default="production"),
-        traces_sample_rate=env.float("SENTRY_TRACES_SAMPLE_RATE", default=0.1),
-    )
-
-    LOGGING["loggers"] = {  # noqa: F405
-        "django.db.backends": {
-            "level": "ERROR",
-            "handlers": ["console"],
-            "propagate": False,
-        },
-        # Errors logged by the SDK itself
-        "sentry_sdk": {"level": "ERROR", "handlers": ["console"], "propagate": False},
-        "django.security.DisallowedHost": {
-            "level": "ERROR",
-            "handlers": ["console"],
-            "propagate": False,
-        },
-    }

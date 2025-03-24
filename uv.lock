@@ -794,6 +794,7 @@ dependencies = [
     { name = "python-slugify" },
     { name = "requests" },
     { name = "rules" },
+    { name = "sentry-sdk" },
     { name = "setuptools" },
     { name = "slippers" },
 ]
@@ -813,7 +814,6 @@ ldap = [
 ]
 prod = [
     { name = "gunicorn" },
-    { name = "sentry-sdk" },
 ]
 test = [
     { name = "coverage" },
@@ -887,7 +887,7 @@ requires-dist = [
     { name = "requests" },
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "rules", specifier = ">=3.3" },
-    { name = "sentry-sdk", marker = "extra == 'prod'", specifier = ">=1.40.5" },
+    { name = "sentry-sdk", specifier = ">=1.40.5" },
     { name = "setuptools", specifier = ">=75.8.0" },
     { name = "slippers" },
     { name = "werkzeug", extras = ["watchdog"], marker = "extra == 'dev'" },

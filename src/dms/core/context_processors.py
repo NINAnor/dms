@@ -6,4 +6,5 @@ from django.template import Context
 def context_settings(request: HttpRequest) -> Context:
     return {
         "PROJECT_NAME": settings.PROJECT_NAME,
+        "SENTRY_DSN": settings.SENTRY_DSN,
     }

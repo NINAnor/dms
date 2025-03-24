@@ -31,6 +31,14 @@
     {% block css %}
     {% endblock css %}
     {% block head_javascript %}
+      {% if SENTRY_DSN %}
+        <script
+          src="https://browser.sentry-cdn.com/9.8.0/bundle.feedback.min.js"
+          integrity="sha384-BqR1JL220rWjYEodXUqj+DdqC9WtoiZTzdgoKZ3JLg4euuDF05JvQzZ3eZ3BT2N8"
+          crossorigin="anonymous"
+        ></script>
+        <script data-sentry-dsn="{{SENTRY_DSN}}" src="{% static 'core/js/sentry-setup.js' %}"></script>
+      {% endif %}
     {% endblock head_javascript %}
   </head>
   <body class="flex h-screen overflow-hidden bg-slate-50">
