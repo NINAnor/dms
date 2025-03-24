@@ -18,6 +18,8 @@ def project_role_is(role):
 def is_project_participant(user, project):
     if not user.is_authenticated:
         return False
+    if not project:
+        return True
     return project.memberships.filter(user=user).exists()
 
 
@@ -25,4 +27,6 @@ def is_project_participant(user, project):
 def is_owner(user, instance):
     if not user.is_authenticated:
         return False
+    if not instance:
+        return True
     return instance.owner == user
