@@ -121,6 +121,7 @@ THIRD_PARTY_APPS = [
     "view_breadcrumbs",
     "rules",
     "import_export",
+    "django_jsonform",
 ]
 
 LOCAL_APPS = [
