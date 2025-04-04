@@ -1,0 +1,20 @@
+{% load utils %}
+
+<c-table>
+    <c-table.body>
+        {% for key, value in dict.items %}
+        <c-table.row>
+            <c-table.head class='font-medium'>{{ key }}</c-table.head>
+            <c-table.cell>
+                {% if value|get_type == 'dict' %}
+                <c-json-object-viewer :dict="value"></c-json-object-viewer>
+                {% elif value|get_type == 'list' %}
+                <c-json-array-viewer :array="value"></c-json-array-viewer>
+                {% else %}
+                {{ value }}
+                {% endif %}
+            </c-table.cell>
+        </c-table.row>
+        {% endfor %}
+    </c-table.body>
+</c-table>

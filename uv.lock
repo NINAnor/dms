@@ -356,16 +356,16 @@ sdist = { url = "https://files.pythonhosted.org/packages/b7/19/00150c8bedf7b6d4c
 
 [[package]]
 name = "django"
-version = "5.1.7"
+version = "5.1.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "asgiref" },
     { name = "sqlparse" },
     { name = "tzdata", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5f/57/11186e493ddc5a5e92cc7924a6363f7d4c2b645f7d7cb04a26a63f9bfb8b/Django-5.1.7.tar.gz", hash = "sha256:30de4ee43a98e5d3da36a9002f287ff400b43ca51791920bfb35f6917bfe041c", size = 10716510 }
+sdist = { url = "https://files.pythonhosted.org/packages/6d/e4/901f54ee114a080371a49bd08fa688d301aaffd9751febaf4ae855fc8fcd/Django-5.1.6.tar.gz", hash = "sha256:1e39eafdd1b185e761d9fab7a9f0b9fa00af1b37b25ad980a8aa0dac13535690", size = 10700620 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ba/0f/7e042df3d462d39ae01b27a09ee76653692442bc3701fbfa6cb38e12889d/Django-5.1.7-py3-none-any.whl", hash = "sha256:1323617cb624add820cb9611cdcc788312d250824f92ca6048fda8625514af2b", size = 8276912 },
+    { url = "https://files.pythonhosted.org/packages/75/6f/d2c216d00975e2604b10940937b0ba6b2c2d9b3cc0cc633e414ae3f14b2e/Django-5.1.6-py3-none-any.whl", hash = "sha256:8d203400bc2952fbfb287c2bbda630297d654920c72a73cc82a9ad7926feaad5", size = 8277066 },
 ]
 
 [[package]]
@@ -458,6 +458,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/93/6c/16f6cb6064c63074fd5b2bd494eb319afd846236d9c1a6c765946df2c289/django_cors_headers-4.7.0.tar.gz", hash = "sha256:6fdf31bf9c6d6448ba09ef57157db2268d515d94fc5c89a0a1028e1fc03ee52b", size = 21037 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/7e/a2/7bcfff86314bd9dd698180e31ba00604001606efb518a06cca6833a54285/django_cors_headers-4.7.0-py3-none-any.whl", hash = "sha256:f1c125dcd58479fe7a67fe2499c16ee38b81b397463cf025f0e2c42937421070", size = 12794 },
+]
+
+[[package]]
+name = "django-cotton"
+version = "2.0.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5b/43/49c48d880ac1461356ddd1a70c74be211db1cf499219ed4cfe54d0e02719/django_cotton-2.0.3.tar.gz", hash = "sha256:ffce33d8e680718928e67fe7e9c6bc64c9d03fea0098b313863728fc38c049bf", size = 21555 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9f/1f/c4277217d24279451901252da6b2d3e7709efe7f1be9aa1d668c99f36d80/django_cotton-2.0.3-py3-none-any.whl", hash = "sha256:53fc1d7756c3728ca9c76c1402758c6778147e0653b12cb3890a5f5e679125e4", size = 21206 },
 ]
 
 [[package]]
@@ -675,6 +687,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ed/d2/61159bc6efd1bf16adc4a2a48f7ace2080d1f7aef054f606d1857cab490c/django-rest-framework-0.1.0.tar.gz", hash = "sha256:47a8f496fa69e3b6bd79f68dd7a1527d907d6b77f009e9db7cf9bb21cc565e4a", size = 969 }
 
 [[package]]
+name = "django-reversion"
+version = "5.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d8/aa/d7e9d98b23041b24d2b35cefcbbfa51e6e557e8e58c1c1bddabdb0baf13f/django_reversion-5.1.0.tar.gz", hash = "sha256:3309821e5b6fceedcce6b6975f1a9c7fab6ae7c7d0e1276a90e345946fa0dcb8", size = 73178 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5a/84/898fec51294e6764ab5fdde5db079ca89d528cef039c05447ca41d6f4c74/django_reversion-5.1.0-py3-none-any.whl", hash = "sha256:084d4f117d9e2b4e8dfdfaad83ebb34410a03eed6071c96089e6811fdea82ad3", size = 84857 },
+]
+
+[[package]]
 name = "django-solo"
 version = "2.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -701,6 +725,18 @@ wheels = [
 [package.optional-dependencies]
 s3 = [
     { name = "boto3" },
+]
+
+[[package]]
+name = "django-svelte-jsoneditor"
+version = "0.4.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django", marker = "python_full_version < '4.0'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/bc/dd/7e48841521760fbbd29b4f094979de517b582be2e4f0f6c6838cad7f22f5/django_svelte_jsoneditor-0.4.2.tar.gz", hash = "sha256:1cc73511297bc6e11d5bbd151543da22a36e67dcc6f652d92943174b88153024", size = 384137 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/97/6e/c2d41e48b9a8fe8be78dd5b1a959c9589b52df9f892808144fad77c85b86/django_svelte_jsoneditor-0.4.2-py3-none-any.whl", hash = "sha256:bfa715a796e5c8a0c3d0edf5b064b21417c65e101fa131ee4a7beb670bbef53c", size = 387144 },
 ]
 
 [[package]]
@@ -815,6 +851,7 @@ dependencies = [
     { name = "django-autocomplete-light" },
     { name = "django-autoslug" },
     { name = "django-cors-headers" },
+    { name = "django-cotton" },
     { name = "django-countries-plus" },
     { name = "django-crispy-forms" },
     { name = "django-environ" },
@@ -830,8 +867,10 @@ dependencies = [
     { name = "django-postgres-extra" },
     { name = "django-probes" },
     { name = "django-rest-framework" },
+    { name = "django-reversion" },
     { name = "django-solo" },
     { name = "django-storages", extra = ["s3"] },
+    { name = "django-svelte-jsoneditor" },
     { name = "django-tables2" },
     { name = "django-taggit" },
     { name = "django-tailwind" },
@@ -844,6 +883,7 @@ dependencies = [
     { name = "drf-standardized-errors", extra = ["openapi"] },
     { name = "fontawesomefree" },
     { name = "gdal" },
+    { name = "jsonfield" },
     { name = "pillow" },
     { name = "procrastinate", extra = ["django"] },
     { name = "psycopg", extra = ["binary"] },
@@ -890,7 +930,7 @@ requires-dist = [
     { name = "coverage", marker = "extra == 'test'" },
     { name = "crispy-tailwind" },
     { name = "dj-rest-auth" },
-    { name = "django", specifier = ">=5.1.6" },
+    { name = "django", specifier = "==5.1.6" },
     { name = "django-allauth", specifier = "==65.5.0" },
     { name = "django-allauth-ui" },
     { name = "django-appconf", specifier = ">=1.0.6" },
@@ -899,6 +939,7 @@ requires-dist = [
     { name = "django-autocomplete-light", specifier = ">=3.11.0" },
     { name = "django-autoslug", specifier = ">=1.9.9" },
     { name = "django-cors-headers", specifier = ">=4.3.1" },
+    { name = "django-cotton", specifier = ">=2.0.3" },
     { name = "django-countries-plus" },
     { name = "django-coverage-plugin", marker = "extra == 'test'" },
     { name = "django-crispy-forms" },
@@ -917,8 +958,10 @@ requires-dist = [
     { name = "django-postgres-extra" },
     { name = "django-probes" },
     { name = "django-rest-framework", specifier = ">=0.1.0" },
+    { name = "django-reversion", specifier = ">=5.1.0" },
     { name = "django-solo" },
     { name = "django-storages", extras = ["s3"], specifier = ">=1.14.5" },
+    { name = "django-svelte-jsoneditor", specifier = ">=0.4.2" },
     { name = "django-tables2" },
     { name = "django-taggit", specifier = ">=6.1.0" },
     { name = "django-tailwind" },
@@ -934,6 +977,7 @@ requires-dist = [
     { name = "gdal", specifier = "==3.10.1" },
     { name = "gunicorn", marker = "extra == 'prod'" },
     { name = "ipdb", marker = "extra == 'dev'" },
+    { name = "jsonfield", specifier = ">=3.1.0" },
     { name = "pillow", specifier = "==11.1.0" },
     { name = "pre-commit", marker = "extra == 'dev'" },
     { name = "procrastinate", extras = ["django"], specifier = ">=3.0.0" },
@@ -1185,6 +1229,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/00/2a/e867e8531cf3e36b41201936b7fa7ba7b5702dbef42922193f05c8976cd6/jmespath-1.0.1.tar.gz", hash = "sha256:90261b206d6defd58fdd5e85f478bf633a2901798906be2ad389150c5c60edbe", size = 25843 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/31/b4/b9b800c45527aadd64d5b442f9b932b00648617eb5d63d2c7a6587b7cafc/jmespath-1.0.1-py3-none-any.whl", hash = "sha256:02e2e4cc71b5bcab88332eebf907519190dd9e6e82107fa7f83b1003a6252980", size = 20256 },
+]
+
+[[package]]
+name = "jsonfield"
+version = "3.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/10/3b/4542fd9465908380ba4321329d3cdfeb959769ec48d878dead978286b48d/jsonfield-3.1.0.tar.gz", hash = "sha256:7e4e84597de21eeaeeaaa7cc5da08c61c48a9b64d0c446b2d71255d01812887a", size = 14870 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7c/97/3a4805532a9c1982368fd9f37b58133419e83704744b733ccab9e9827176/jsonfield-3.1.0-py3-none-any.whl", hash = "sha256:df857811587f252b97bafba42e02805e70a398a7a47870bc6358a0308dd689ed", size = 7974 },
 ]
 
 [[package]]

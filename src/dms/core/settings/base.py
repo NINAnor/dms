@@ -121,6 +121,8 @@ THIRD_PARTY_APPS = [
     "rules",
     "import_export",
     "django_jsonform",
+    "django_svelte_jsoneditor",
+    "reversion",
     "django_cotton",
 ]
 
@@ -485,6 +487,10 @@ if AUTH_LDAP_SERVER_URI:
     AUTHENTICATION_BACKENDS += ("django_auth_ldap.backend.LDAPBackend",)
     LOGGING["loggers"]["django_auth_ldap"] = {"level": "DEBUG", "handlers": ["console"]}
 
+
+SVELTE_JSONEDITOR_PROPS = {
+    "mode": "text",
+}
 
 # Sentry
 # ------

@@ -13,6 +13,7 @@ urlpatterns = [
     path("api/v1/", include("dms.core.router", namespace="api_v1")),
     path("surveys/", include("dms.surveys.urls", namespace="surveys")),
     path("", include("dms.projects.urls", namespace="projects")),
+    path("", include("dms.datasets.urls", namespace="datasets")),
     path("", include("dms.theme.urls")),
 ]
 

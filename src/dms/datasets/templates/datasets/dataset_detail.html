@@ -1,0 +1,27 @@
+{% extends 'app.html' %}
+{% load rules %}
+{% load static %}
+{% load language_tags %}
+{% load i18n %}
+{% block article %}
+
+
+<div class="flex items-center justify-between">
+    <div>
+        <h1 class="text-3xl font-bold">{{ dataset }}</h1>
+        <p class="text-sm text-gray-700">
+            Created at: {{dataset.created_at}} &bull;
+            Last Modified: {{dataset.last_modified_at}}
+        </p>
+    </div>
+    <div class="flex gap-4">
+        <a class="btn btn-primary" href="{% url 'projects:project_detail' pk=dataset.project_id %}">Project</a>
+        <a class="btn btn-primary" href="{% url 'datasets:dataset_update' pk=dataset.id %}">Edit</a>
+        <a class="btn btn-primary" href="{% url 'datasets:dataset_update_metadata' pk=dataset.id %}">Edit Metadata</a>
+    </div>
+</div>
+<div id="metadata-wrapper">
+    <c-json-object-viewer :dict="dataset.metadata"></c-json-object-viewer>
+</div>
+
+{% endblock article %}

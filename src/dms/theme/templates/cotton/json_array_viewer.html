@@ -1,0 +1,9 @@
+{% load utils %}
+
+{% for element in array %}
+{% if element|get_type == 'dict' %}
+<c-json-object-viewer :dict="element"></c-json-object-viewer>
+{% else %}
+{{ element }}
+{% endif %}
+{% endfor %}

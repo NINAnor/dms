@@ -5,7 +5,7 @@ requires = ["hatchling"]
 [project]
 authors = [{name = "Niccolò Cantù", email = "niccolo.cantu@nina.no"}]
 dependencies = [
-  "django>=5.1.6",
+  "django==5.1.6",
   "python-slugify>=8.0.1",
   "Pillow==11.1.0",
   "argon2-cffi",
@@ -64,7 +64,11 @@ dependencies = [
   "sentry-sdk>=1.40.5",
   "django-autoslug>=1.9.9",
   "pyjwt[crypto]>=2.9.0",
-  "django-cotton>=2.0.3",
+  "django-jsonform>=2.23.2",
+  "django-svelte-jsoneditor>=0.4.2",
+  "jsonfield>=3.1.0",
+  "django-reversion>=5.1.0",
+  "django-cotton>=2.0.3"
 ]
 description = "Add your description here"
 license = {text = "GPLv3"}
