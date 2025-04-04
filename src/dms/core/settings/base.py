@@ -111,7 +111,6 @@ THIRD_PARTY_APPS = [
     "tailwind",
     "django_tables2",
     "widget_tweaks",
-    "slippers",
     "fontawesomefree",
     "leaflet",
     "procrastinate.contrib.django",
@@ -122,6 +121,7 @@ THIRD_PARTY_APPS = [
     "rules",
     "import_export",
     "django_jsonform",
+    "django_cotton",
 ]
 
 LOCAL_APPS = [
@@ -271,7 +271,7 @@ TEMPLATES = [
                 "dms.users.context_processors.allauth_settings",
                 "dms.core.context_processors.context_settings",
             ],
-            "builtins": ["slippers.templatetags.slippers"],
+            "builtins": [],
         },
     },
 ]

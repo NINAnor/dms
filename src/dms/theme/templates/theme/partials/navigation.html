@@ -1,0 +1,48 @@
+{% load i18n static %}
+
+<header class="sticky top-0 z-999 flex w-full navbar bg-white drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none">
+  <div class="flex flex-grow items-center justify-between px-4 py-4 shadow-2 md:px-6 2xl:px-11">
+    <div class="text-2xl font-bold uppercase">
+      <a class="navbar-brand fw-bolder no-underline" href="{% url 'home' %}">
+        <img src="{% static 'images/logo.png' %}" style="max-width: 100px" />
+      </a>
+    </div>
+    <div>
+      <c-navigation-menu>
+        <c-navigation-menu.list>
+          <c-navigation-menu.item>
+            <c-navigation-menu.link href="{% url 'projects:project_list' %}"><i class="fas fa-people-group"></i> Projects</c-navigation-menu.link>
+          </c-navigation-menu.item>
+          <c-navigation-menu.item>
+          {% if user.is_authenticated %}
+          <c-navigation-menu.trigger index='0'>{{ user }}</c-navigation-menu.trigger>
+          <c-navigation-menu.content index='0' class="bg-white md:w-[10rem]" >
+            <c-navigation-menu.link  href="{% url 'projects:dmp_list' %}">
+                <i class="fas fa-file-shield"></i>
+                {% trans 'My DMPs' %}
+            </c-navigation-menu.link >
+            <c-navigation-menu.link  href="{% url 'projects:project_list' %}?participant={{request.user.username}}">
+              <i class="fas fa-people-group"></i>
+              {% trans 'My Projects' %}
+            </c-navigation-menu.link >
+            {% if user.is_staff %}
+            <c-navigation-menu.link  href="{% url 'admin:index' %}">
+              <i class="fas fa-cog"></i>
+              {% trans 'Admin' %}
+            </c-navigation-menu.link >
+            {% endif %}
+            <c-dropdown-menu.separator />
+            <c-navigation-menu.link href="{% url 'account_logout' %}">
+                <i class="fas fa-right-from-bracket"></i>
+                {% trans 'Log Out' %}
+            </c-navigation-menu.link>
+          </c-navigation-menu.content>
+          {% else %}
+            <c-navigation-menu.link href="{% url 'account_login' %}">Login</c-navigation-menu.link>
+          {% endif %}
+          </c-navigation-menu.item>
+        </c-navigation-menu.list>
+      </c-navigation-menu>
+    </div>    
+  </div>
+</header>

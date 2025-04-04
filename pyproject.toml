@@ -64,7 +64,7 @@ dependencies = [
   "sentry-sdk>=1.40.5",
   "django-autoslug>=1.9.9",
   "pyjwt[crypto]>=2.9.0",
-  "django-jsonform>=2.23.2"
+  "django-cotton>=2.0.3",
 ]
 description = "Add your description here"
 license = {text = "GPLv3"}

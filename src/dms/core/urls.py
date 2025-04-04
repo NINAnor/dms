@@ -3,8 +3,6 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views import defaults as default_views
 
-from .views import HomeView
-
 urlpatterns = [
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
@@ -15,7 +13,7 @@ urlpatterns = [
     path("api/v1/", include("dms.core.router", namespace="api_v1")),
     path("surveys/", include("dms.surveys.urls", namespace="surveys")),
     path("", include("dms.projects.urls", namespace="projects")),
-    path("", HomeView.as_view(), name="home"),
+    path("", include("dms.theme.urls")),
 ]
 
 
