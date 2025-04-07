@@ -17,8 +17,10 @@ from .rules import (
 )
 from .schemas import (
     DATASET_PROFILES,
+    RESOURCE_PROFILES,
     STORAGE_TYPE_CONFIG,
     DatasetProfileType,
+    ResourceMediaType,
     ResourceProfileType,
     StorageType,
 )
@@ -120,6 +122,12 @@ class Storage(RulesModel):
         return self.title
 
 
+def get_resource_metadata_schema(instance=None):
+    if not instance:
+        return None
+    return RESOURCE_PROFILES.get(instance.profile).get(instance.media_type)
+
+
 class Resource(RulesModel):
     id = models.UUIDField(primary_key=True)
     title = models.CharField(help_text="A name that describes the resource")
@@ -149,7 +157,9 @@ class Resource(RulesModel):
         blank=True,
         help_text="To what profile should this resouce conform to?",
     )
-    metadata = JSONBField(default=dict)
+    media_type = models.CharField(choices=ResourceMediaType)
+    metadata = JSONBField(default=dict, schema=get_resource_metadata_schema)
+    schema = JSONBField(default=dict)
 
     class Meta:
         rules_permissions = {

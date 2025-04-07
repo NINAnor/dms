@@ -2,7 +2,7 @@
 # from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
-from django.views.generic import CreateView, DetailView, UpdateView
+from django.views.generic import CreateView, DetailView, TemplateView, UpdateView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 from rules.contrib.views import PermissionRequiredMixin
@@ -23,6 +23,7 @@ from .forms import (
     StorageForm,
 )
 from .models import Dataset, Resource, Storage
+from .schemas import RESOURCE_MEDIA_TYPE
 from .tables import DatasetTable, ResourceTable, StorageTable
 
 
@@ -208,3 +209,19 @@ class StorageConfigView(
     def get_form_kwargs(self):
         args = super().get_form_kwargs()
         return args
+
+
+class ResourceMediaTypeOptionsView(TemplateView):
+    template_name = "datasets/options.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+
+        ctx["options"] = []
+
+        profile = self.request.GET.get("profile")
+        if profile:
+            allowed = RESOURCE_MEDIA_TYPE.get(profile, {})
+            ctx["options"] = list((k.value, k.label) for k in allowed.keys())
+
+        return ctx

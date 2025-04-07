@@ -3,6 +3,7 @@ import uuid
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
+from django.urls import reverse_lazy
 
 from dms.projects.models import Project
 
@@ -85,8 +86,9 @@ class ResourceForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = "post"
         self.helper.form_action = ""
-        # self.helper.include_media = False
         self.helper.add_input(Submit("submit", "Submit"))
+
+        self.fields["storage"].required = True
 
         self.user = user
         self.dataset = dataset
@@ -106,9 +108,22 @@ class ResourceForm(forms.ModelForm):
         fields = [
             "title",
             "profile",
+            "media_type",
             "storage",
             "path",
         ]
+
+        widgets = {
+            "profile": forms.Select(
+                attrs={
+                    "hx-get": reverse_lazy("datasets:resource_media_type_list"),
+                    "hx-trigger": "load,change",
+                    "hx-target": "#id_media_type",
+                    "hx-include": "#id_profile",
+                }
+            ),
+            "media_type": forms.Select(choices=[]),
+        }
 
 
 class StorageForm(forms.ModelForm):

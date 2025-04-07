@@ -68,7 +68,8 @@ dependencies = [
   "django-svelte-jsoneditor>=0.4.2",
   "jsonfield>=3.1.0",
   "django-reversion>=5.1.0",
-  "django-cotton>=2.0.3"
+  "django-cotton>=2.0.3",
+  "django-htmx>=1.23.0"
 ]
 description = "Add your description here"
 license = {text = "GPLv3"}

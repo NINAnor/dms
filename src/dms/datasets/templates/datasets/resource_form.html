@@ -1,5 +1,6 @@
 {% extends "app.html" %}
 {% load crispy_forms_tags static %}
+{% load django_htmx %}
 
 {% block article %}
     <h3 class="text-4xl mb-5">{{ object }}</h3>
@@ -10,8 +11,5 @@
 
 {% block body_javascript %}
 {{ block.super }}
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"
-    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
-    crossorigin="anonymous"></script>
-{{ form.media }}
+{% htmx_script %}
 {% endblock body_javascript %}

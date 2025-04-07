@@ -1,4 +1,6 @@
 # ruff: noqa: E501
+import copy
+
 from django.db.models import TextChoices
 
 CONTIBUTOR_ROLES = [
@@ -428,9 +430,93 @@ class ResourceProfileType(TextChoices):
     TABULAR = "tabular", "Tabular"
     VECTOR = "vector", "Vector"
     RASTER = "raster", "Raster"
+    DOCUMENTATION = "documentation", "Documentation"
 
 
 RESOURCE_PROFILES = {}
+
+
+class ResourceMediaType(TextChoices):
+    PARQUET = "application/vnd.apache.parquet", "Parquet"
+    # CSV = "text/csv", "CSV" # Should be supported?
+    # JSON = "application/json", "JSON" # It's probably needed for nested/unstructured data
+    COG = (
+        "image/tiff; application=geotiff; profile=cloud-optimized",
+        "Cloud Optimized GeoTIFF",
+    )
+    PDF = "application/pdf", "PDF"
+    HTML = "text/html", "HTML"
+    OTHER = "application/octet-stream", "Other"
+
+
+PARQUET_CONFIG = {
+    "type": "object",
+    "properties": {
+        "hive_partitioning": {
+            "type": "boolean",
+            "title": "Hive Partitioning",
+            "help_text": "Whether to use Hive partitioning for the Parquet file",
+        },
+        "compression": {
+            "type": "string",
+            "title": "Compression",
+            "help_text": "The compression algorithm used for the Parquet file",
+            "enum": ["snappy", "gzip", "brotli"],
+        },
+    },
+}
+
+GEOPARQUET_CONFIG = copy.deepcopy(PARQUET_CONFIG)
+GEOPARQUET_CONFIG["properties"]["epsg"] = {
+    "epsg": {
+        "type": "integer",
+        "title": "EPSG Code",
+    },
+    "geometry_column": {
+        "type": "string",
+    },
+}
+
+GEOPARQUET_CONFIG["required"] = ["epsg", "geometry_column"]
+
+NOTES_CONFIG = {
+    "type": "object",
+    "properties": {
+        "notes": {
+            "type": "string",
+        },
+    },
+}
+
+
+RESOURCE_MEDIA_TYPE = {
+    ResourceProfileType.TABULAR: {
+        ResourceMediaType.PARQUET: PARQUET_CONFIG,
+    },
+    ResourceProfileType.VECTOR: {
+        ResourceMediaType.PARQUET: GEOPARQUET_CONFIG,
+    },
+    ResourceProfileType.RASTER: {
+        ResourceMediaType.COG: {
+            "type": "object",
+            "properties": {
+                "epsg": {
+                    "type": "integer",
+                    "title": "EPSG Code",
+                },
+                "notes": {
+                    "type": "string",
+                },
+            },
+            "required": ["epsg"],
+        }
+    },
+    ResourceProfileType.DOCUMENTATION: {
+        ResourceMediaType.HTML: NOTES_CONFIG,
+        ResourceMediaType.PDF: NOTES_CONFIG,
+        ResourceMediaType.OTHER: NOTES_CONFIG,
+    },
+}
 
 
 class StorageType(TextChoices):
