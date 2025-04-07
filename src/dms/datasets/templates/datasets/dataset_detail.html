@@ -4,6 +4,7 @@
 {% load language_tags %}
 {% load i18n %}
 {% block article %}
+{% load render_table from django_tables2 %}
 
 
 <div class="flex items-center justify-between">
@@ -31,6 +32,16 @@
     <c-accordion.item value='item-2'>
         <c-accordion.trigger value='item-2' class="text-2xl font-bold">Resources</c-accordion.trigger>
         <c-accordion.content value='item-2'>
+            <c-navigation-menu class="mb-4">
+                <c-navigation-menu.list class="items-center justify-start gap-8">
+                    <c-navigation-menu.item>
+                        <c-navigation-menu.link class="bg-secondary" href='{% url "datasets:resource_create" dataset_pk=dataset.pk %}'>
+                            <i class="fas fa-plus"></i> Register new Resource
+                        </c-navigation-menu.link>
+                    </c-navigation-menu.item>
+                </c-navigation-menu.list>
+            </c-navigation-menu>
+            {% render_table resource_table %}
         </c-accordion.content>
     </c-accordion.item>
 </c-accordion>

@@ -13,6 +13,15 @@ def dataset_in_user_projects(user, dataset):
 
 
 @rules.predicate
+def storage_in_user_projects(user, storage):
+    if not user.is_authenticated:
+        return False
+    if not storage:
+        return True
+    return Project.objects.filter(members__user=user, storages=storage).exists()
+
+
+@rules.predicate
 def resource_in_user_projects(user, resource):
     if not user.is_authenticated:
         return False

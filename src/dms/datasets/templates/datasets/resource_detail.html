@@ -1,0 +1,38 @@
+{% extends 'app.html' %}
+{% load rules %}
+{% load static %}
+{% load language_tags %}
+{% load i18n %}
+{% block article %}
+
+
+<div class="flex items-center justify-between">
+    <div>
+        <h1 class="text-4xl font-bold">{{ resource }}</h1>
+        <p class="text-sm text-gray-700">
+            Created at: {{resource.created_at}} &bull;
+            Last Modified: {{resource.last_modified_at}}
+        </p>
+    </div>
+    <div class="flex gap-4">
+        <a class="btn btn-primary" href="{% url 'datasets:dataset_detail' pk=resource.dataset_id %}">Dataset</a>
+        <a class="btn btn-primary" href="{% url 'datasets:resource_update' pk=resource.id dataset_pk=resource.dataset_id %}">Edit</a>
+    </div>
+</div>
+
+<c-accordion type='multiple' open="{'item-1': true, 'item-2': true}" class="mt-4">
+    <c-accordion.item value='item-1'>
+        <c-accordion.trigger value='item-1' class="text-2xl font-bold">Metadata</c-accordion.trigger>
+        <c-accordion.content value='item-1'>
+        </c-accordion.content>
+    </c-accordion.item>
+    <c-accordion.item value='item-2'>
+        <c-accordion.trigger value='item-2' class="text-2xl font-bold">Preview</c-accordion.trigger>
+        <c-accordion.content value='item-2'>
+
+        </c-accordion.content>
+    </c-accordion.item>
+</c-accordion>
+
+
+{% endblock article %}

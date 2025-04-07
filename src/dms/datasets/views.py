@@ -13,9 +13,9 @@ from view_breadcrumbs import (
 )
 
 from .filters import DatasetFilter
-from .forms import DatasetForm, DatasetMetadataForm, DatasetUpdateForm
-from .models import Dataset
-from .tables import DatasetTable
+from .forms import DatasetForm, DatasetMetadataForm, DatasetUpdateForm, ResourceForm
+from .models import Dataset, Resource
+from .tables import DatasetTable, ResourceTable
 
 
 class DatasetListView(
@@ -33,6 +33,11 @@ class DatasetListView(
 class DatasetDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailView):
     model = Dataset
     permission_required = "datasets.view_dataset"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["resource_table"] = ResourceTable(self.object.resources.all())
+        return ctx
 
 
 class DatasetCreateView(PermissionRequiredMixin, CreateBreadcrumbMixin, CreateView):
@@ -76,3 +81,65 @@ class DatasetUpdateMetadataView(
 
     def get_success_url(self):
         return reverse("datasets:dataset_detail", kwargs={"pk": self.object.pk})
+
+
+class ResourceDetailView(PermissionRequiredMixin, DetailView):
+    model = Resource
+    permission_required = "datasets.view_resource"
+
+
+class ResourceCreateView(
+    PermissionRequiredMixin,
+    CreateView,
+):
+    permission_required = "datasets.add_resource"
+    model = Resource
+    form_class = ResourceForm
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.dataset = None
+
+    def get_dataset(self):
+        if not self.dataset:
+            self.dataset = Dataset.objects.get(pk=self.kwargs["dataset_pk"])
+        return self.dataset
+
+    def get_form_kwargs(self):
+        args = super().get_form_kwargs()
+        args["user"] = self.request.user
+        args["dataset"] = self.get_dataset()
+        return args
+
+    def get_success_url(self):
+        return reverse(
+            "datasets:dataset_detail", kwargs={"pk": self.kwargs.get("dataset_pk")}
+        )
+
+
+class ResourceUpdateView(
+    PermissionRequiredMixin,
+    # CreateBreadcrumbMixin,
+    UpdateView,
+):
+    permission_required = "datasets.change_resource"
+    model = Resource
+    form_class = ResourceForm
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.dataset = None
+
+    def get_dataset(self):
+        return self.object.dataset
+
+    def get_form_kwargs(self):
+        args = super().get_form_kwargs()
+        args["user"] = self.request.user
+        args["dataset"] = self.get_dataset()
+        return args
+
+    def get_success_url(self):
+        return reverse(
+            "datasets:dataset_detail", kwargs={"pk": self.kwargs.get("dataset_pk")}
+        )

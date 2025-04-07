@@ -1,6 +1,6 @@
 import django_tables2 as tables
 
-from .models import Dataset
+from .models import Dataset, Resource
 
 
 class DatasetTable(tables.Table):
@@ -16,5 +16,23 @@ class DatasetTable(tables.Table):
             "created_at",
             "last_modified_at",
             "project",
+        )
+        template_name = "django_tables2/bootstrap.html"
+
+
+class ResourceTable(tables.Table):
+    title = tables.LinkColumn()
+    created_at = tables.DateColumn(format="d/m/Y")
+    last_modified_at = tables.DateColumn(format="d/m/Y")
+
+    class Meta:
+        model = Resource
+        fields = (
+            "title",
+            "created_at",
+            "last_modified_at",
+            "profile",
+            "storage",
+            "path",
         )
         template_name = "django_tables2/bootstrap.html"

@@ -1,6 +1,37 @@
 # ruff: noqa: E501
 from django.db.models import TextChoices
 
+CONTIBUTOR_ROLES = [
+    "Data Collector",
+    "Data Curator",
+    "Data Manager",
+    "Editor",
+    "Funder",
+    "Hosting Institution",
+    "Project Leader",
+    "Project Manager",
+    "Project Member",
+    "Related Person",
+    "Researcher",
+    "Research Group",
+    "Rights Holder",
+    "Sponsor",
+    "Supervisor",
+    "Work Package Leader",
+    "Other",
+]
+
+IDENTIFIERS = [
+    "ORCID",
+    "ISNI",
+    "LCNA",
+    "VIAF",
+    "GND",
+    "DAI",
+    "ResearcherID",
+    "ScopusID",
+]
+
 SHARED_DEFS = {
     "person": {
         "title": "Person",
@@ -31,6 +62,7 @@ SHARED_DEFS = {
             "identifierScheme": {
                 "type": "string",
                 "title": "Identifier Type",
+                "enum": IDENTIFIERS,
                 "help_text": "The type of identifier that uniquely identifies the author (e.g. ORCID, ISNI)",
             },
         },
@@ -51,6 +83,7 @@ SHARED_DEFS = {
             "identifier": {
                 "type": "string",
                 "title": "Identifier",
+                "enum": IDENTIFIERS,
                 "help_text": "Uniquely identifies the person when paired with an identifier type",
             },
             "affiliation": {
@@ -137,7 +170,27 @@ SHARED_DEFS = {
             "identifierType": {
                 "title": "Identifier Type",
                 "type": "str",
-                "enum": [],
+                "enum": [
+                    "ark",
+                    "arXiv",
+                    "bibcode",
+                    "cstr",
+                    "doi",
+                    "ean13",
+                    "eissn",
+                    "handle",
+                    "isbn",
+                    "issn",
+                    "istc",
+                    "lissn",
+                    "lsid",
+                    "pmid",
+                    "purl",
+                    "upc",
+                    "url",
+                    "urn",
+                    "DASH-NRS",
+                ],
                 "help_text": "The type of identifier that uniquely identifies a related publication",
             },
             "identifier": {
@@ -372,7 +425,13 @@ DATASET_PROFILES = {
 
 
 class ResourceProfileType(TextChoices):
-    pass
+    TABULAR = "tabular", "Tabular"
+    VECTOR = "vector", "Vector"
+    RASTER = "raster", "Raster"
 
 
 RESOURCE_PROFILES = {}
+
+
+class StorageType(TextChoices):
+    S3 = "s3", "S3"

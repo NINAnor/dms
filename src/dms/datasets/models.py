@@ -8,8 +8,17 @@ from django_jsonform.models.fields import JSONField as JSONBField
 from jsonfield import JSONField
 from rules.contrib.models import RulesModel, RulesModelBase, RulesModelMixin
 
-from .rules import dataset_in_user_projects, resource_in_user_projects
-from .schemas import DATASET_PROFILES, DatasetProfileType, ResourceProfileType
+from .rules import (
+    dataset_in_user_projects,
+    resource_in_user_projects,
+    storage_in_user_projects,
+)
+from .schemas import (
+    DATASET_PROFILES,
+    DatasetProfileType,
+    ResourceProfileType,
+    StorageType,
+)
 
 
 class Schema(RulesModel):
@@ -66,22 +75,61 @@ class Dataset(RulesModelMixin, geo_models.Model, metaclass=RulesModelBase):
         }
 
 
-class Resource(RulesModel):
+class Storage(RulesModel):
     id = models.UUIDField(primary_key=True)
-    title = models.CharField()
-    name = AutoSlugField(populate_from="title")
-    path = models.CharField()
-    dataset = models.ForeignKey("Dataset", on_delete=models.CASCADE)
+    type = models.CharField(choices=StorageType.choices)
+    config = JSONBField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Created at"))
     last_modified_at = models.DateTimeField(
         auto_now=True, verbose_name=_("Last modified at")
     )
-    sources = models.ManyToManyField("self", blank=True)
+    project = models.ForeignKey(
+        "projects.Project",
+        on_delete=models.PROTECT,
+        related_name="storages",
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        rules_permissions = {
+            "add": rules.is_authenticated,
+            "view": rules.is_authenticated,
+            "change": storage_in_user_projects,
+            "delete": storage_in_user_projects,
+        }
+
+
+class Resource(RulesModel):
+    id = models.UUIDField(primary_key=True)
+    title = models.CharField(help_text="A name that describes the resource")
+    name = AutoSlugField(populate_from="title")
+    path = models.CharField(
+        verbose_name="Path to the resource",
+        help_text="describe how to find the resource."
+        + " Can be a link, or a path relative to the selected storage",
+    )
+    storage = models.ForeignKey(
+        "Storage",
+        on_delete=models.CASCADE,
+        related_name="resources",
+        null=True,
+        blank=True,
+    )
+    dataset = models.ForeignKey(
+        "Dataset", on_delete=models.CASCADE, related_name="resources"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Created at"))
+    last_modified_at = models.DateTimeField(
+        auto_now=True, verbose_name=_("Last modified at")
+    )
     profile = models.CharField(
-        choices=ResourceProfileType.choices, null=True, blank=True
+        choices=ResourceProfileType.choices,
+        null=True,
+        blank=True,
+        help_text="To what profile should this resouce conform to?",
     )
     metadata = JSONBField(default=dict)
-    config = JSONBField(default=dict)
 
     class Meta:
         rules_permissions = {
@@ -90,3 +138,12 @@ class Resource(RulesModel):
             "change": resource_in_user_projects,
             "delete": rules.is_staff,
         }
+
+    def get_absolute_url(self):
+        return reverse(
+            "datasets:resource_detail",
+            kwargs={"dataset_pk": self.dataset_id, "pk": self.pk},
+        )
+
+    def __str__(self):
+        return self.title
