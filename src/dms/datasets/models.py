@@ -1,3 +1,4 @@
+import reversion
 import rules
 from autoslug import AutoSlugField
 from django.contrib.gis.db import models as geo_models
@@ -46,6 +47,7 @@ def get_metadata_schema(instance=None):
     return DATASET_PROFILES.get(instance.profile)
 
 
+@reversion.register(follow=["resources"])
 class Dataset(RulesModelMixin, geo_models.Model, metaclass=RulesModelBase):
     id = models.UUIDField(primary_key=True)
     title = models.CharField()
