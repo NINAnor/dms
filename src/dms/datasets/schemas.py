@@ -447,7 +447,6 @@ HTTP_CONFIG = {
             "help_text": "The Base URL to the HTTP resource",
         },
     },
-    "required": ["url"],
 }
 
 S3_CONFIG = {
