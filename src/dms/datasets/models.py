@@ -12,6 +12,7 @@ from .rules import (
     dataset_in_user_projects,
     resource_in_user_projects,
     storage_in_user_projects,
+    storage_is_shared,
 )
 from .schemas import (
     DATASET_PROFILES,
@@ -102,9 +103,9 @@ class Storage(RulesModel):
     class Meta:
         rules_permissions = {
             "add": rules.is_authenticated,
-            "view": rules.is_authenticated,
+            "view": storage_in_user_projects | storage_is_shared,
             "change": storage_in_user_projects,
-            "delete": storage_in_user_projects,
+            "delete": rules.is_staff,
         }
 
     def get_absolute_url(self):

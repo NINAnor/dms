@@ -39,7 +39,7 @@ class ResourceTable(tables.Table):
 
 
 class StorageTable(tables.Table):
-    # title = tables.LinkColumn()
+    title = tables.LinkColumn()
     created_at = tables.DateColumn(format="d/m/Y")
     last_modified_at = tables.DateColumn(format="d/m/Y")
 

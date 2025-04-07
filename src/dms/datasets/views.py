@@ -1,6 +1,6 @@
 # from django.db.models import Prefetch
 # from django.urls import reverse_lazy
-from django.db.models import Q
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
 from django.views.generic import CreateView, DetailView, UpdateView
 from django_filters.views import FilterView
@@ -154,30 +154,19 @@ class ResourceUpdateView(
 
 
 class StorageListView(
-    PermissionRequiredMixin, ListBreadcrumbMixin, SingleTableMixin, FilterView
+    LoginRequiredMixin, ListBreadcrumbMixin, SingleTableMixin, FilterView
 ):
     model = Storage
     table_class = StorageTable
     filterset_class = StorageFilter
-    permission_required = "datasets.view_storage"
 
     def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .filter(
-                Q(project_id__isnull=True)
-                | Q(project=self.request.user.project_set.all())
-            )
-        )
+        return super().get_queryset()
 
 
 class StorageDetailView(PermissionRequiredMixin, DetailView):
     model = Storage
     permission_required = "datasets.view_storage"
-
-    def get_queryset(self):
-        return super().get_queryset()
 
 
 class StorageCreateView(

@@ -22,6 +22,15 @@ def storage_in_user_projects(user, storage):
 
 
 @rules.predicate
+def storage_is_shared(user, storage):
+    if not user.is_authenticated:
+        return False
+    if not storage:
+        return True
+    return storage.project_id is None
+
+
+@rules.predicate
 def resource_in_user_projects(user, resource):
     if not user.is_authenticated:
         return False
