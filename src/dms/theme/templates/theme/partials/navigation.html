@@ -14,6 +14,9 @@
             <c-navigation-menu.link href="{% url 'projects:project_list' %}"><i class="fas fa-people-group"></i> Projects</c-navigation-menu.link>
           </c-navigation-menu.item>
           <c-navigation-menu.item>
+            <c-navigation-menu.link href="{% url 'datasets:dataset_list' %}"><i class="fas fa-database"></i> Datasets</c-navigation-menu.link>
+          </c-navigation-menu.item>
+          <c-navigation-menu.item>
           {% if user.is_authenticated %}
           <c-navigation-menu.trigger index='0'>{{ user }}</c-navigation-menu.trigger>
           <c-navigation-menu.content index='0' class="bg-white md:w-[10rem]" >
