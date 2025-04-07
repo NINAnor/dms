@@ -3,7 +3,8 @@
 {% block page-title %}Datasets{% endblock %}
 
 {% block page-actions %}
-<div class="flex">
+<div class="flex gap-4">
     <a class="btn btn-primary" href="{% url 'datasets:dataset_create' %}">Register</a>
+    <a class="btn btn-primary" href="{% url 'datasets:storage_list' %}">Storages</a>
 </div>
 {% endblock page-actions %}

@@ -434,4 +434,46 @@ RESOURCE_PROFILES = {}
 
 
 class StorageType(TextChoices):
+    HTTP = "http", "HTTP"
     S3 = "s3", "S3"
+
+
+HTTP_CONFIG = {
+    "type": "object",
+    "properties": {
+        "url": {
+            "type": "string",
+            "title": "URL",
+            "help_text": "The Base URL to the HTTP resource",
+        },
+    },
+    "required": ["url"],
+}
+
+S3_CONFIG = {
+    "type": "object",
+    "properties": {
+        "endpoint": {
+            "type": "string",
+            "title": "Endpoint",
+            "help_text": "The endpoint for the S3 storage",
+        },
+        "bucket": {
+            "type": "string",
+            "title": "Bucket",
+            "help_text": "The bucket for the S3 storage",
+        },
+        "access_key": {
+            "type": "string",
+            "title": "Access Key",
+            "help_text": "The access key for the S3 storage",
+        },
+        "secret_key": {
+            "type": "string",
+            "title": "Secret Key",
+        },
+    },
+    "required": ["endpoint", "bucket"],
+}
+
+STORAGE_TYPE_CONFIG = {StorageType.HTTP: HTTP_CONFIG, StorageType.S3: S3_CONFIG}

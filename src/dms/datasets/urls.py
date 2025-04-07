@@ -37,4 +37,21 @@ urlpatterns = [
         views.ResourceUpdateView.as_view(),
         name="resource_update",
     ),
+    path("storages/", views.StorageListView.as_view(), name="storage_list"),
+    path(
+        "storages/register/", views.StorageCreateView.as_view(), name="storage_create"
+    ),
+    path(
+        "storages/<uuid:pk>/edit/",
+        views.StorageUpdateView.as_view(),
+        name="storage_update",
+    ),
+    path(
+        "storages/<uuid:pk>/config/",
+        views.StorageConfigView.as_view(),
+        name="storage_update_config",
+    ),
+    path(
+        "storages/<uuid:pk>/", views.StorageDetailView.as_view(), name="storage_detail"
+    ),
 ]

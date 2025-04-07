@@ -15,6 +15,7 @@ from .rules import (
 )
 from .schemas import (
     DATASET_PROFILES,
+    STORAGE_TYPE_CONFIG,
     DatasetProfileType,
     ResourceProfileType,
     StorageType,
@@ -75,10 +76,17 @@ class Dataset(RulesModelMixin, geo_models.Model, metaclass=RulesModelBase):
         }
 
 
+def get_config_schema(instance=None):
+    if not instance:
+        return None
+    return STORAGE_TYPE_CONFIG.get(instance.type)
+
+
 class Storage(RulesModel):
     id = models.UUIDField(primary_key=True)
+    title = models.CharField()
     type = models.CharField(choices=StorageType.choices)
-    config = JSONBField(default=dict)
+    config = JSONBField(null=True, blank=True, schema=get_config_schema)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Created at"))
     last_modified_at = models.DateTimeField(
         auto_now=True, verbose_name=_("Last modified at")
@@ -98,6 +106,15 @@ class Storage(RulesModel):
             "change": storage_in_user_projects,
             "delete": storage_in_user_projects,
         }
+
+    def get_absolute_url(self):
+        return reverse(
+            "datasets:storage_detail",
+            kwargs={"pk": self.pk},
+        )
+
+    def __str__(self):
+        return self.title
 
 
 class Resource(RulesModel):

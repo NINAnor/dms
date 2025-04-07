@@ -1,5 +1,6 @@
 # from django.db.models import Prefetch
 # from django.urls import reverse_lazy
+from django.db.models import Q
 from django.urls import reverse
 from django.views.generic import CreateView, DetailView, UpdateView
 from django_filters.views import FilterView
@@ -12,10 +13,17 @@ from view_breadcrumbs import (
     UpdateBreadcrumbMixin,
 )
 
-from .filters import DatasetFilter
-from .forms import DatasetForm, DatasetMetadataForm, DatasetUpdateForm, ResourceForm
-from .models import Dataset, Resource
-from .tables import DatasetTable, ResourceTable
+from .filters import DatasetFilter, StorageFilter
+from .forms import (
+    DatasetForm,
+    DatasetMetadataForm,
+    DatasetUpdateForm,
+    ResourceForm,
+    StorageConfigForm,
+    StorageForm,
+)
+from .models import Dataset, Resource, Storage
+from .tables import DatasetTable, ResourceTable, StorageTable
 
 
 class DatasetListView(
@@ -143,3 +151,71 @@ class ResourceUpdateView(
         return reverse(
             "datasets:dataset_detail", kwargs={"pk": self.kwargs.get("dataset_pk")}
         )
+
+
+class StorageListView(
+    PermissionRequiredMixin, ListBreadcrumbMixin, SingleTableMixin, FilterView
+):
+    model = Storage
+    table_class = StorageTable
+    filterset_class = StorageFilter
+    permission_required = "datasets.view_storage"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .filter(
+                Q(project_id__isnull=True)
+                | Q(project=self.request.user.project_set.all())
+            )
+        )
+
+
+class StorageDetailView(PermissionRequiredMixin, DetailView):
+    model = Storage
+    permission_required = "datasets.view_storage"
+
+    def get_queryset(self):
+        return super().get_queryset()
+
+
+class StorageCreateView(
+    PermissionRequiredMixin,
+    CreateView,
+):
+    permission_required = "datasets.add_storage"
+    model = Storage
+    form_class = StorageForm
+
+    def get_form_kwargs(self):
+        args = super().get_form_kwargs()
+        args["user"] = self.request.user
+        return args
+
+
+class StorageUpdateView(
+    PermissionRequiredMixin,
+    UpdateView,
+):
+    permission_required = "datasets.change_storage"
+    model = Storage
+    form_class = StorageForm
+
+    def get_form_kwargs(self):
+        args = super().get_form_kwargs()
+        args["user"] = self.request.user
+        return args
+
+
+class StorageConfigView(
+    PermissionRequiredMixin,
+    UpdateView,
+):
+    permission_required = "datasets.change_storage"
+    model = Storage
+    form_class = StorageConfigForm
+
+    def get_form_kwargs(self):
+        args = super().get_form_kwargs()
+        return args
