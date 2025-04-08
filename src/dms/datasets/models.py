@@ -16,8 +16,9 @@ from .rules import (
     storage_is_shared,
 )
 from .schemas import (
+    BASE_SCHEMAS,
     DATASET_PROFILES,
-    RESOURCE_PROFILES,
+    RESOURCE_MEDIA_TYPE,
     STORAGE_TYPE_CONFIG,
     DatasetProfileType,
     ResourceMediaType,
@@ -125,7 +126,13 @@ class Storage(RulesModel):
 def get_resource_metadata_schema(instance=None):
     if not instance:
         return None
-    return RESOURCE_PROFILES.get(instance.profile).get(instance.media_type)
+    return RESOURCE_MEDIA_TYPE.get(instance.profile).get(instance.media_type)
+
+
+def get_resource_data_schema(instance=None):
+    if not instance:
+        return None
+    return BASE_SCHEMAS.get(instance.profile, None)
 
 
 class Resource(RulesModel):
@@ -159,7 +166,7 @@ class Resource(RulesModel):
     )
     media_type = models.CharField(choices=ResourceMediaType)
     metadata = JSONBField(default=dict, schema=get_resource_metadata_schema)
-    schema = JSONBField(default=dict)
+    schema = JSONBField(default=dict, schema=get_resource_data_schema)
 
     class Meta:
         rules_permissions = {

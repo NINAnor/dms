@@ -126,6 +126,19 @@ class ResourceForm(forms.ModelForm):
         }
 
 
+class ResourceMetadataForm(BaseMetadataForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["schema"].widget.instance = self.instance
+
+    class Meta:
+        model = Resource
+        fields = [
+            "metadata",
+            "schema",
+        ]
+
+
 class StorageForm(forms.ModelForm):
     def __init__(self, *args, user, **kwargs):
         super().__init__(*args, **kwargs)

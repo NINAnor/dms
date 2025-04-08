@@ -19,6 +19,7 @@ from .forms import (
     DatasetMetadataForm,
     DatasetUpdateForm,
     ResourceForm,
+    ResourceMetadataForm,
     StorageConfigForm,
     StorageForm,
 )
@@ -122,7 +123,8 @@ class ResourceCreateView(
 
     def get_success_url(self):
         return reverse(
-            "datasets:dataset_detail", kwargs={"pk": self.kwargs.get("dataset_pk")}
+            "datasets:resource_update_metadata",
+            kwargs={"dataset_pk": self.kwargs.get("dataset_pk"), "pk": self.object.pk},
         )
 
 
@@ -150,8 +152,18 @@ class ResourceUpdateView(
 
     def get_success_url(self):
         return reverse(
-            "datasets:dataset_detail", kwargs={"pk": self.kwargs.get("dataset_pk")}
+            "datasets:resource_update_metadata",
+            kwargs={"dataset_pk": self.kwargs.get("dataset_pk"), "pk": self.object.pk},
         )
+
+
+class ResourceMetadataUpdateView(
+    PermissionRequiredMixin,
+    UpdateView,
+):
+    permission_required = "datasets.change_resource"
+    model = Resource
+    form_class = ResourceMetadataForm
 
 
 class StorageListView(

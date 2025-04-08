@@ -17,19 +17,26 @@
     <div class="flex gap-4">
         <a class="btn btn-primary" href="{% url 'datasets:dataset_detail' pk=resource.dataset_id %}">Dataset</a>
         <a class="btn btn-primary" href="{% url 'datasets:resource_update' pk=resource.id dataset_pk=resource.dataset_id %}">Edit</a>
+        <a class="btn btn-primary" href="{% url 'datasets:resource_update_metadata' pk=resource.id dataset_pk=resource.dataset_id %}">Edit Metadata</a>
     </div>
 </div>
 
-<c-accordion type='multiple' open="{'item-1': true, 'item-2': true}" class="mt-4">
+<c-accordion type='multiple' open="{'item-1': true, 'item-2': true , 'schema': true}" class="mt-4">
     <c-accordion.item value='item-1'>
         <c-accordion.trigger value='item-1' class="text-2xl font-bold">Metadata</c-accordion.trigger>
         <c-accordion.content value='item-1'>
+            <c-json-object-viewer :dict="resource.metadata"></c-json-object-viewer>
+        </c-accordion.content>
+    </c-accordion.item>
+    <c-accordion.item value='schema'>
+        <c-accordion.trigger value='schema' class="text-2xl font-bold">Schema</c-accordion.trigger>
+        <c-accordion.content value='schema'>
+            <c-json-object-viewer :dict="resource.schema"></c-json-object-viewer>
         </c-accordion.content>
     </c-accordion.item>
     <c-accordion.item value='item-2'>
         <c-accordion.trigger value='item-2' class="text-2xl font-bold">Preview</c-accordion.trigger>
         <c-accordion.content value='item-2'>
-
         </c-accordion.content>
     </c-accordion.item>
 </c-accordion>

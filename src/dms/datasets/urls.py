@@ -37,6 +37,11 @@ urlpatterns = [
         views.ResourceUpdateView.as_view(),
         name="resource_update",
     ),
+    path(
+        "datasets/<uuid:dataset_pk>/resources/<uuid:pk>/edit/metadata/",
+        views.ResourceMetadataUpdateView.as_view(),
+        name="resource_update_metadata",
+    ),
     path("storages/", views.StorageListView.as_view(), name="storage_list"),
     path(
         "storages/register/", views.StorageCreateView.as_view(), name="storage_create"

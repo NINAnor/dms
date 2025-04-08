@@ -110,3 +110,7 @@ table.table thead th.desc.orderable a::after {
 table.table thead th.asc.orderable a::after {
   content: '\f0de';
 }
+
+.rjf-check-input input[type="checkbox"] {
+  @apply checkbox !important;
+}

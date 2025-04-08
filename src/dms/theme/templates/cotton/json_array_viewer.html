@@ -1,8 +1,11 @@
 {% load utils %}
 
+<c-vars array="[]" show_empty="false"></c-vars>
+
+
 {% for element in array %}
 {% if element|get_type == 'dict' %}
-<c-json-object-viewer :dict="element"></c-json-object-viewer>
+<c-json-object-viewer :dict="element" :show_empty="show_empty"></c-json-object-viewer>
 {% else %}
 {{ element }}
 {% endif %}

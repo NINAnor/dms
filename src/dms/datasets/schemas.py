@@ -433,7 +433,178 @@ class ResourceProfileType(TextChoices):
     DOCUMENTATION = "documentation", "Documentation"
 
 
-RESOURCE_PROFILES = {}
+BASE_TABULAR_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "primary_key": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "string",
+            },
+            "title": "Primary Key",
+        },
+        "columns": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "required": ["name", "type"],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Column Name",
+                        "help_text": "The name of the column",
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Column Type",
+                        "help_text": "The type of the column",
+                        "enum": [
+                            "string",
+                            "integer",
+                            "float",
+                            "boolean",
+                            "date",
+                            "datetime",
+                        ],
+                    },
+                    "description": {
+                        "type": "string",
+                        "title": "Description",
+                        "help_text": "A description of the column",
+                        "widget": "textarea",
+                    },
+                    "unit": {
+                        "type": "string",
+                        "title": "Unit",
+                        "help_text": "The unit of the column",
+                    },
+                    "notes": {
+                        "type": "string",
+                        "title": "Notes",
+                        "help_text": "Additional information about the column",
+                        "widget": "textarea",
+                    },
+                    "required": {
+                        "type": "boolean",
+                        "title": "Required",
+                        "help_text": "Whether the column is required",
+                        "default": False,
+                    },
+                    "unique": {
+                        "type": "boolean",
+                        "title": "Unique",
+                        "help_text": "Whether the column values are unique",
+                        "default": False,
+                    },
+                    "default": {
+                        "type": "string",
+                        "title": "Default Value",
+                        "help_text": "The default value for the column",
+                    },
+                    "format": {
+                        "type": "string",
+                        "title": "Format",
+                        "help_text": "The format of the column values",
+                    },
+                    "example": {
+                        "type": "string",
+                        "title": "Example Value",
+                        "help_text": "An example value for the column",
+                    },
+                    "enum": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "title": "Enum Values",
+                        "help_text": "The possible values for the column",
+                    },
+                    "skos:exactMatch": {
+                        "type": "string",
+                        "title": "Dictionary term URI",
+                        "help_text": "A URI that points to the web presence of the Dictionary term",
+                        "format": "uri",
+                    },
+                },
+            },
+        },
+    },
+}
+
+BASE_RASTER_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "crs": {
+            "type": "integer",
+            "title": "Spatial Reference System",
+            "help_text": "Insert the EPSG code of the spatial reference system used",
+        },
+        "bands": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "required": ["name", "type"],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Band Name",
+                        "help_text": "The name of the band",
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Band Type",
+                        "help_text": "The type of the band",
+                        "enum": [
+                            "byte",
+                            "int16",
+                            "int32",
+                            "float32",
+                            "float64",
+                            "uint8",
+                            "uint16",
+                            "uint32",
+                            "int8",
+                            "int64",
+                        ],
+                    },
+                    "description": {
+                        "type": "string",
+                        "title": "Description",
+                        "help_text": "A description of the band",
+                        "widget": "textarea",
+                    },
+                    "unit": {
+                        "type": "string",
+                        "title": "Unit",
+                    },
+                    "minValue": {
+                        "type": "number",
+                    },
+                    "maxValue": {
+                        "type": "number",
+                    },
+                    "noDataValue": {
+                        "type": "number",
+                        "title": "No Data Value",
+                    },
+                    "colorMap": {
+                        "type": "string",
+                        "title": "Color Map",
+                        "help_text": "The color map used for the band",
+                    },
+                },
+            },
+        },
+    },
+}
+
+BASE_SCHEMAS = {
+    ResourceProfileType.TABULAR: BASE_TABULAR_SCHEMA,
+    ResourceProfileType.VECTOR: BASE_TABULAR_SCHEMA,
+    ResourceProfileType.RASTER: BASE_RASTER_SCHEMA,
+    ResourceProfileType.DOCUMENTATION: None,
+}
 
 
 class ResourceMediaType(TextChoices):
@@ -455,7 +626,7 @@ PARQUET_CONFIG = {
         "hive_partitioning": {
             "type": "boolean",
             "title": "Hive Partitioning",
-            "help_text": "Whether to use Hive partitioning for the Parquet file",
+            "help_text": "The path represents a Hive partitioned table",
         },
         "compression": {
             "type": "string",
@@ -484,6 +655,7 @@ NOTES_CONFIG = {
     "properties": {
         "notes": {
             "type": "string",
+            "widget": "textarea",
         },
     },
 }
@@ -506,6 +678,7 @@ RESOURCE_MEDIA_TYPE = {
                 },
                 "notes": {
                     "type": "string",
+                    "widget": "textarea",
                 },
             },
             "required": ["epsg"],
