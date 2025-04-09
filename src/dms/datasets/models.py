@@ -18,11 +18,11 @@ from .rules import (
 from .schemas import (
     BASE_SCHEMAS,
     DATASET_PROFILES,
-    RESOURCE_MEDIA_TYPE,
+    RESOURCE_TYPE,
     STORAGE_TYPE_CONFIG,
     DatasetProfileType,
-    ResourceMediaType,
     ResourceProfileType,
+    ResourceType,
     StorageType,
 )
 
@@ -50,15 +50,19 @@ def get_metadata_schema(instance=None):
     return DATASET_PROFILES.get(instance.profile)
 
 
-@reversion.register(follow=["resources"])
+@reversion.register(follow=["resources", "source_rels", "dest_rels"])
 class Dataset(RulesModelMixin, geo_models.Model, metaclass=RulesModelBase):
-    id = models.UUIDField(primary_key=True)
+    id = models.UUIDField(
+        primary_key=True, db_default=models.Func(function="gen_random_uuid")
+    )
     title = models.CharField()
     name = AutoSlugField(populate_from="title")
     project = models.ForeignKey(
         "projects.Project", on_delete=models.PROTECT, related_name="datasets"
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Created at"))
+    created_at = models.DateTimeField(
+        db_default=models.functions.Now(), verbose_name=_("Created at")
+    )
     last_modified_at = models.DateTimeField(
         auto_now=True, verbose_name=_("Last modified at")
     )
@@ -82,6 +86,44 @@ class Dataset(RulesModelMixin, geo_models.Model, metaclass=RulesModelBase):
         }
 
 
+class RelationshipType(models.TextChoices):
+    CITES = "Cites", "Cites"
+    REFERENCES = "References", "References"
+    IS_PART_OF = "IsPartOf", "Is part of"
+    IS_SOURCE_OF = "IsSourceOf", "Is source of"
+    IS_DERIVED_FROM = "IsDerivedFrom", "Is derived from"
+    IS_TRANSLATION_OF = "IsTranslationOf", "Is translation of"
+    REVIEWS = "Reviews", "Reviews"
+    DOCUMENTS = "Documents", "Documents"
+
+
+class DatasetRelationship(RulesModel):
+    id = models.UUIDField(
+        primary_key=True, db_default=models.Func(function="gen_random_uuid")
+    )
+    source = models.ForeignKey(
+        "Dataset", on_delete=models.CASCADE, related_name="source_rels"
+    )
+    destination = models.ForeignKey(
+        "Dataset", on_delete=models.CASCADE, related_name="dest_rels"
+    )
+    type = models.CharField(choices=RelationshipType.choices)
+
+    class Meta:
+        rules_permissions = {
+            "add": rules.is_authenticated,
+            "view": rules.always_allow,
+            "change": rules.is_authenticated,
+            "delete": rules.is_authenticated,
+        }
+        constraints = [
+            models.UniqueConstraint(
+                fields=["source", "destination", "type"],
+                name="unique_relationship_type",
+            )
+        ]
+
+
 def get_config_schema(instance=None):
     if not instance:
         return None
@@ -89,11 +131,15 @@ def get_config_schema(instance=None):
 
 
 class Storage(RulesModel):
-    id = models.UUIDField(primary_key=True)
+    id = models.UUIDField(
+        primary_key=True, db_default=models.Func(function="gen_random_uuid")
+    )
     title = models.CharField()
     type = models.CharField(choices=StorageType.choices)
     config = JSONBField(null=True, blank=True, schema=get_config_schema)
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Created at"))
+    created_at = models.DateTimeField(
+        db_default=models.functions.Now(), verbose_name=_("Created at")
+    )
     last_modified_at = models.DateTimeField(
         auto_now=True, verbose_name=_("Last modified at")
     )
@@ -126,7 +172,7 @@ class Storage(RulesModel):
 def get_resource_metadata_schema(instance=None):
     if not instance:
         return None
-    return RESOURCE_MEDIA_TYPE.get(instance.profile).get(instance.media_type)
+    return RESOURCE_TYPE.get(instance.profile).get(instance.type)
 
 
 def get_resource_data_schema(instance=None):
@@ -136,7 +182,9 @@ def get_resource_data_schema(instance=None):
 
 
 class Resource(RulesModel):
-    id = models.UUIDField(primary_key=True)
+    id = models.UUIDField(
+        primary_key=True, db_default=models.Func(function="gen_random_uuid")
+    )
     title = models.CharField(help_text="A name that describes the resource")
     name = AutoSlugField(populate_from="title")
     path = models.CharField(
@@ -154,7 +202,9 @@ class Resource(RulesModel):
     dataset = models.ForeignKey(
         "Dataset", on_delete=models.CASCADE, related_name="resources"
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Created at"))
+    created_at = models.DateTimeField(
+        db_default=models.functions.Now(), verbose_name=_("Created at")
+    )
     last_modified_at = models.DateTimeField(
         auto_now=True, verbose_name=_("Last modified at")
     )
@@ -164,7 +214,7 @@ class Resource(RulesModel):
         blank=True,
         help_text="To what profile should this resouce conform to?",
     )
-    media_type = models.CharField(choices=ResourceMediaType)
+    type = models.CharField(choices=ResourceType, default=ResourceType.OTHER)
     metadata = JSONBField(default=dict, schema=get_resource_metadata_schema)
     schema = JSONBField(default=dict, schema=get_resource_data_schema)
 

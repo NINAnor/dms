@@ -108,7 +108,7 @@ class ResourceForm(forms.ModelForm):
         fields = [
             "title",
             "profile",
-            "media_type",
+            "type",
             "storage",
             "path",
         ]
@@ -116,13 +116,13 @@ class ResourceForm(forms.ModelForm):
         widgets = {
             "profile": forms.Select(
                 attrs={
-                    "hx-get": reverse_lazy("datasets:resource_media_type_list"),
+                    "hx-get": reverse_lazy("datasets:resource_type_list"),
                     "hx-trigger": "load,change",
-                    "hx-target": "#id_media_type",
+                    "hx-target": "#id_type",
                     "hx-include": "#id_profile",
                 }
             ),
-            "media_type": forms.Select(choices=[]),
+            "type": forms.Select(choices=[]),
         }
 
 

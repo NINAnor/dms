@@ -439,14 +439,11 @@ BASE_TABULAR_SCHEMA = {
         "primary_key": {
             "type": "array",
             "minItems": 1,
-            "items": {
-                "type": "string",
-            },
+            "items": {"type": "string", "default": "id"},
             "title": "Primary Key",
         },
         "columns": {
             "type": "array",
-            "minItems": 1,
             "items": {
                 "type": "object",
                 "required": ["name", "type"],
@@ -607,17 +604,17 @@ BASE_SCHEMAS = {
 }
 
 
-class ResourceMediaType(TextChoices):
-    PARQUET = "application/vnd.apache.parquet", "Parquet"
+class ResourceType(TextChoices):
+    PARQUET = "parquet", "Parquet"
     # CSV = "text/csv", "CSV" # Should be supported?
     # JSON = "application/json", "JSON" # It's probably needed for nested/unstructured data
     COG = (
-        "image/tiff; application=geotiff; profile=cloud-optimized",
+        "cloud-optimized-geotiff",
         "Cloud Optimized GeoTIFF",
     )
-    PDF = "application/pdf", "PDF"
-    HTML = "text/html", "HTML"
-    OTHER = "application/octet-stream", "Other"
+    DWCA = "dwca", "Darwin Core Archive"
+    PDF = "pdf", "PDF"
+    OTHER = "", "Other"
 
 
 PARQUET_CONFIG = {
@@ -661,15 +658,16 @@ NOTES_CONFIG = {
 }
 
 
-RESOURCE_MEDIA_TYPE = {
+RESOURCE_TYPE = {
     ResourceProfileType.TABULAR: {
-        ResourceMediaType.PARQUET: PARQUET_CONFIG,
+        ResourceType.PARQUET: PARQUET_CONFIG,
     },
     ResourceProfileType.VECTOR: {
-        ResourceMediaType.PARQUET: GEOPARQUET_CONFIG,
+        ResourceType.PARQUET: GEOPARQUET_CONFIG,
+        ResourceType.DWCA: NOTES_CONFIG,
     },
     ResourceProfileType.RASTER: {
-        ResourceMediaType.COG: {
+        ResourceType.COG: {
             "type": "object",
             "properties": {
                 "epsg": {
@@ -685,9 +683,8 @@ RESOURCE_MEDIA_TYPE = {
         }
     },
     ResourceProfileType.DOCUMENTATION: {
-        ResourceMediaType.HTML: NOTES_CONFIG,
-        ResourceMediaType.PDF: NOTES_CONFIG,
-        ResourceMediaType.OTHER: NOTES_CONFIG,
+        ResourceType.PDF: NOTES_CONFIG,
+        ResourceType.OTHER: NOTES_CONFIG,
     },
 }
 

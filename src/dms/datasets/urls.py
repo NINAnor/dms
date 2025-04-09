@@ -60,8 +60,8 @@ urlpatterns = [
         "storages/<uuid:pk>/", views.StorageDetailView.as_view(), name="storage_detail"
     ),
     path(
-        "options/resource-media-type/",
+        "options/resource-type/",
         views.ResourceMediaTypeOptionsView.as_view(),
-        name="resource_media_type_list",
+        name="resource_type_list",
     ),
 ]
