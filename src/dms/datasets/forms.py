@@ -20,6 +20,7 @@ class DatasetForm(forms.ModelForm):
         self.helper.add_input(Submit("submit", "Submit"))
 
         self.user = user
+        self.fields["project"].required = True
         self.fields["project"].queryset = Project.objects.filter(
             members__user=self.user
         )

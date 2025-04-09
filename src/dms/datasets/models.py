@@ -58,7 +58,10 @@ class Dataset(RulesModelMixin, geo_models.Model, metaclass=RulesModelBase):
     title = models.CharField()
     name = AutoSlugField(populate_from="title")
     project = models.ForeignKey(
-        "projects.Project", on_delete=models.PROTECT, related_name="datasets"
+        "projects.Project",
+        on_delete=models.PROTECT,
+        related_name="datasets",
+        null=True,
     )
     created_at = models.DateTimeField(
         db_default=models.functions.Now(), verbose_name=_("Created at")

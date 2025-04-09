@@ -9,6 +9,8 @@ def dataset_in_user_projects(user, dataset):
         return False
     if not dataset:
         return True
+    if not dataset.project_id and user.is_staff:
+        return True
     return Project.objects.filter(members__user=user, datasets=dataset).exists()
 
 
