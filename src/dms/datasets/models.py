@@ -9,21 +9,12 @@ from django_jsonform.models.fields import JSONField as JSONBField
 from jsonfield import JSONField
 from rules.contrib.models import RulesModel, RulesModelBase, RulesModelMixin
 
+from . import schemas
 from .rules import (
     dataset_in_user_projects,
     resource_in_user_projects,
     storage_in_user_projects,
     storage_is_shared,
-)
-from .schemas import (
-    BASE_SCHEMAS,
-    DATASET_PROFILES,
-    RESOURCE_TYPE,
-    STORAGE_TYPE_CONFIG,
-    DatasetProfileType,
-    ResourceProfileType,
-    ResourceType,
-    StorageType,
 )
 
 
@@ -47,7 +38,7 @@ class Schema(RulesModel):
 def get_metadata_schema(instance=None):
     if not instance:
         return None
-    return DATASET_PROFILES.get(instance.profile)
+    return schemas.dataset_profiles.DATASET_PROFILES_MAP.get(instance.profile)
 
 
 @reversion.register(follow=["resources", "source_rels", "dest_rels"])
@@ -70,7 +61,8 @@ class Dataset(RulesModelMixin, geo_models.Model, metaclass=RulesModelBase):
         auto_now=True, verbose_name=_("Last modified at")
     )
     profile = models.CharField(
-        default=DatasetProfileType.COMMON, choices=DatasetProfileType.choices
+        default=schemas.dataset_profiles.DatasetProfileType.COMMON,
+        choices=schemas.dataset_profiles.DatasetProfileType.choices,
     )
     metadata = JSONBField(schema=get_metadata_schema, default=dict)
 
@@ -130,7 +122,7 @@ class DatasetRelationship(RulesModel):
 def get_config_schema(instance=None):
     if not instance:
         return None
-    return STORAGE_TYPE_CONFIG.get(instance.type)
+    return schemas.storage_types.STORAGE_TYPE_MAP.get(instance.type)
 
 
 class Storage(RulesModel):
@@ -138,7 +130,7 @@ class Storage(RulesModel):
         primary_key=True, db_default=models.Func(function="gen_random_uuid")
     )
     title = models.CharField()
-    type = models.CharField(choices=StorageType.choices)
+    type = models.CharField(choices=schemas.storage_types.StorageType.choices)
     config = JSONBField(null=True, blank=True, schema=get_config_schema)
     created_at = models.DateTimeField(
         db_default=models.functions.Now(), verbose_name=_("Created at")
@@ -175,13 +167,15 @@ class Storage(RulesModel):
 def get_resource_metadata_schema(instance=None):
     if not instance:
         return None
-    return RESOURCE_TYPE.get(instance.profile).get(instance.type)
+    return schemas.resource_types.RESOURCE_TYPE_MAP.get(instance.profile).get(
+        instance.type
+    )
 
 
 def get_resource_data_schema(instance=None):
     if not instance:
         return None
-    return BASE_SCHEMAS.get(instance.profile, None)
+    return schemas.resource_profiles.RESOURCE_PROFILES_MAP.get(instance.profile, None)
 
 
 class Resource(RulesModel):
@@ -212,12 +206,15 @@ class Resource(RulesModel):
         auto_now=True, verbose_name=_("Last modified at")
     )
     profile = models.CharField(
-        choices=ResourceProfileType.choices,
+        choices=schemas.resource_profiles.ResourceProfileType.choices,
         null=True,
         blank=True,
         help_text="To what profile should this resouce conform to?",
     )
-    type = models.CharField(choices=ResourceType, default=ResourceType.OTHER)
+    type = models.CharField(
+        choices=schemas.resource_types.ResourceType,
+        default=schemas.resource_types.ResourceType.OTHER,
+    )
     metadata = JSONBField(default=dict, schema=get_resource_metadata_schema)
     schema = JSONBField(default=dict, schema=get_resource_data_schema)
 

@@ -13,6 +13,7 @@ from view_breadcrumbs import (
     UpdateBreadcrumbMixin,
 )
 
+from . import schemas
 from .filters import DatasetFilter, StorageFilter
 from .forms import (
     DatasetForm,
@@ -24,7 +25,6 @@ from .forms import (
     StorageForm,
 )
 from .models import Dataset, Resource, Storage
-from .schemas import RESOURCE_TYPE
 from .tables import DatasetTable, ResourceTable, StorageTable
 
 
@@ -233,7 +233,7 @@ class ResourceMediaTypeOptionsView(TemplateView):
 
         profile = self.request.GET.get("profile")
         if profile:
-            allowed = RESOURCE_TYPE.get(profile, {})
+            allowed = schemas.resource_types.RESOURCE_TYPE_MAP.get(profile, {})
             ctx["options"] = list((k.value, k.label) for k in allowed.keys())
 
         return ctx
