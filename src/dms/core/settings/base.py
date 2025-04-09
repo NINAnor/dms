@@ -125,6 +125,7 @@ THIRD_PARTY_APPS = [
     "reversion",
     "django_cotton",
     "django_htmx",
+    "slippers",
 ]
 
 LOCAL_APPS = [
@@ -275,7 +276,7 @@ TEMPLATES = [
                 "dms.users.context_processors.allauth_settings",
                 "dms.core.context_processors.context_settings",
             ],
-            "builtins": [],
+            "builtins": ["slippers.templatetags.slippers"],
         },
     },
 ]
