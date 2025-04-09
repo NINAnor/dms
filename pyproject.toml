@@ -69,7 +69,8 @@ dependencies = [
   "jsonfield>=3.1.0",
   "django-reversion>=5.1.0",
   "django-cotton>=2.0.3",
-  "django-htmx>=1.23.0"
+  "django-htmx>=1.23.0",
+  "duckdb>=1.2.2"
 ]
 description = "Add your description here"
 license = {text = "GPLv3"}
