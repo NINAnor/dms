@@ -48,16 +48,32 @@ SHARED_DEFS = {
                 "title": "First Name",
                 "help_text": "First name of the person",
             },
-            "email": {"type": "string", "title": "Email", "format": "email"},
-            "identifier": {
+            "url": {
                 "type": "string",
-                "title": "Identifier",
-                "help_text": "Uniquely identifies the person when paired with an identifier type",
+                "help_text": "on-line information that can be used to contact the individual or organization",
             },
+            "email": {"type": "string", "title": "Email", "format": "email"},
+            "positionName": {
+                "type": "string",
+            },
+            "phone": {"type": "string"},
+            "address": {"type": "string"},
+            "city": {"type": "string"},
+            "administrativeArea": {
+                "type": "string",
+                "help_text": "state, province of the location",
+            },
+            "postalcode": {"type": "string"},
+            "country": {"type": "string", "default": "Norway"},
             "affiliation": {
                 "type": "string",
                 "title": "Affiliation",
                 "help_text": "The name of the entity affiliated, e.g. an organization's name",
+            },
+            "identifier": {
+                "type": "string",
+                "title": "Identifier",
+                "help_text": "Uniquely identifies the person when paired with an identifier type",
             },
             "identifierScheme": {
                 "type": "string",
@@ -66,7 +82,11 @@ SHARED_DEFS = {
                 "help_text": "The type of identifier that uniquely identifies the author (e.g. ORCID, ISNI)",
             },
         },
-        "required": ["first_name", "last_name", "email"],
+        "required": [
+            "first_name",
+            "last_name",
+            "email",
+        ],
     },
     "organization": {
         "title": "Organization",
@@ -80,16 +100,29 @@ SHARED_DEFS = {
                 "help_text": "Name of the organization",
             },
             "email": {"type": "string", "title": "Email", "format": "email"},
+            "url": {
+                "type": "string",
+                "help_text": "on-line information that can be used to contact the individual or organization",
+            },
+            "phone": {"type": "string"},
+            "address": {"type": "string"},
+            "city": {"type": "string"},
+            "administrativeArea": {
+                "type": "string",
+                "help_text": "state, province of the location",
+            },
+            "postalcode": {"type": "string"},
+            "country": {"type": "string", "default": "Norway"},
+            "affiliation": {
+                "type": "string",
+                "title": "Affiliation",
+                "help_text": "The name of the entity affiliated, e.g. an organization's name",
+            },
             "identifier": {
                 "type": "string",
                 "title": "Identifier",
                 "enum": IDENTIFIERS,
                 "help_text": "Uniquely identifies the person when paired with an identifier type",
-            },
-            "affiliation": {
-                "type": "string",
-                "title": "Affiliation",
-                "help_text": "The name of the entity affiliated, e.g. an organization's name",
             },
             "identifierScheme": {
                 "type": "string",

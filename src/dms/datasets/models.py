@@ -2,11 +2,13 @@ import reversion
 import rules
 from autoslug import AutoSlugField
 from django.contrib.gis.db import models as geo_models
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from django_jsonform.models.fields import JSONField as JSONBField
 from jsonfield import JSONField
+from procrastinate.contrib.django import app
 from rules.contrib.models import RulesModel, RulesModelBase, RulesModelMixin
 
 from . import schemas
@@ -65,6 +67,7 @@ class Dataset(RulesModelMixin, geo_models.Model, metaclass=RulesModelBase):
         choices=schemas.dataset_profiles.DatasetProfileType.choices,
     )
     metadata = JSONBField(schema=get_metadata_schema, default=dict)
+    fetch = JSONBField(null=True, blank=True, encoder=DjangoJSONEncoder)
 
     def __str__(self):
         return self.title
@@ -79,6 +82,12 @@ class Dataset(RulesModelMixin, geo_models.Model, metaclass=RulesModelBase):
             "change": dataset_in_user_projects,
             "delete": rules.is_staff,
         }
+
+    def fetch_updates(self):
+        if self.fetch:
+            app.configure_task(name=self.fetch["task_name"]).defer(
+                dataset_id=str(self.id)
+            )
 
 
 class RelationshipType(models.TextChoices):

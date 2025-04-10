@@ -71,7 +71,12 @@ dependencies = [
   "django-cotton>=2.0.3",
   "django-htmx>=1.23.0",
   "duckdb>=1.2.2",
-  "pyarrow>=19.0.1"
+  "pyarrow>=19.0.1",
+  "beautifulsoup4>=4.13.3",
+  "lxml>=5.3.1",
+  "xmltodict>=0.14.2",
+  "fsspec>=2025.3.2",
+  "aiohttp>=3.11.16"
 ]
 description = "Add your description here"
 license = {text = "GPLv3"}

@@ -538,3 +538,6 @@ if SENTRY_DSN:
             "propagate": False,
         },
     }
+
+
+DATASETS_IPT_URLS = env.list("DATASETS_IPT_URLS", default=["https://ipt.nina.no"])

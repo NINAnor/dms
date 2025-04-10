@@ -16,13 +16,21 @@
         </p>
     </div>
     <div class="flex gap-4">
-        <a class="btn btn-primary" href="{% url 'projects:project_detail' pk=dataset.project_id %}">Project</a>
+        {% if dataset.project %}<a class="btn btn-primary" href="{% url 'projects:project_detail' pk=dataset.project_id %}">Project</a>{% endif %}
         <a class="btn btn-primary" href="{% url 'datasets:dataset_update' pk=dataset.id %}">Edit</a>
         <a class="btn btn-primary" href="{% url 'datasets:dataset_update_metadata' pk=dataset.id %}">Edit Metadata</a>
     </div>
 </div>
 
-<c-accordion type='multiple' open="{'item-1': true, 'item-2': true}" class="mt-4">
+<c-accordion type='multiple' open="{'item-1': true, 'item-2': true, 'fetch': true}" class="mt-4">
+    {% if dataset.fetch %}
+    <c-accordion.item value='fetch'>
+        <c-accordion.trigger value='fetch' class="text-2xl font-bold">Fetch</c-accordion.trigger>
+        <c-accordion.content value='fetch'>
+            <c-json-object-viewer :dict="dataset.fetch"></c-json-object-viewer>
+        </c-accordion.content>
+    </c-accordion.item>
+    {% endif %}
     <c-accordion.item value='item-1'>
         <c-accordion.trigger value='item-1' class="text-2xl font-bold">Metadata</c-accordion.trigger>
         <c-accordion.content value='item-1'>
