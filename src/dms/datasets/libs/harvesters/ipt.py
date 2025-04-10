@@ -9,6 +9,8 @@ from bs4 import BeautifulSoup
 
 from dms.datasets.models import Resource
 from dms.datasets.schemas.dataset_profiles import DatasetProfileType
+from dms.datasets.schemas.resource_profiles import ResourceProfileType
+from dms.datasets.schemas.resource_types import ResourceType
 
 from .harvester import DatasetListHarvester, DatasetUpdateHarvester
 
@@ -81,4 +83,6 @@ class IPTResourceHarvester(DatasetUpdateHarvester):
             storage=storage,
             path=dataset.fetch["url"].replace(origin, ""),
             dataset=dataset,
+            profile=ResourceProfileType.VECTOR,
+            type=ResourceType.DWCA,
         )
