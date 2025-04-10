@@ -66,6 +66,14 @@ x-django-dev: &django-dev
     - ./certs/:/usr/local/share/ca-certificates/
     - ./uv.lock:/app/uv.lock
   command: uv run manage.py runserver 0.0.0.0:8000
+  develop:
+    watch:
+      - action: rebuild
+        path: ./Dockerfile
+      - action: rebuild
+        path: ./uv.lock
+      - action: rebuild
+        path: ./.env
 
 services:
   django:
@@ -103,6 +111,16 @@ services:
       WAIT_FOR_HTTP: http://django:8000/ht/
       INSTALL_CERTS: 1
     command: uv run manage.py procrastinate worker
+    develop:
+      watch:
+        - action: restart
+          path: ./src
+        - action: rebuild
+          path: ./Dockerfile
+        - action: rebuild
+          path: ./uv.lock
+        - action: rebuild
+          path: ./.env
 
   tailwind:
     <<: *django-dev
