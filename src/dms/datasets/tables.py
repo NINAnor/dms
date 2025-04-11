@@ -58,5 +58,5 @@ class StorageTable(tables.Table):
 class DatasetRelationshipTable(tables.Table):
     class Meta:
         model = DatasetRelationship
-        fields = ("source", "destination", "type")
+        fields = ("id", "source", "destination", "type")
         template_name = "django_tables2/bootstrap.html"

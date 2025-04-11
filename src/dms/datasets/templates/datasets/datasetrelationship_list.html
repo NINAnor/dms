@@ -1,0 +1,27 @@
+{% extends "app.html" %}
+{% load crispy_forms_tags static %}
+{% load django_htmx %}
+
+{% block article %}
+    <h3 class="text-4xl mb-5">Manage relationships</h3>
+    <div class="flex gap-5 mb-5">
+    </div>
+
+    <button class="btn btn-default" type="button" hx-get="{% url 'datasets:dataset_relationship_create' dataset_pk=view.kwargs.dataset_pk %}" hx-target="#forms" hx-swap="afterbegin">
+        Add new relationship
+    </button>
+
+    <div id="forms" class="flex flex-col gap-4">
+        {% for object in object_list %}
+        <div hx-target="this" hx-swap="outerHTML" hx-trigger="load" hx-get="{% url 'datasets:dataset_relationship_update' dataset_pk=view.kwargs.dataset_pk pk=object.pk %}" hx-indicator="#spinner_{{object.id}}">
+            <i id="spinner_{{object.id}}" class="fas fa-spinner fa-spin"></i>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block body_javascript %}
+{{ block.super }}
+
+{% htmx_script %}
+{% endblock body_javascript %}

@@ -4,5 +4,6 @@
 
 {% block page-actions %}
 <div class="flex gap-4">
+    <a class="btn btn-primary" href="{% url 'datasets:dataset_relationship_manage' dataset_pk=view.kwargs.pk %}">Manage</a>
 </div>
 {% endblock page-actions %}

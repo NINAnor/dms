@@ -3,7 +3,13 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.urls import reverse
-from django.views.generic import CreateView, DetailView, TemplateView, UpdateView
+from django.views.generic import (
+    CreateView,
+    DetailView,
+    ListView,
+    TemplateView,
+    UpdateView,
+)
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 from rules.contrib.views import PermissionRequiredMixin
@@ -19,6 +25,7 @@ from .filters import DatasetFilter, DatasetRelationshipFilter, StorageFilter
 from .forms import (
     DatasetForm,
     DatasetMetadataForm,
+    DatasetRelationshipForm,
     DatasetUpdateForm,
     ResourceForm,
     ResourceMetadataForm,
@@ -255,4 +262,74 @@ class DatasetRelationshipListView(
             .filter(
                 Q(source_id=self.kwargs["pk"]) | Q(destination_id=self.kwargs["pk"])
             )
+        )
+
+
+class DatasetRelationshipManageView(PermissionRequiredMixin, ListView):
+    model = DatasetRelationship
+    queryset = DatasetRelationship.objects.all()
+    permission_required = "datasets.change_datasetrelationship"
+
+    def get_template_names(self):
+        if self.request.htmx:
+            return "datasets/partials/form.html"
+        return super().get_template_names()
+
+    def get_queryset(self):
+        return super().get_queryset().filter(source_id=self.kwargs["dataset_pk"])
+
+
+class DatasetRelationshipCreateView(PermissionRequiredMixin, CreateView):
+    form_class = DatasetRelationshipForm
+    permission_required = "datasets.change_datasetrelationship"
+    model = DatasetRelationship
+
+    def get_template_names(self):
+        if self.request.htmx:
+            return "datasets/partials/form.html"
+        return super().get_template_names()
+
+    def get_queryset(self):
+        return super().get_queryset().filter(source_id=self.kwargs["dataset_pk"])
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+
+        kwargs["user"] = self.request.user
+        kwargs["source"] = Dataset.objects.get(pk=self.kwargs["dataset_pk"])
+
+        return kwargs
+
+    def get_success_url(self):
+        return reverse(
+            "datasets:dataset_relationship_update",
+            kwargs={"dataset_pk": self.kwargs["dataset_pk"], "pk": self.object.pk},
+        )
+
+
+class DatasetRelationshipUpdateView(PermissionRequiredMixin, UpdateView):
+    model = DatasetRelationship
+    form_class = DatasetRelationshipForm
+    permission_required = "datasets.change_datasetrelationship"
+
+    def get_template_names(self):
+        if self.request.htmx:
+            return "datasets/partials/form.html"
+        return super().get_template_names()
+
+    def get_queryset(self):
+        return super().get_queryset().filter(source_id=self.kwargs["dataset_pk"])
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+
+        kwargs["user"] = self.request.user
+        kwargs["source"] = Dataset.objects.get(pk=self.kwargs["dataset_pk"])
+
+        return kwargs
+
+    def get_success_url(self):
+        return reverse(
+            "datasets:dataset_relationship_update",
+            kwargs={"dataset_pk": self.kwargs["dataset_pk"], "pk": self.object.pk},
         )

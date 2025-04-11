@@ -1,0 +1,28 @@
+{% load crispy_forms_tags static %}
+
+<div hx-target="this" hx-swap="outerHTML">
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+        {% if object %}
+        <form method="POST" action="">
+            {% csrf_token %}
+            <div class="flex gap-4 items-center">
+                {{ form | crispy }}
+                <button class="btn btn-primary" type="submit" hx-post="{% url 'datasets:dataset_relationship_update' dataset_pk=view.kwargs.dataset_pk pk=object.pk %}" hx-indicator="spinner_{{object.id}}">
+                    Update <i id="spinner_{{object.id}}" class="fas fa-spinner fa-spin htmx-indicator"></i>
+                </button>
+        </div>
+
+        </form>
+        {% else %}
+        <form method="POST" action="">
+            {% csrf_token %}
+            {{ form | crispy }}
+            <button class="btn btn-primary" hx-post="{% url 'datasets:dataset_relationship_create' dataset_pk=view.kwargs.dataset_pk %}" hx-indicator="#spinner_{% now 'U' %}">
+                Create <i id="spinner_{% now 'U' %}" class="fas fa-spinner fa-spin htmx-indicator"></i>
+            </button>
+        </form>
+        {% endif %}
+        </div>
+    </div>
+</div>

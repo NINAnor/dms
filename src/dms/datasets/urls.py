@@ -18,6 +18,21 @@ urlpatterns = [
         name="dataset_relationship_list",
     ),
     path(
+        "datasets/<uuid:dataset_pk>/relationships/edit/",
+        views.DatasetRelationshipManageView.as_view(),
+        name="dataset_relationship_manage",
+    ),
+    path(
+        "datasets/<uuid:dataset_pk>/relationships/create/",
+        views.DatasetRelationshipCreateView.as_view(),
+        name="dataset_relationship_create",
+    ),
+    path(
+        "datasets/<uuid:dataset_pk>/relationships/edit/<uuid:pk>/",
+        views.DatasetRelationshipUpdateView.as_view(),
+        name="dataset_relationship_update",
+    ),
+    path(
         "datasets/<uuid:pk>/edit/",
         views.DatasetUpdateView.as_view(),
         name="dataset_update",

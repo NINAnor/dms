@@ -114,3 +114,12 @@ table.table thead th.asc.orderable a::after {
 .rjf-check-input input[type="checkbox"] {
   @apply checkbox !important;
 }
+
+.htmx-indicator {
+  display: none;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+  display: inline-block;
+}
