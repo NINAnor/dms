@@ -1,6 +1,6 @@
 import django_tables2 as tables
 
-from .models import Dataset, Resource, Storage
+from .models import Dataset, DatasetRelationship, Resource, Storage
 
 
 class DatasetTable(tables.Table):
@@ -52,4 +52,11 @@ class StorageTable(tables.Table):
             "last_modified_at",
             "project",
         )
+        template_name = "django_tables2/bootstrap.html"
+
+
+class DatasetRelationshipTable(tables.Table):
+    class Meta:
+        model = DatasetRelationship
+        fields = ("source", "destination", "type")
         template_name = "django_tables2/bootstrap.html"

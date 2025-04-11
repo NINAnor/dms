@@ -1,6 +1,7 @@
 # from django.db.models import Prefetch
 # from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.urls import reverse
 from django.views.generic import CreateView, DetailView, TemplateView, UpdateView
 from django_filters.views import FilterView
@@ -14,7 +15,7 @@ from view_breadcrumbs import (
 )
 
 from . import schemas
-from .filters import DatasetFilter, StorageFilter
+from .filters import DatasetFilter, DatasetRelationshipFilter, StorageFilter
 from .forms import (
     DatasetForm,
     DatasetMetadataForm,
@@ -24,8 +25,8 @@ from .forms import (
     StorageConfigForm,
     StorageForm,
 )
-from .models import Dataset, Resource, Storage
-from .tables import DatasetTable, ResourceTable, StorageTable
+from .models import Dataset, DatasetRelationship, Resource, Storage
+from .tables import DatasetRelationshipTable, DatasetTable, ResourceTable, StorageTable
 
 
 class DatasetListView(
@@ -237,3 +238,21 @@ class ResourceMediaTypeOptionsView(TemplateView):
             ctx["options"] = list((k.value, k.label) for k in allowed.keys())
 
         return ctx
+
+
+class DatasetRelationshipListView(
+    PermissionRequiredMixin, SingleTableMixin, FilterView
+):
+    queryset = DatasetRelationship.objects.all()
+    table_class = DatasetRelationshipTable
+    permission_required = "datasets.list_datasetrelationship"
+    filterset_class = DatasetRelationshipFilter
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .filter(
+                Q(source_id=self.kwargs["pk"]) | Q(destination_id=self.kwargs["pk"])
+            )
+        )

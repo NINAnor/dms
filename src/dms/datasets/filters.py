@@ -66,3 +66,13 @@ class ResourceFilter(filters.FilterSet):
             "type": ["exact"],
             "profile": ["exact"],
         }
+
+
+class DatasetRelationshipFilter(filters.FilterSet):
+    class Meta:
+        model = models.DatasetRelationship
+        fields = (
+            "source",
+            "destination",
+            "type",
+        )
