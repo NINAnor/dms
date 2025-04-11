@@ -2,6 +2,7 @@ import uuid
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
+from dal import autocomplete
 from django import forms
 from django.urls import reverse_lazy
 
@@ -206,3 +207,4 @@ class DatasetRelationshipForm(forms.ModelForm):
             "type",
             "destination",
         ]
+        widgets = {"destination": autocomplete.ModelSelect2(url="autocomplete:dataset")}

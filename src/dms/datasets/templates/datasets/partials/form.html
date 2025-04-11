@@ -11,6 +11,9 @@
                 <button class="btn btn-primary" type="submit" hx-post="{% url 'datasets:dataset_relationship_update' dataset_pk=view.kwargs.dataset_pk pk=object.pk %}" hx-indicator="spinner_{{object.id}}">
                     Update <i id="spinner_{{object.id}}" class="fas fa-spinner fa-spin htmx-indicator"></i>
                 </button>
+                <button class="btn btn-error" type="submit" hx-post="{% url 'datasets:dataset_relationship_delete' dataset_pk=view.kwargs.dataset_pk pk=object.pk %}" hx-confirm="Are you sure you wish to delete this relationship?">
+                    Delete <i id="spinner_{{object.id}}" class="fas fa-spinner fa-spin htmx-indicator"></i>
+                </button>
         </div>
 
         </form>
@@ -26,3 +29,15 @@
         </div>
     </div>
 </div>
+{{ form.media }}
+<!-- <script>
+    htmx.on("htmx:afterSettle", (e) => {
+        setTimeout(() => {
+            if (typeof dal_init === 'undefined') {
+                window.dispatchEvent(new Event('load'));
+                $('select[data-autocomplete-light-function]').select2();
+                dal_init = true;
+            }
+        }, 200);
+    })
+</script> -->

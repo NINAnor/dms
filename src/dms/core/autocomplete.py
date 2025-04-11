@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import path
 from taggit.models import Tag
 
+from dms.datasets.autocomplete import DatasetAutocomplete
 from dms.projects.autocomplete import (
     CategoryAutocomplete,
     ProjectAutocomplete,
@@ -26,4 +27,5 @@ urlpatterns = [
     path("project/", ProjectAutocomplete.as_view(), name="project"),
     path("user/", UserAutocomplete.as_view(), name="user"),
     path("tag/", TagAutocomplete.as_view(), name="tag"),
+    path("dataset/", DatasetAutocomplete.as_view(), name="dataset"),
 ]

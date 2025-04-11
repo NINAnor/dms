@@ -33,6 +33,11 @@ urlpatterns = [
         name="dataset_relationship_update",
     ),
     path(
+        "datasets/<uuid:dataset_pk>/relationships/delete/<uuid:pk>/",
+        views.DatasetRelationshipDeleteView.as_view(),
+        name="dataset_relationship_delete",
+    ),
+    path(
         "datasets/<uuid:pk>/edit/",
         views.DatasetUpdateView.as_view(),
         name="dataset_update",

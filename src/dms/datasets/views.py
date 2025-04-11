@@ -1,10 +1,14 @@
 # from django.db.models import Prefetch
 # from django.urls import reverse_lazy
+import uuid
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
+from django.http import HttpResponse
 from django.urls import reverse
 from django.views.generic import (
     CreateView,
+    DeleteView,
     DetailView,
     ListView,
     TemplateView,
@@ -297,6 +301,7 @@ class DatasetRelationshipCreateView(PermissionRequiredMixin, CreateView):
 
         kwargs["user"] = self.request.user
         kwargs["source"] = Dataset.objects.get(pk=self.kwargs["dataset_pk"])
+        kwargs["prefix"] = f"DR{uuid.uuid4()}"
 
         return kwargs
 
@@ -325,6 +330,7 @@ class DatasetRelationshipUpdateView(PermissionRequiredMixin, UpdateView):
 
         kwargs["user"] = self.request.user
         kwargs["source"] = Dataset.objects.get(pk=self.kwargs["dataset_pk"])
+        kwargs["prefix"] = f"DR{self.object.id}"
 
         return kwargs
 
@@ -333,3 +339,20 @@ class DatasetRelationshipUpdateView(PermissionRequiredMixin, UpdateView):
             "datasets:dataset_relationship_update",
             kwargs={"dataset_pk": self.kwargs["dataset_pk"], "pk": self.object.pk},
         )
+
+
+class DatasetRelationshipDeleteView(PermissionRequiredMixin, DeleteView):
+    model = DatasetRelationship
+    permission_required = "datasets.delete_datasetrelationship"
+
+    def get_queryset(self):
+        return super().get_queryset().filter(source_id=self.kwargs["dataset_pk"])
+
+    def get_template_names(self):
+        if self.request.htmx:
+            return "datasets/partials/form.html"
+        return super().get_template_names()
+
+    def form_valid(self, form):
+        self.object.delete()
+        return HttpResponse("")
