@@ -1,4 +1,3 @@
-import reversion
 import rules
 from autoslug import AutoSlugField
 from django.contrib.gis.db import models as geo_models
@@ -43,7 +42,6 @@ def get_metadata_schema(instance=None):
     return schemas.dataset_profiles.DATASET_PROFILES_MAP.get(instance.profile)
 
 
-@reversion.register(follow=["resources", "source_rels", "dest_rels"])
 class Dataset(RulesModelMixin, geo_models.Model, metaclass=RulesModelBase):
     id = models.UUIDField(
         primary_key=True, db_default=models.Func(function="gen_random_uuid")
@@ -66,8 +64,11 @@ class Dataset(RulesModelMixin, geo_models.Model, metaclass=RulesModelBase):
         default=schemas.dataset_profiles.DatasetProfileType.COMMON,
         choices=schemas.dataset_profiles.DatasetProfileType.choices,
     )
-    metadata = JSONBField(schema=get_metadata_schema, default=dict)
+    metadata = JSONBField(
+        schema=get_metadata_schema, default=dict, encoder=DjangoJSONEncoder
+    )
     fetch = JSONBField(null=True, blank=True, encoder=DjangoJSONEncoder)
+    version = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -224,8 +225,12 @@ class Resource(RulesModel):
         choices=schemas.resource_types.ResourceType,
         default=schemas.resource_types.ResourceType.OTHER,
     )
-    metadata = JSONBField(default=dict, schema=get_resource_metadata_schema)
-    schema = JSONBField(default=dict, schema=get_resource_data_schema)
+    metadata = JSONBField(
+        default=dict, schema=get_resource_metadata_schema, encoder=DjangoJSONEncoder
+    )
+    schema = JSONBField(
+        default=dict, schema=get_resource_data_schema, encoder=DjangoJSONEncoder
+    )
 
     class Meta:
         rules_permissions = {

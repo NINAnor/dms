@@ -6,11 +6,20 @@ from drf_spectacular.views import (
 )
 from rest_framework_nested import routers
 
+from dms.datasets.api import views as datasets_views
 from dms.projects.api import views as projects_views
 
 router = routers.DefaultRouter()
 router.register("projects", projects_views.ProjectModelViewSet, basename="projects")
 router.register("dmps", projects_views.DMPModelViewSet, basename="dmps")
+router.register("datasets", datasets_views.DatasetViewSet, basename="datasets")
+router.register("storages", datasets_views.StorageViewSet, basename="storages")
+router.register("resources", datasets_views.ResourceViewSet, basename="resources")
+router.register(
+    "datasets-relationships",
+    datasets_views.DatasetRelationshipViewSet,
+    basename="dataset-relationships",
+)
 
 app_name = "api_v1"
 
