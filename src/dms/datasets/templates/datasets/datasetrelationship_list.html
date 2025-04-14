@@ -3,9 +3,10 @@
 {% load django_htmx %}
 
 {% block article %}
+<div x-data="checkElementPresence()" x-init="startObserving()">
     <h3 class="text-4xl mb-5">Manage relationships</h3>
     <div class="flex gap-5 mb-5">
-        <button class="btn btn-default" type="button" hx-get="{% url 'datasets:dataset_relationship_create' dataset_pk=view.kwargs.dataset_pk %}" hx-target="#forms" hx-swap="afterbegin">
+        <button class="btn btn-default" type="button" hx-get="{% url 'datasets:dataset_relationship_create' dataset_pk=view.kwargs.dataset_pk %}" hx-target="#forms" hx-swap="afterbegin" :disabled="elementExists">
             Add new relationship
         </button>
     </div>
@@ -17,10 +18,33 @@
         </div>
         {% endfor %}
     </div>
+</div>
 {% endblock %}
 
 {% block body_javascript %}
 {{ block.super }}
+
+<script>
+    function checkElementPresence() {
+        return {
+            elementExists: false,
+            showSpecialElement: true, // for demo purposes
+            startObserving() {
+                // Initial check
+                this.elementExists = !!document.getElementById('create-form');
+
+                const observer = new MutationObserver(() => {
+                    this.elementExists = !!document.getElementById('create-form');
+                });
+
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+            }
+        }
+    }
+</script>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"
     integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
     crossorigin="anonymous"></script>

@@ -116,10 +116,10 @@ table.table thead th.asc.orderable a::after {
 }
 
 .htmx-indicator {
-  display: none;
+  opacity: 0;
 }
 
 .htmx-request .htmx-indicator,
 .htmx-request.htmx-indicator {
-  display: inline-block;
+  opacity: 1;
 }

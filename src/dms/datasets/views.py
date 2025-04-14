@@ -1,6 +1,5 @@
 # from django.db.models import Prefetch
 # from django.urls import reverse_lazy
-import uuid
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
@@ -301,7 +300,6 @@ class DatasetRelationshipCreateView(PermissionRequiredMixin, CreateView):
 
         kwargs["user"] = self.request.user
         kwargs["source"] = Dataset.objects.get(pk=self.kwargs["dataset_pk"])
-        kwargs["prefix"] = f"DR{uuid.uuid4()}"
 
         return kwargs
 
