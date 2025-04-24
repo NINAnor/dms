@@ -463,15 +463,15 @@ sdist = { url = "https://files.pythonhosted.org/packages/66/f8/b58f84c29bcbca379
 
 [[package]]
 name = "django-allauth-ui"
-version = "1.6.1"
+version = "1.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django-widget-tweaks" },
     { name = "slippers" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ba/5e/77fb367763c305b79a93f8c4bded0dfb2fb39b26df3b7c1d42e3e49d8225/django_allauth_ui-1.6.1.tar.gz", hash = "sha256:8a1b966cf6f78908d36a0973f6d84cfa6dbb93a55608b0625f6d644745180bcf", size = 38089 }
+sdist = { url = "https://files.pythonhosted.org/packages/ce/29/167caffc78718c586caff7e0877c8241ce850e1900b49654e43524edde41/django_allauth_ui-1.7.1.tar.gz", hash = "sha256:f429aedaeeb9a225f42ae844f5533d3fa6797179e6bcdab5370ef5857dfd944a", size = 39664 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8d/bc/ddc663d608f1ef5b87c644f53de8e510f843c6ffde40dc315770b20ee358/django_allauth_ui-1.6.1-py3-none-any.whl", hash = "sha256:f4f8b5629c8839c4e5f26fc65642ad227fd3ed0465de2e45924a797cddaf4645", size = 42610 },
+    { url = "https://files.pythonhosted.org/packages/a6/f0/95c153601b8c705a67cf71945c380e051fbcb19206ff37d346c03f648993/django_allauth_ui-1.7.1-py3-none-any.whl", hash = "sha256:0332a1fac5fdec01e9300ce426955d7fd67277fa15483a879aaec634c98fef39", size = 59578 },
 ]
 
 [[package]]
@@ -983,7 +983,6 @@ dependencies = [
     { name = "duckdb" },
     { name = "fontawesomefree" },
     { name = "fsspec" },
-    { name = "gdal" },
     { name = "jsonfield" },
     { name = "lxml" },
     { name = "pillow" },
@@ -1036,9 +1035,9 @@ requires-dist = [
     { name = "coverage", marker = "extra == 'test'" },
     { name = "crispy-tailwind" },
     { name = "dj-rest-auth" },
-    { name = "django", specifier = "==5.2" },
+    { name = "django", specifier = ">=5.2" },
     { name = "django-allauth", specifier = "==65.5.0" },
-    { name = "django-allauth-ui" },
+    { name = "django-allauth-ui", specifier = "==1.7.1" },
     { name = "django-appconf", specifier = ">=1.0.6" },
     { name = "django-auditlog", specifier = ">=3.0.0" },
     { name = "django-auth-ldap", marker = "extra == 'ldap'" },
@@ -1083,7 +1082,6 @@ requires-dist = [
     { name = "factory-boy", marker = "extra == 'test'" },
     { name = "fontawesomefree" },
     { name = "fsspec", specifier = ">=2025.3.2" },
-    { name = "gdal", specifier = "==3.10.1" },
     { name = "gunicorn", marker = "extra == 'prod'" },
     { name = "ipdb", marker = "extra == 'dev'" },
     { name = "jsonfield", specifier = ">=3.1.0" },
@@ -1093,7 +1091,7 @@ requires-dist = [
     { name = "procrastinate", extras = ["django"], specifier = ">=3.0.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2.4" },
     { name = "pyarrow", specifier = ">=19.0.1" },
-    { name = "pygeometa" },
+    { name = "pygeometa", git = "https://github.com/nicokant/pygeometa?rev=gbif-eml" },
     { name = "pyjwt", extras = ["crypto"], specifier = ">=2.9.0" },
     { name = "pyproj" },
     { name = "pytest", marker = "extra == 'test'" },
@@ -1281,12 +1279,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/45/d8/8425e6ba5fcec61a1
 wheels = [
     { url = "https://files.pythonhosted.org/packages/44/4b/e0cfc1a6f17e990f3e64b7d941ddc4acdc7b19d6edd51abf495f32b1a9e4/fsspec-2025.3.2-py3-none-any.whl", hash = "sha256:2daf8dc3d1dfa65b6aa37748d112773a7a08416f6c70d96b264c96476ecaf711", size = 194435 },
 ]
-
-[[package]]
-name = "gdal"
-version = "3.10.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/98/50/7a528e3ff5a4e6b90a2b39dbcc549a7b45ac40f041e4be06ff272d780be2/gdal-3.10.1.tar.gz", hash = "sha256:ec66a6cf5cd2380d03b1c27f82738732e0f829a95f7f0c81cc61c4bea18a9cda", size = 845809 }
 
 [[package]]
 name = "gunicorn"
@@ -1963,19 +1955,16 @@ wheels = [
 
 [[package]]
 name = "pygeometa"
-version = "0.16.1"
-source = { registry = "https://pypi.org/simple" }
+version = "0.17.dev1"
+source = { git = "https://github.com/nicokant/pygeometa?rev=gbif-eml#b5faef53fa196af4671ec0a9bb1b6279e1395997" }
 dependencies = [
+    { name = "beautifulsoup4" },
     { name = "click" },
     { name = "jinja2" },
     { name = "jsonschema" },
     { name = "lxml" },
     { name = "owslib" },
     { name = "pyyaml" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/e5/ad/523c29ab00c805f49d15f3eea93797e5872c31fe44b2ab591f85acb16853/pygeometa-0.16.1.tar.gz", hash = "sha256:07b333705286226922a916be93a14164e832a460f6a87ada0909cf0f560f4152", size = 59905 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a6/9b/c31373196e4b939d53503f48dc4df38cdd2b12ffd8f6524589f0498e9061/pygeometa-0.16.1-py2.py3-none-any.whl", hash = "sha256:c70c4ad47fa1a58ab8310c5b7522e289bb8914151fa4421ae71964dc7738b67c", size = 79642 },
 ]
 
 [[package]]

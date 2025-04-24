@@ -5,7 +5,7 @@ requires = ["hatchling"]
 [project]
 authors = [{name = "Niccolò Cantù", email = "niccolo.cantu@nina.no"}]
 dependencies = [
-  "django==5.2",
+  "django>=5.2",
   "python-slugify>=8.0.1",
   "Pillow==11.1.0",
   "argon2-cffi",
@@ -32,7 +32,7 @@ dependencies = [
   "django-languages-plus",
   # auth
   "django-allauth==65.5.0",
-  "django-allauth-ui",
+  "django-allauth-ui==1.7.1",
   # ui
   "django-crispy-forms",
   "fontawesomefree",
@@ -50,7 +50,7 @@ dependencies = [
   "djangorestframework-simplejwt",
   # gis
   "pygeometa @ git+https://github.com/nicokant/pygeometa@gbif-eml#egg=pygeometa",
-  "gdal==3.10.1",
+  # "gdal==3.10.1",
   "pyproj",
   # queue
   "procrastinate[django]>=3.0.0",
@@ -67,11 +67,8 @@ dependencies = [
   "django-jsonform>=2.23.2",
   "django-svelte-jsoneditor>=0.4.2",
   "jsonfield>=3.1.0",
-  "django-reversion>=5.1.0",
   "django-cotton>=2.0.3",
   "django-htmx>=1.23.0",
-  "duckdb>=1.2.2",
-  "pyarrow>=19.0.1",
   "beautifulsoup4>=4.13.3",
   "lxml>=5.3.1",
   "xmltodict>=0.14.2",
