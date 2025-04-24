@@ -2,13 +2,12 @@ from datetime import datetime
 from urllib.parse import urlparse
 
 from dms.datasets.models import Dataset, Storage
-from dms.datasets.schemas.dataset_profiles import DatasetProfileType
 from dms.datasets.schemas.storage_types import StorageType
 
 
 class BaseHarvester:
     type = None
-    profile = DatasetProfileType.COMMON
+    profile = None
     task_name = None
 
     def get_storage(self, url: str):

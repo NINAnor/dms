@@ -61,7 +61,7 @@ class Dataset(RulesModelMixin, geo_models.Model, metaclass=RulesModelBase):
         auto_now=True, verbose_name=_("Last modified at")
     )
     profile = models.CharField(
-        default=schemas.dataset_profiles.DatasetProfileType.COMMON,
+        default=schemas.dataset_profiles.DatasetProfileType.DATACITE,
         choices=schemas.dataset_profiles.DatasetProfileType.choices,
     )
     metadata = JSONBField(

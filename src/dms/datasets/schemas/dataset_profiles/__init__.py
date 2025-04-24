@@ -1,17 +1,17 @@
 from django.db.models import TextChoices
 
-from . import common, external
+from . import datacite
 
 
 class DatasetProfileType(TextChoices):
-    COMMON = "common", "Common"
-    EXTERNAL = "external", "External"
+    DATACITE = "datacite", "DataCite"
     GBIF = "gbif", "GBIF"
 
 
 DATASET_PROFILES_MAP = {
-    DatasetProfileType.COMMON: common.schema,
-    DatasetProfileType.EXTERNAL: external.schema,
+    DatasetProfileType.DATACITE: datacite.schema,
+    # it's not possible to create manually a GBIF EML metadata
+    # might be solved in a future
     DatasetProfileType.GBIF: None,
 }
 
