@@ -49,7 +49,7 @@ dependencies = [
   "drf-standardized-errors[openapi]",
   "djangorestframework-simplejwt",
   # gis
-  "pygeometa",
+  "pygeometa @ git+https://github.com/nicokant/pygeometa@gbif-eml#egg=pygeometa",
   "gdal==3.10.1",
   "pyproj",
   # queue
@@ -137,6 +137,11 @@ indent_size = 2
 [tool.djlint.js]
 indent_size = 2
 
+[tool.hatch]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
 # ==== mypy ====
 [tool.mypy]
 check_untyped_defs = true
@@ -180,7 +185,7 @@ generated-members = [
 
 # ==== pytest ====
 [tool.pytest.ini_options]
-addopts = "--ds=config.settings.test --reuse-db"
+addopts = "--ds=dms.core.settings.test --reuse-db"
 minversion = "6.0"
 python_files = ["tests.py", "test_*.py"]
 
