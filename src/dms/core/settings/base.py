@@ -62,6 +62,8 @@ DATABASES["default"]["ATOMIC_REQUESTS"] = True
 # https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=None)  # noqa F405
+if DATABASES["default"]["CONN_MAX_AGE"]:
+    DATABASES["default"]["OPTIONS"] = {"pool": True}
 
 # URLS
 # ------------------------------------------------------------------------------

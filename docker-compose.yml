@@ -82,6 +82,7 @@ services:
       <<: *django-prod-env
       DJANGO_COLLECTSTATIC: 1
       DJANGO_MIGRATE: 1
+      CONN_MAX_AGE: 0
       # INSTALL_CERTS: 1
     volumes:
       - statics:/app/staticfiles
@@ -102,6 +103,7 @@ services:
     environment:
       <<: *django-prod-env
       WAIT_FOR_HTTP: http://django:8000/ht/
+      CONN_MAX_AGE: 60
     command: uv run manage.py procrastinate worker
 
   queue-dev:
