@@ -10,6 +10,7 @@ from .models import (
     Resource,
     Schema,
     Storage,
+    get_metadata_schema,
 )
 from .resources import SchemaResource
 
@@ -28,7 +29,11 @@ class DatasetForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # manually set the current instance on the widget
-        self.fields["metadata"].widget.instance = self.instance
+        if get_metadata_schema(self.instance):
+            self.fields["metadata"].widget.instance = self.instance
+        else:
+            self.fields["metadata"].widget = SvelteJSONEditorWidget()
+
         self.fields["fetch"].widget = SvelteJSONEditorWidget()
 
 
