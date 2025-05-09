@@ -36,6 +36,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
 ENV DJANGO_SETTINGS_MODULE="dms.core.settings.test"
 ENV DATABASE_URL=""
+ENV DATASETS_IPT_URLS=""
 RUN uv run manage.py compilemessages -l no
 
 FROM production AS tailwind
@@ -44,6 +45,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
 ENV DJANGO_SETTINGS_MODULE="dms.core.settings.test"
 ENV DATABASE_URL=""
+ENV DATASETS_IPT_URLS=""
 RUN uv run manage.py tailwind install
 RUN uv run manage.py tailwind build
 
