@@ -98,7 +98,7 @@ class Project(RulesModel):
         ACTIVE = "N", "Active"
         COMPLETED = "T", "Completed"
         PARKED = "P", "Parked"
-        ACTIVE2 = "C", "Active"
+        NOT_COMPLETED = "C", "Not completed"
 
     number = models.CharField(primary_key=True)
     name = models.CharField(null=True, blank=True)
