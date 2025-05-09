@@ -51,21 +51,24 @@ class Command(BaseCommand):
                         continue
 
                     username = get_string(entry, settings.AUTH_LDAP_UID)
+                    user_id = get_string(entry, settings.AUTH_LDAP_USER_ATTR_MAP["id"])
                     defaults = {}
 
                     for k, m in settings.AUTH_LDAP_USER_ATTR_MAP.items():
                         defaults[k] = get_string(entry, m)
 
-                    if not all(defaults.values()) or not username:
+                    if not all(defaults.values()) or not username or not user_id:
                         logging.warning(
                             f"Skipping {username} as some fields are empty: {str(defaults)}"  # noqa: E501
                         )
                         continue
+                    else:
+                        defaults["username"] = username
 
                     try:
                         with transaction.atomic():
                             user, created = User.objects.update_or_create(
-                                username=username,
+                                id=user_id,
                                 defaults=defaults,
                             )
 
