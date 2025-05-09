@@ -11,6 +11,7 @@ from procrastinate.contrib.django import app
 from rules.contrib.models import RulesModel, RulesModelBase, RulesModelMixin
 
 from . import schemas
+from .libs import inference
 from .rules import (
     dataset_in_user_projects,
     resource_in_user_projects,
@@ -265,3 +266,12 @@ class Resource(RulesModel):
             return self.path
 
         return self.storage.get_full_path(self.path)
+
+    def infer_schema(self) -> bool:
+        if self.type == schemas.resource_types.ResourceType.PARQUET:
+            path = self.get_resource_path()
+            self.schema["columns"] = inference.duckdb_inference(path)
+            self.save(update_fields=["schema"])
+            return True
+
+        return False

@@ -1,0 +1,6 @@
+<c-vars method="POST" action="" />
+
+<form method="{{ method }}" action="{{ action }}">
+  {% csrf_token %}
+  <c-button type="submit" {{ attrs }}>{{ slot }}</c-button>
+</form>

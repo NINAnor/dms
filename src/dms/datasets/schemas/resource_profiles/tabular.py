@@ -27,10 +27,12 @@ schema = {
                         "enum": [
                             "string",
                             "integer",
+                            "double",
                             "float",
                             "boolean",
                             "date",
                             "datetime",
+                            "blob",
                         ],
                     },
                     "description": {

@@ -63,6 +63,11 @@ urlpatterns = [
         name="resource_update",
     ),
     path(
+        "datasets/<uuid:dataset_pk>/resources/<uuid:pk>/infer-schema/",
+        views.ResourceInferSchemaView.as_view(),
+        name="resource_infer_schema",
+    ),
+    path(
         "datasets/<uuid:dataset_pk>/resources/<uuid:pk>/edit/metadata/",
         views.ResourceMetadataUpdateView.as_view(),
         name="resource_update_metadata",

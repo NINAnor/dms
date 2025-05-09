@@ -1,6 +1,7 @@
 # from django.db.models import Prefetch
 # from django.urls import reverse_lazy
 
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import HttpResponse
@@ -22,6 +23,8 @@ from view_breadcrumbs import (
     ListBreadcrumbMixin,
     UpdateBreadcrumbMixin,
 )
+
+from dms.shared.views import ActionView
 
 from . import schemas
 from .filters import DatasetFilter, DatasetRelationshipFilter, StorageFilter
@@ -175,6 +178,26 @@ class ResourceMetadataUpdateView(
     permission_required = "datasets.change_resource"
     model = Resource
     form_class = ResourceMetadataForm
+
+
+class ResourceInferSchemaView(PermissionRequiredMixin, ActionView):
+    model = Resource
+    permission_required = "datasets.change_resource"
+
+    def get_success_url(self):
+        return reverse(
+            "datasets:resource_update_metadata",
+            kwargs={"pk": self.object.pk, "dataset_pk": self.object.dataset_id},
+        )
+
+    def execute(self):
+        obj = self.object
+        if obj.infer_schema():
+            messages.add_message(self.request, messages.SUCCESS, "Schema inferred")
+        else:
+            messages.add_message(
+                self.request, messages.WARNING, "Unable to infer schema of the resource"
+            )
 
 
 class StorageListView(
