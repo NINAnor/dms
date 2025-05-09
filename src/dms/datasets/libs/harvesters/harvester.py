@@ -84,6 +84,8 @@ class DatasetListHarvester(BaseHarvester):
 
 
 class DatasetUpdateHarvester(BaseHarvester):
+    context = {}
+
     def fetch(self, url: str) -> tuple[dict, dict]:
         raise NotImplementedError()
 

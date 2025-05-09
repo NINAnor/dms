@@ -538,4 +538,4 @@ if SENTRY_DSN:
     }
 
 
-DATASETS_IPT_URLS = env.list("DATASETS_IPT_URLS", default=["https://ipt.nina.no"])
+DATASETS_IPT_URLS = env.list("DATASETS_IPT_URLS")

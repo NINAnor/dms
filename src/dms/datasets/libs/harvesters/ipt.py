@@ -2,10 +2,7 @@ import logging
 import traceback
 from urllib.parse import urlparse
 
-import fsspec
 import requests
-import xmltodict
-from bs4 import BeautifulSoup
 
 from dms.datasets.models import Resource
 from dms.datasets.schemas.dataset_profiles import DatasetProfileType
@@ -26,25 +23,19 @@ class IPTHarvester(DatasetListHarvester):
 
     def fetch(self, url):
         self.get_storage(url=url)
-        response = requests.get(f"{url}/rss", timeout=20)
-        soup = BeautifulSoup(response.text, features="lxml-xml")
+        response = requests.get(url, timeout=20)
+        resources = response.json()["resources"]
         datasets = []
-        for item in soup.find_all("item"):
+        for item in resources:
             try:
-                archive = item.find("ipt:dwca")
-                if archive:
-                    datasets.append(
-                        (
-                            item.find("link").text,
-                            item.find("title").text,
-                            item.find("link").text.split("=")[1],
-                            archive.text,
-                        )
+                datasets.append(
+                    (
+                        item.get("link"),
+                        item.get("title"),
+                        item.get("id"),
+                        item.get("url"),
                     )
-                else:
-                    logger.warning(
-                        f"no archive url found for {item.find('title').text}"
-                    )
+                )
             except Exception:
                 logger.error(traceback.format_exc())
 
@@ -57,32 +48,39 @@ class IPTResourceHarvester(DatasetUpdateHarvester):
     task_name = "datasets:harvest__ipt__dataset"
 
     def fetch(self, url):
-        path = f"zip://eml.xml::{url}"
-        with fsspec.open(path) as eml:
-            metadata = xmltodict.parse(eml.read())
-            optional = {}
-
-            try:
-                optional["title"] = metadata["eml:eml"]["dataset"]["title"]["#text"]
-            except Exception:
-                logger.error(traceback.format_exc())
-
-            return metadata, optional
+        response = requests.get(url, timeout=20)
+        resource = response.json()
+        self.context["resource"] = resource
+        return resource.get("meta"), {
+            "title": resource["meta"]["eml:eml"]["dataset"]["title"]["#text"]
+        }
 
     def run(self, dataset):
         super().run(dataset=dataset)
 
-        uri = urlparse(dataset.fetch["url"])
-        origin = f"{uri.scheme}://{uri.netloc}"
+        uri = urlparse(self.context["resource"]["ipt_dwca"])
 
-        storage = self.get_storage(url=origin)
+        storage = self.get_storage(url=f"{uri.scheme}://{uri.netloc}")
 
         Resource.objects.get_or_create(
             title="Darwin Core Archive",
             name="dwca",
             storage=storage,
-            path=dataset.fetch["url"].replace(origin, ""),
+            path=uri.path,
             dataset=dataset,
             profile=ResourceProfileType.VECTOR,
             type=ResourceType.DWCA,
+        )
+
+        uri = urlparse(self.context["resource"]["parquet_url"])
+        storage = self.get_storage(url=f"{uri.scheme}://{uri.netloc}")
+
+        Resource.objects.get_or_create(
+            title="Parquet",
+            name="parquet",
+            storage=storage,
+            path=uri.path,
+            dataset=dataset,
+            profile=ResourceProfileType.VECTOR,
+            type=ResourceType.PARQUET,
         )
