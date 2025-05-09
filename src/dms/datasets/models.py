@@ -132,7 +132,7 @@ class DatasetRelationship(RulesModel):
 def get_config_schema(instance=None):
     if not instance:
         return None
-    return schemas.storage_types.STORAGE_TYPE_MAP.get(instance.type)
+    return instance.get_schema()
 
 
 class Storage(RulesModel):
@@ -169,6 +169,17 @@ class Storage(RulesModel):
             "datasets:storage_detail",
             kwargs={"pk": self.pk},
         )
+
+    def _get_type_class(self) -> schemas.storage_types.StorageBase:
+        return schemas.storage_types.STORAGE_TYPE_MAP.get(self.type)
+
+    def get_full_path(self, path: str):
+        cls: schemas.storage_types.base.StorageBase = self._get_type_class()
+        return cls.get_full_path(self.config, path)
+
+    def get_schema(self):
+        cls: schemas.storage_types.base.StorageBase = self._get_type_class()
+        return cls.SCHEMA
 
     def __str__(self):
         return self.title
@@ -248,3 +259,9 @@ class Resource(RulesModel):
 
     def __str__(self):
         return self.title
+
+    def get_resource_path(self):
+        if not self.storage:
+            return self.path
+
+        return self.storage.get_full_path(self.path)
