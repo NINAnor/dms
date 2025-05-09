@@ -91,4 +91,5 @@ class ProjectFilter(filters.FilterSet):
             "section": ["exact"],
             "start_date": ["gte"],
             "end_date": ["lte"],
+            "customer": ["istartswith"],
         }
