@@ -24,6 +24,7 @@ x-django-env: &django-env
   SENTRY_DSN: ${SENTRY_DSN}
   AWS_REQUEST_CHECKSUM_CALCULATION: WHEN_REQUIRED
   AWS_RESPONSE_CHECKSUM_VALIDATION: WHEN_REQUIRED
+  DATASETS_IPT_URLS: ${DATASETS_IPT_URLS}
 
 x-django-prod-env: &django-prod-env
   <<: *django-env
