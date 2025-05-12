@@ -40,6 +40,7 @@ class Migration(migrations.Migration):
                 ("title", models.CharField(null=True)),
                 ("description", models.TextField(null=True)),
                 ("uri", models.CharField()),
+                ("type", models.CharField(null=True)),
                 (
                     "access",
                     models.CharField(

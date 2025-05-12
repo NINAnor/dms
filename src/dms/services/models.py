@@ -1,5 +1,6 @@
 import rules
 from django.db import models
+from django.urls import reverse
 from rules.contrib.models import RulesModel
 
 
@@ -22,6 +23,12 @@ class Service(RulesModel):
             "change": rules.is_staff,
             "delete": rules.is_staff,
         }
+
+    def __str__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        return reverse("services:service_detail", kwargs={"pk": self.pk})
 
 
 class ProjectService(RulesModel):
@@ -111,6 +118,7 @@ class Resource(RulesModel):
         db_constraint=False,
     )
     access = models.CharField(choices=AccessType.choices)
+    type = models.CharField(null=True, blank=True)
     internal_ref = models.CharField(null=True)
     external = models.BooleanField(default=False)
 
