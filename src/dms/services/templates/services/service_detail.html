@@ -37,7 +37,7 @@
                         <c-table.head class='font-medium'>Projects</c-table.head>
                         <c-table.cell class="d-flex flex-col">
                             {% for project in object.projects.all %}
-                            <div><a href="{% url 'projects:project_detail' pk=project.id %}">{{ project }}</a></div>
+                            <div><a href="{% url 'projects:project_detail' pk=project.pk %}">{{ project }}</a></div>
                             {% endfor %}
                         </c-table.cell>
                     </c-table.row>
