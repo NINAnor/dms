@@ -14,4 +14,4 @@ class ServiceListView(
     model = Service
     table_class = ServiceTable
     filterset_class = ServiceFilter
-    permission_required = "services.view_services"
+    permission_required = "services.view_service"

@@ -1,5 +1,4 @@
 import rules
-from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from rules.contrib.models import RulesModel
 
@@ -8,26 +7,12 @@ class Service(RulesModel):
     id = models.CharField(primary_key=True)
     title = models.CharField(max_length=255)
     description = models.TextField(null=True)
-    keywords = ArrayField(
-        models.CharField(),
-        default=list,
-        blank=True,
-    )
-    technologies = ArrayField(
-        models.CharField(),
-        default=list,
-        blank=True,
-    )
+    keywords = models.JSONField(null=True, blank=True)
+    technologies = models.JSONField(null=True, blank=True)
 
-    related = models.ManyToManyField(
-        "self",
-        symmetrical=False,
-        blank=True,
-    )
+    related = models.ManyToManyField("self", blank=True, through="ServiceRelated")
     projects = models.ManyToManyField(
-        "projects.Project",
-        blank=True,
-        through="ProjectService",
+        "projects.Project", blank=True, through="ProjectService"
     )
 
     class Meta:
@@ -61,13 +46,40 @@ class ProjectService(RulesModel):
         }
 
 
+class ServiceRelated(RulesModel):
+    pk = models.CompositePrimaryKey("from_service", "to_service")
+    from_service = models.ForeignKey(
+        "Service",
+        on_delete=models.DO_NOTHING,
+        db_constraint=False,
+        related_name="related_to_service",
+    )
+    to_service = models.ForeignKey(
+        "Service",
+        on_delete=models.DO_NOTHING,
+        db_constraint=False,
+        related_name="related_from_service",
+    )
+
+    class Meta:
+        rules_permissions = {
+            "add": rules.is_staff,
+            "view": rules.always_allow,
+            "change": rules.is_staff,
+            "delete": rules.is_staff,
+        }
+
+
 class Contributor(RulesModel):
     class Role(models.TextChoices):
         MAINTAINER = "maintainer", "Maintainer"
         OWNER = "owner", "Owner"
 
     service = models.ForeignKey(
-        Service, related_name="contributors", on_delete=models.CASCADE
+        Service,
+        related_name="contributors",
+        on_delete=models.CASCADE,
+        db_constraint=False,
     )
     email = models.EmailField()
     role = models.CharField(choices=Role.choices)

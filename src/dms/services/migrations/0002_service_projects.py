@@ -17,4 +17,11 @@ class Migration(migrations.Migration):
                 blank=True, through="services.ProjectService", to="projects.project"
             ),
         ),
+        migrations.AddField(
+            model_name="service",
+            name="related",
+            field=models.ManyToManyField(
+                blank=True, through="services.ServiceRelated", to="services.service"
+            ),
+        ),
     ]

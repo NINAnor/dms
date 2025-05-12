@@ -2,6 +2,7 @@
 
 import django.contrib.postgres.fields
 import django.db.models.deletion
+import rules.contrib.models
 from django.db import migrations, models
 
 
@@ -21,23 +22,15 @@ class Migration(migrations.Migration):
                 ("description", models.TextField(null=True)),
                 (
                     "keywords",
-                    django.contrib.postgres.fields.ArrayField(
-                        base_field=models.CharField(),
+                    models.JSONField(
                         blank=True,
                         default=list,
-                        size=None,
                     ),
                 ),
                 (
                     "technologies",
-                    django.contrib.postgres.fields.ArrayField(
-                        base_field=models.CharField(),
-                        blank=True,
-                        default=list,
-                        size=None,
-                    ),
+                    models.JSONField(blank=True, default=list),
                 ),
-                ("related", models.ManyToManyField(blank=True, to="services.service")),
             ],
         ),
         migrations.CreateModel(
@@ -103,6 +96,41 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
+            name="ServiceRelated",
+            fields=[
+                (
+                    "pk",
+                    models.CompositePrimaryKey(
+                        "from_service",
+                        "to_service",
+                        blank=True,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "from_service",
+                    models.ForeignKey(
+                        db_constraint=False,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="related_to_service",
+                        to="services.service",
+                    ),
+                ),
+                (
+                    "to_service",
+                    models.ForeignKey(
+                        db_constraint=False,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="related_from_service",
+                        to="services.service",
+                    ),
+                ),
+            ],
+            bases=(rules.contrib.models.RulesModelMixin, models.Model),
+        ),
+        migrations.CreateModel(
             name="Contributor",
             fields=[
                 ("email", models.EmailField(max_length=254)),
@@ -128,6 +156,7 @@ class Migration(migrations.Migration):
                     "service",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
+                        db_constraint=False,
                         related_name="contributors",
                         to="services.service",
                     ),
