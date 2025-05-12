@@ -38,4 +38,6 @@ def resource_in_user_projects(user, resource):
         return False
     if not resource:
         return True
-    return resource.dataset.project.filter(members__user=user).exists()
+    if resource.dataset.project:
+        return resource.dataset.project.filter(members__user=user).exists()
+    return False
