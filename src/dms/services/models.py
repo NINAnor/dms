@@ -1,4 +1,5 @@
 import rules
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.urls import reverse
 from rules.contrib.models import RulesModel
@@ -8,8 +9,8 @@ class Service(RulesModel):
     id = models.CharField(primary_key=True)
     title = models.CharField(max_length=255)
     description = models.TextField(null=True)
-    keywords = models.JSONField(null=True, blank=True)
-    technologies = models.JSONField(null=True, blank=True)
+    keywords = ArrayField(models.CharField(), null=True, blank=True)
+    technologies = ArrayField(models.CharField(), null=True, blank=True)
 
     related = models.ManyToManyField("self", blank=True, through="ServiceRelated")
     projects = models.ManyToManyField(

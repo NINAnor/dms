@@ -22,14 +22,15 @@ class Migration(migrations.Migration):
                 ("description", models.TextField(null=True)),
                 (
                     "keywords",
-                    models.JSONField(
-                        blank=True,
-                        default=list,
+                    django.contrib.postgres.fields.ArrayField(
+                        models.CharField(), null=True, blank=True
                     ),
                 ),
                 (
                     "technologies",
-                    models.JSONField(blank=True, default=list),
+                    django.contrib.postgres.fields.ArrayField(
+                        models.CharField(), null=True, blank=True
+                    ),
                 ),
             ],
         ),
@@ -40,7 +41,7 @@ class Migration(migrations.Migration):
                 ("title", models.CharField(null=True)),
                 ("description", models.TextField(null=True)),
                 ("uri", models.CharField()),
-                ("type", models.CharField(null=True)),
+                ("type", models.CharField(null=True, blank=True)),
                 (
                     "access",
                     models.CharField(

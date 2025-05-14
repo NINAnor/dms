@@ -4,9 +4,9 @@ from django_tables2.views import SingleTableMixin
 from rules.contrib.views import PermissionRequiredMixin
 from view_breadcrumbs import DetailBreadcrumbMixin, ListBreadcrumbMixin
 
-from .filters import ServiceFilter
-from .models import Service
-from .tables import ContributorTable, ResourceTable, ServiceTable
+from .filters import ResourceFilter, ServiceFilter
+from .models import Resource, Service
+from .tables import ContributorTable, ResourceTable, ServiceResourceTable, ServiceTable
 
 
 class ServiceListView(
@@ -27,3 +27,12 @@ class ServiceDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailVi
         ctx["resource_table"] = ResourceTable(self.object.resources.all())
         ctx["contributor_table"] = ContributorTable(self.object.contributors.all())
         return ctx
+
+
+class ServiceResourceListView(
+    PermissionRequiredMixin, ListBreadcrumbMixin, SingleTableMixin, FilterView
+):
+    model = Resource
+    table_class = ServiceResourceTable
+    filterset_class = ResourceFilter
+    permission_required = "services.view_resource"

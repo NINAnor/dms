@@ -14,7 +14,7 @@ urlpatterns = [
     path("surveys/", include("dms.surveys.urls", namespace="surveys")),
     path("", include("dms.projects.urls", namespace="projects")),
     path("", include("dms.datasets.urls", namespace="datasets")),
-    path("", include("dms.services.urls", namespace="services")),
+    path("services/", include("dms.services.urls", namespace="services")),
     path("", include("dms.theme.urls")),
 ]
 
