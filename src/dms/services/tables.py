@@ -14,6 +14,14 @@ class ServiceTable(tables.Table):
     def render_technologies(self, value):
         return ", ".join(value)
 
+    def render_projects(self, value):
+        text = [
+            f'<a href="{reverse("projects:project_detail", kwargs={"pk": p.pk})}">{p.pk}</a>'  # noqa: E501
+            for p in value.all()
+            if p
+        ]
+        return format_html(", ".join(text))
+
     class Meta:
         model = Service
         fields = (

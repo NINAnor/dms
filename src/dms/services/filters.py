@@ -14,6 +14,13 @@ class ServiceFilter(filters.FilterSet):
         label="Project",
     )
 
+    keyword = filters.CharFilter(method="filter_array", label="Keyword")
+
+    def filter_array(self, queryset, name, value):
+        if value:
+            return queryset.filter(**{f"{name}s__contains": [value]})
+        return queryset
+
     def filter_by_project(self, queryset, name, value):
         if value:
             return queryset.filter(projects=value)
@@ -21,7 +28,10 @@ class ServiceFilter(filters.FilterSet):
 
     class Meta:
         model = Service
-        fields = {"title": ["icontains"], "projects": ["exact"]}
+        fields = {
+            "title": ["icontains"],
+            "projects": ["exact"],
+        }
 
 
 class ResourceFilter(filters.FilterSet):
