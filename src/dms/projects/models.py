@@ -93,6 +93,13 @@ class DMP(RulesModel):
         return self.name
 
 
+class ProjectTopic(models.Model):
+    id = models.CharField(primary_key=True)
+
+    def __str__(self):
+        return self.id
+
+
 class Project(RulesModel):
     class Status(models.TextChoices):
         ACTIVE = "N", "Active"
@@ -122,6 +129,7 @@ class Project(RulesModel):
     customer = models.CharField(null=True, blank=True)
     budget = models.DecimalField(decimal_places=2, max_digits=16, null=True, blank=True)
 
+    topics = models.ManyToManyField("ProjectTopic", blank=True)
     tags = TaggableManager(through=GenericStringTaggedItem)
 
     def __str__(self) -> str:
