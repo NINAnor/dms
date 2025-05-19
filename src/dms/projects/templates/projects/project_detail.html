@@ -1,5 +1,6 @@
 {% extends 'app.html' %}
 {% load rules %}
+{% load render_table from django_tables2 %}
 
 {% block article %}
 
@@ -83,6 +84,18 @@
             {% endfor %}
         </tbody>
     </table>
+
+
+<c-accordion type='multiple' open="{'item-1': true, 'item-2': true, 'fetch': true}" class="mt-4">
+    <c-accordion.item value='item-2'>
+        <c-accordion.trigger value='item-2' class="text-2xl font-bold">Services</c-accordion.trigger>
+        <c-accordion.content value='item-2'>
+            {% render_table services %}
+        </c-accordion.content>
+    </c-accordion.item>
+</c-accordion>
+
+
 </div>
 <div class="flex mt-5 gap-4">
     {% if project.dmp %}

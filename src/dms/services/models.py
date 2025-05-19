@@ -14,7 +14,10 @@ class Service(RulesModel):
 
     related = models.ManyToManyField("self", blank=True, through="ServiceRelated")
     projects = models.ManyToManyField(
-        "projects.Project", blank=True, through="ProjectService"
+        "projects.Project",
+        blank=True,
+        through="ProjectService",
+        related_name="services",
     )
 
     class Meta:

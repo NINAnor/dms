@@ -12,6 +12,8 @@ from view_breadcrumbs import (
     UpdateBreadcrumbMixin,
 )
 
+from dms.services.tables import ServiceTable
+
 from .filters import DMPFilter, ProjectFilter
 from .forms import DMPForm, ProjectForm
 from .models import DMP, Project, ProjectsConfiguration
@@ -44,8 +46,13 @@ class ProjectDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailVi
             super()
             .get_queryset()
             .select_related("category", "section")
-            .prefetch_related("tags", Prefetch("members__user"))
+            .prefetch_related("tags", Prefetch("members__user"), "services")
         )
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["services"] = ServiceTable(self.object.services.all())
+        return ctx
 
 
 class ProjectUpdateView(PermissionRequiredMixin, UpdateBreadcrumbMixin, UpdateView):
