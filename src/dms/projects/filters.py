@@ -42,6 +42,10 @@ class ProjectFilter(filters.FilterSet):
         label="Participant",
         to_field_name="username",
     )
+    topics = filters.ModelMultipleChoiceFilter(
+        queryset=models.ProjectTopic.objects.all(),
+        widget=autocomplete.ModelSelect2Multiple(url="autocomplete:project_topic"),
+    )
     tags = filters.ModelMultipleChoiceFilter(
         queryset=Tag.objects.all(),
         widget=autocomplete.ModelSelect2Multiple(url="autocomplete:tag"),
@@ -92,4 +96,5 @@ class ProjectFilter(filters.FilterSet):
             "start_date": ["gte"],
             "end_date": ["lte"],
             "customer": ["istartswith"],
+            "topics": ["exact"],
         }

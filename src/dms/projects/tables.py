@@ -21,6 +21,7 @@ class ProjectTable(tables.Table):
             "end_date",
             "section",
             "category",
+            "topics",
             "customer",
             "tags",
         )
@@ -28,6 +29,9 @@ class ProjectTable(tables.Table):
 
     def render_tags(self, value, record):
         return ", ".join(value.all().values_list("name", flat=True))
+
+    def render_topics(self, value, record):
+        return ", ".join(value.all().values_list("id", flat=True))
 
 
 class DMPTable(tables.Table):

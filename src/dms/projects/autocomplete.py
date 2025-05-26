@@ -1,10 +1,6 @@
 from dal import autocomplete
 
-from .models import (
-    Category,
-    Project,
-    Section,
-)
+from .models import Category, Project, ProjectTopic, Section
 
 
 class ProjectAutocomplete(autocomplete.Select2QuerySetView):
@@ -26,4 +22,11 @@ class CategoryAutocomplete(autocomplete.Select2QuerySetView):
     model = Category
     search_fields = [
         "text",
+    ]
+
+
+class ProjectTopicAutocomplete(autocomplete.Select2QuerySetView):
+    model = ProjectTopic
+    search_fields = [
+        "id",
     ]

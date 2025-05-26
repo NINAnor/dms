@@ -21,11 +21,15 @@ class ProjectForm(forms.ModelForm):
         model = Project
         fields = [
             "description",
+            "topics",
             "tags",
         ]
 
         widgets = {
             "tags": autocomplete.TaggitSelect2(url="autocomplete:tag"),
+            "topics": autocomplete.ModelSelect2Multiple(
+                url="autocomplete:project_topic"
+            ),
         }
 
 

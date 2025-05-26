@@ -2,7 +2,7 @@ import logging
 import traceback
 
 from django.contrib import admin
-from import_export import fields, resources
+from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from solo.admin import SingletonModelAdmin
 
@@ -12,21 +12,20 @@ from .models import (
     Project,
     ProjectMembership,
     ProjectsConfiguration,
+    ProjectTopic,
     Section,
 )
 
 
 class ProjectResource(resources.ModelResource):
-    topics = fields.Field(
-        attribute="topics",
-    )
-
     def save_instance(self, instance, is_create, row, **kwargs):
         super().save_instance(instance, is_create, row, **kwargs)
 
         try:
             if row["topics"] and not is_create:
-                instance.tags.add(*row["topics"].split(","))
+                for t in row["topics"].split(","):
+                    topic, _ = ProjectTopic.objects.get_or_create(id=t)
+                    instance.topics.add(topic)
         except Exception:
             logging.error(traceback.format_exc())
 
@@ -38,6 +37,11 @@ class ProjectResource(resources.ModelResource):
             "topics",
         )
         import_id_fields = ["number"]
+
+
+@admin.register(ProjectTopic)
+class ProjectTopicAdmin(admin.ModelAdmin):
+    pass
 
 
 @admin.register(Category)
