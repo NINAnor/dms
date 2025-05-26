@@ -9,6 +9,10 @@ from dms.projects.autocomplete import (
     ProjectAutocomplete,
     SectionAutocomplete,
 )
+from dms.services.autocomplete import (
+    ServiceKeywordAutocomplete,
+    ServiceTechnologyAutocomplete,
+)
 from dms.users.autocomplete import UserAutocomplete
 
 
@@ -28,4 +32,14 @@ urlpatterns = [
     path("user/", UserAutocomplete.as_view(), name="user"),
     path("tag/", TagAutocomplete.as_view(), name="tag"),
     path("dataset/", DatasetAutocomplete.as_view(), name="dataset"),
+    path(
+        "services/keyword/",
+        ServiceKeywordAutocomplete.as_view(),
+        name="service_keyword",
+    ),
+    path(
+        "services/technology/",
+        ServiceTechnologyAutocomplete.as_view(),
+        name="service_technology",
+    ),
 ]

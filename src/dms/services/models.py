@@ -1,8 +1,22 @@
 import rules
 from django.contrib.postgres.fields import ArrayField
-from django.db import models
+from django.db import connection, models
 from django.urls import reverse
 from rules.contrib.models import RulesModel
+
+
+class ServiceManager(models.Manager):
+    def get_keywords_list(self):
+        with connection.cursor() as cursor:
+            cursor.execute("select distinct unnest(keywords) from services_service")
+            rows = cursor.fetchall()
+        return {(row[0], row[0]) for row in rows}
+
+    def get_technologies_list(self):
+        with connection.cursor() as cursor:
+            cursor.execute("select distinct unnest(technologies) from services_service")
+            rows = cursor.fetchall()
+        return {(row[0], row[0]) for row in rows}
 
 
 class Service(RulesModel):
@@ -19,6 +33,8 @@ class Service(RulesModel):
         through="ProjectService",
         related_name="services",
     )
+
+    objects = ServiceManager()
 
     class Meta:
         rules_permissions = {
