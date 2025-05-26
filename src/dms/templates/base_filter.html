@@ -10,6 +10,7 @@
       <h1 class="font-bold text-4xl">{% block page-title %}{% endblock %}</h1>
       {% block page-actions %}{% endblock page-actions %}
     </div>
+    {% block before-filter %}{% endblock %}
     {% if filter %}
     <form method="get" class="py-3 px-4 border mb-3 ">
       <div class="flex flex-wrap gap-4">
