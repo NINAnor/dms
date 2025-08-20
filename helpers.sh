@@ -9,3 +9,5 @@ alias dpcli_prod="$BASE_CMD prod"
 
 alias djcli_dev="dpcli_dev exec -it django-dev uv run manage.py"
 alias djcli_prod="dpcli_prod exec -it django uv run manage.py"
+
+[ -f aliases-private.sh ] && source aliases-private.sh || true

@@ -7,9 +7,9 @@ x-django-env: &django-env
   DJANGO_SETTINGS_MODULE: dms.core.settings.production
   USE_DOCKER: "yes"
   OIDC_PROVIDER_ID: nina
-  OIDC_CLIENT_ID: "${OIDC_CLIENT_ID}"
-  OIDC_SECRET: "${OIDC_SECRET}"
-  OIDC_PROVIDER_URL: "${OIDC_PROVIDER_URL}"
+  OIDC_CLIENT_ID: "${OIDC_CLIENT_ID:-}"
+  OIDC_SECRET: "${OIDC_SECRET:-}"
+  OIDC_PROVIDER_URL: "${OIDC_PROVIDER_URL:-}"
   OIDC_PROVIDER_NAME: NINA
   DJANGO_AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
   DJANGO_AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
@@ -21,7 +21,7 @@ x-django-env: &django-env
   AUTH_LDAP_USER_SEARCH_BASE: ${AUTH_LDAP_USER_SEARCH_BASE}
   AUTH_LDAP_UID: ${AUTH_LDAP_UID}
   AUTH_LDAP_USER_ATTR_MAP: ${AUTH_LDAP_USER_ATTR_MAP}
-  SENTRY_DSN: ${SENTRY_DSN}
+  SENTRY_DSN: ${SENTRY_DSN:-}
   AWS_REQUEST_CHECKSUM_CALCULATION: WHEN_REQUIRED
   AWS_RESPONSE_CHECKSUM_VALIDATION: WHEN_REQUIRED
   DATASETS_IPT_URLS: ${DATASETS_IPT_URLS}
@@ -69,14 +69,6 @@ x-django-dev: &django-dev
     - ./certs/:/usr/local/share/ca-certificates/
     - ./uv.lock:/app/uv.lock
   command: uv run manage.py runserver 0.0.0.0:8000
-  develop:
-    watch:
-      - action: rebuild
-        path: ./Dockerfile
-      - action: rebuild
-        path: ./uv.lock
-      - action: rebuild
-        path: ./.env
 
 services:
   django:
@@ -90,6 +82,14 @@ services:
     volumes:
       - statics:/app/staticfiles
       # - ./certs/:/usr/local/share/ca-certificates/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.django.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.django.entrypoints=web"
+      - "traefik.http.routers.django.priority=1"
+      - "traefik.http.services.django.loadbalancer.server.port=8000"
+      - "traefik.http.middlewares.upload-limit.buffering.maxRequestBodyBytes=8000000000"
+      - "traefik.http.routers.django.middlewares=upload-limit"
 
   django-dev:
     <<: *django-dev
@@ -100,6 +100,14 @@ services:
       <<: *django-dev-env
       DJANGO_MIGRATE: 1
       INSTALL_CERTS: 1
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.django-dev.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.django-dev.entrypoints=web"
+      - "traefik.http.routers.django-dev.priority=1"
+      - "traefik.http.services.django-dev.loadbalancer.server.port=8000"
+      - "traefik.http.middlewares.upload-limit-dev.buffering.maxRequestBodyBytes=8000000000"
+      - "traefik.http.routers.django-dev.middlewares=upload-limit-dev"
 
   queue:
     <<: *django-prod
@@ -145,46 +153,44 @@ services:
     ports:
       - 5432:5432
 
-  proxy:
-    build:
-      context: ./nginx
+  static:
+    image: nginx:alpine
     profiles:
       - prod
     volumes:
-      - statics:/statics
-      - ./media:/media
-    ports:
-      - 8000:80
-  caddy:
-    profiles:
-      - dev
-    image: caddy:2.9.1
-    volumes:
-      - ./media:/django/media
-      - ./caddy/Caddyfile.dev:/etc/caddy/Caddyfile
-    ports:
-      - 8000:80
+      - statics:/usr/share/nginx/html/static:ro
+      - ./media:/usr/share/nginx/html/media:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.static.rule=PathPrefix(`/static/`) || PathPrefix(`/media/`)"
+      - "traefik.http.routers.static.entrypoints=web"
+      - "traefik.http.services.static.loadbalancer.server.port=80"
+      - "traefik.http.routers.static.priority=10"
 
-  # frontend:
-  #   profiles:
-  #     - dev
-  #   build:
-  #     target: frontend
-  #   command: npm run dev -- --host 0.0.0.0 --cors
-  #   ports:
-  #     - 5173:5173
-  #   volumes:S
-  #     - ./src/frontend/src:/app/src
+  traefik:
+    image: traefik:v3
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --log.level=DEBUG
+
+    ports:
+      - 8000:80
+      - 8080:8080
+    volumes:
+      - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:ro
 
   minio:
     image: quay.io/minio/minio
     entrypoint: sh
-    command: -c 'mkdir -p /data/${S3_BUCKET} && minio server /data --console-address ":9091" --address ":9090"'
+    command: -c 'mkdir -p /data/${S3_BUCKET:-dms} && minio server /data --console-address ":9091" --address ":9090"'
     ports:
       - 9090:9090
       - 9091:9091
     volumes:
       - ./volumes/minio:/data
     environment:
-      MINIO_ROOT_USER: ${S3_ACCESS_KEY}
-      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY}
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-}

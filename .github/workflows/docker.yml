@@ -16,8 +16,6 @@ jobs:
           - context: .
             target: django
             image: ghcr.io/ninanor/dms/django
-          - context: ./nginx
-            image: ghcr.io/ninanor/dms/proxy
 
     permissions:
       contents: read

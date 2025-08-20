@@ -1,3 +1,0 @@
-http:// {
-    reverse_proxy http://django:8000
-}
