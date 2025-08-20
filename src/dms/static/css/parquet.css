@@ -1,0 +1,7 @@
+@import "https://esm.sh/hightable/dist/HighTable.css";
+
+#parquet-preview {
+    height: 50vh;
+    display: flex;
+    flex: 1;
+}

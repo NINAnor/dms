@@ -3,6 +3,7 @@
 {% load static %}
 {% load language_tags %}
 {% load i18n %}
+
 {% block article %}
 
 
@@ -39,9 +40,23 @@
     <c-accordion.item value='item-2'>
         <c-accordion.trigger value='item-2' class="text-2xl font-bold">Preview</c-accordion.trigger>
         <c-accordion.content value='item-2'>
+            {% if resource.type == 'parquet' %}
+                <div id="parquet-preview" data-url="{{ object.get_resource_path }}"></div>
+            {% else %}
+                <p class="text-gray-500">Preview not available for this resource type ({{ resource.resource_type }}).</p>
+            {% endif %}
         </c-accordion.content>
     </c-accordion.item>
 </c-accordion>
 
 
 {% endblock article %}
+
+{% block body_javascript %}
+    {{ block.super }}
+    {% if resource.type == 'parquet' %}
+    <link rel="stylesheet" href="{% static 'css/parquet.css' %}">
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="{% static 'js/parquet-preview.js' %}" data-type="module" type="text/babel"></script>
+    {% endif %}
+{% endblock body_javascript %}
