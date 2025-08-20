@@ -15,7 +15,7 @@ else
 fi
 
 # Connecting to LDAPS may require custom CA certificates installed
-if [[ -z "${INSTALL_CERTS}" ]]
+if [[ -z "${LDAP_CA_FILE_PATH}" ]]
 then
   echo "CA cert not installed"
 else

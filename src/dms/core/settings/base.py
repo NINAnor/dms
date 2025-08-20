@@ -470,6 +470,14 @@ if AUTH_LDAP_SERVER_URI:
 
     AUTH_LDAP_USER_ATTR_MAP = env.json("AUTH_LDAP_USER_ATTR_MAP", default={})
 
+    if ca_cert := env("LDAP_CA_FILE_PATH", default=None):
+        AUTH_LDAP_GLOBAL_OPTIONS = {
+            ldap.OPT_X_TLS_REQUIRE_CERT: True,
+            ldap.OPT_X_TLS_DEMAND: True,
+            ldap.OPT_REFERRALS: 0,
+            ldap.OPT_X_TLS_CACERTFILE: env("LDAP_CA_FILE_PATH"),
+        }
+
     if groups := env("AUTH_LDAP_REQUIRE_GROUPS", default=""):
         AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
             env("AUTH_LDAP_GROUP_SEARCH_BASE"),
