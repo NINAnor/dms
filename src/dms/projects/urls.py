@@ -7,10 +7,10 @@ app_name = "projects"
 urlpatterns = [
     path("projects/", views.ProjectListView.as_view(), name="project_list"),
     path(
-        "projects/<int:pk>/", views.ProjectDetailView.as_view(), name="project_detail"
+        "projects/<str:pk>/", views.ProjectDetailView.as_view(), name="project_detail"
     ),
     path(
-        "projects/<int:pk>/update/",
+        "projects/<str:pk>/update/",
         views.ProjectUpdateView.as_view(),
         name="project_update",
     ),
