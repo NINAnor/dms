@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "https://esm.sh/react@18";
 import { createRoot } from "https://esm.sh/react-dom@18/client";
-import { HighTable, createEventTarget } from "https://esm.sh/hightable";
+import { HighTable, createEventTarget } from "https://esm.sh/hightable@0.18.5";
 import {
   byteLengthFromUrl,
   parquetMetadataAsync,
   asyncBufferFromUrl,
   parquetReadObjects,
-} from "https://esm.sh/hyparquet";
+} from "https://esm.sh/hyparquet@1.17.2";
 
 import { compressors } from "https://esm.sh/hyparquet-compressors";
 
@@ -35,6 +35,7 @@ async function load(url) {
       return { value: cellCache.get(column)[row] };
     },
     async fetch({ rowStart, rowEnd, columns }) {
+      console.log("fetching");
       const rows = await parquetReadObjects({
         file: asyncBuffer,
         columns,
@@ -44,6 +45,7 @@ async function load(url) {
       });
       let rowNumber = rowStart;
       for (const row of rows) {
+        console.log(row);
         for (const column of columns) {
           cellCache.get(column)[rowNumber] = row[column];
         }
