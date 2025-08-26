@@ -1,52 +1,26 @@
+import fiona
+import rasterio as rio
 import rules
 from autoslug import AutoSlugField
-from django.contrib.gis.db import models as geo_models
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.urls import reverse
+from django.utils.timezone import now
 from django.utils.translation import gettext as _
 from django_jsonform.models.fields import JSONField as JSONBField
-from jsonfield import JSONField
-from procrastinate.contrib.django import app
-from rules.contrib.models import RulesModel, RulesModelBase, RulesModelMixin
+from model_utils.managers import InheritanceManager
+from rules.contrib.models import RulesModel
 
-from . import schemas
-from .libs import inference
 from .rules import (
     dataset_in_user_projects,
     resource_in_user_projects,
-    storage_in_user_projects,
-    storage_is_shared,
 )
+from .schemas import dataset_metadata
 
 
-class Schema(RulesModel):
-    name = models.SlugField(primary_key=True)
-    url = models.CharField(null=True, blank=True)
-    schema = JSONField(default=dict)
-
-    class Meta:
-        rules_permissions = {
-            "add": rules.is_staff,
-            "view": rules.always_allow,
-            "change": rules.is_staff,
-            "delete": rules.is_staff,
-        }
-
-    def __str__(self):
-        return self.name
-
-
-def get_metadata_schema(instance=None):
-    if not instance:
-        return None
-    return schemas.dataset_profiles.DATASET_PROFILES_MAP.get(instance.profile)
-
-
-class Dataset(RulesModelMixin, geo_models.Model, metaclass=RulesModelBase):
-    id = models.UUIDField(
-        primary_key=True, db_default=models.Func(function="gen_random_uuid")
-    )
+class Dataset(RulesModel):
+    id = models.CharField(primary_key=True)
+    version = models.IntegerField(null=True, blank=True)
     title = models.CharField()
     name = AutoSlugField(populate_from="title")
     project = models.ForeignKey(
@@ -61,15 +35,9 @@ class Dataset(RulesModelMixin, geo_models.Model, metaclass=RulesModelBase):
     last_modified_at = models.DateTimeField(
         auto_now=True, verbose_name=_("Last modified at")
     )
-    profile = models.CharField(
-        default=schemas.dataset_profiles.DatasetProfileType.DATACITE,
-        choices=schemas.dataset_profiles.DatasetProfileType.choices,
-    )
     metadata = JSONBField(
-        schema=get_metadata_schema, default=dict, encoder=DjangoJSONEncoder
+        schema=dataset_metadata.schema, default=dict, encoder=DjangoJSONEncoder
     )
-    fetch = JSONBField(null=True, blank=True, encoder=DjangoJSONEncoder)
-    version = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -85,33 +53,24 @@ class Dataset(RulesModelMixin, geo_models.Model, metaclass=RulesModelBase):
             "delete": rules.is_staff,
         }
 
-    def fetch_updates(self):
-        if self.fetch:
-            app.configure_task(name=self.fetch["task_name"]).defer(
-                dataset_id=str(self.id)
-            )
-
 
 class RelationshipType(models.TextChoices):
     CITES = "Cites", "Cites"
     REFERENCES = "References", "References"
     IS_PART_OF = "IsPartOf", "Is part of"
-    IS_SOURCE_OF = "IsSourceOf", "Is source of"
     IS_DERIVED_FROM = "IsDerivedFrom", "Is derived from"
     IS_TRANSLATION_OF = "IsTranslationOf", "Is translation of"
-    REVIEWS = "Reviews", "Reviews"
-    DOCUMENTS = "Documents", "Documents"
+    IS_VERSION_OF = "IsVersionOf", "Is version of"
 
 
 class DatasetRelationship(RulesModel):
-    id = models.UUIDField(
-        primary_key=True, db_default=models.Func(function="gen_random_uuid")
-    )
+    pk = models.CompositePrimaryKey("source_id", "target_id", "type")
+    uuid = models.UUIDField(db_default=models.Func(function="gen_random_uuid"))
     source = models.ForeignKey(
         "Dataset", on_delete=models.CASCADE, related_name="source_rels"
     )
-    destination = models.ForeignKey(
-        "Dataset", on_delete=models.CASCADE, related_name="dest_rels"
+    target = models.ForeignKey(
+        "Dataset", on_delete=models.CASCADE, related_name="target_rels"
     )
     type = models.CharField(choices=RelationshipType.choices)
 
@@ -122,101 +81,31 @@ class DatasetRelationship(RulesModel):
             "change": rules.is_authenticated,
             "delete": rules.is_authenticated,
         }
-        constraints = [
-            models.UniqueConstraint(
-                fields=["source", "destination", "type"],
-                name="unique_relationship_type",
-            )
-        ]
-
-
-def get_config_schema(instance=None):
-    if not instance:
-        return None
-    return instance.get_schema()
-
-
-class Storage(RulesModel):
-    id = models.UUIDField(
-        primary_key=True, db_default=models.Func(function="gen_random_uuid")
-    )
-    title = models.CharField()
-    type = models.CharField(choices=schemas.storage_types.StorageType.choices)
-    config = JSONBField(null=True, blank=True, schema=get_config_schema)
-    created_at = models.DateTimeField(
-        db_default=models.functions.Now(), verbose_name=_("Created at")
-    )
-    last_modified_at = models.DateTimeField(
-        auto_now=True, verbose_name=_("Last modified at")
-    )
-    project = models.ForeignKey(
-        "projects.Project",
-        on_delete=models.PROTECT,
-        related_name="storages",
-        null=True,
-        blank=True,
-    )
-
-    class Meta:
-        rules_permissions = {
-            "add": rules.is_authenticated,
-            "view": storage_in_user_projects | storage_is_shared,
-            "change": storage_in_user_projects,
-            "delete": rules.is_staff,
-        }
-
-    def get_absolute_url(self):
-        return reverse(
-            "datasets:storage_detail",
-            kwargs={"pk": self.pk},
-        )
-
-    def _get_type_class(self) -> schemas.storage_types.StorageBase:
-        return schemas.storage_types.STORAGE_TYPE_MAP.get(self.type)
-
-    def get_full_path(self, path: str):
-        cls: schemas.storage_types.base.StorageBase = self._get_type_class()
-        return cls.get_full_path(self.config, path)
-
-    def get_schema(self):
-        cls: schemas.storage_types.base.StorageBase = self._get_type_class()
-        return cls.SCHEMA
-
-    def __str__(self):
-        return self.title
-
-
-def get_resource_metadata_schema(instance=None):
-    if not instance:
-        return None
-    return schemas.resource_types.RESOURCE_TYPE_MAP.get(instance.profile).get(
-        instance.type
-    )
-
-
-def get_resource_data_schema(instance=None):
-    if not instance:
-        return None
-    return schemas.resource_profiles.RESOURCE_PROFILES_MAP.get(instance.profile, None)
 
 
 class Resource(RulesModel):
-    id = models.UUIDField(
-        primary_key=True, db_default=models.Func(function="gen_random_uuid")
+    class Role(models.TextChoices):
+        DATA = "data", "Data"
+        PRESENTATION = "presentation", "Presentation"
+        DOCUMENTATION = "documentation", "Documentation"
+        METADATA = "metadata", "Metadata"
+
+    class ACCESSIBILITY(models.TextChoices):
+        PUBLIC = "public", "Public"
+        INTERNAL = "internal", "Internal"
+        PERMISSIVE = "permissive", "Permission required"
+
+    id = models.CharField(
+        primary_key=True,
     )
-    title = models.CharField(help_text="A name that describes the resource")
-    name = AutoSlugField(populate_from="title")
-    path = models.CharField(
-        verbose_name="Path to the resource",
-        help_text="describe how to find the resource."
-        + " Can be a link, or a path relative to the selected storage",
+    title = models.CharField(
+        help_text="A name that describes the resource", default="", blank=True
     )
-    storage = models.ForeignKey(
-        "Storage",
-        on_delete=models.CASCADE,
-        related_name="resources",
-        null=True,
-        blank=True,
+    description = models.CharField(default="", blank=True)
+    name = models.CharField(null=True, blank=True)
+    uri = models.CharField(
+        verbose_name="URI of the resource",
+        help_text="",
     )
     dataset = models.ForeignKey(
         "Dataset", on_delete=models.CASCADE, related_name="resources"
@@ -227,22 +116,11 @@ class Resource(RulesModel):
     last_modified_at = models.DateTimeField(
         auto_now=True, verbose_name=_("Last modified at")
     )
-    profile = models.CharField(
-        choices=schemas.resource_profiles.ResourceProfileType.choices,
-        null=True,
-        blank=True,
-        help_text="To what profile should this resouce conform to?",
-    )
-    type = models.CharField(
-        choices=schemas.resource_types.ResourceType,
-        default=schemas.resource_types.ResourceType.OTHER,
-    )
-    metadata = JSONBField(
-        default=dict, schema=get_resource_metadata_schema, encoder=DjangoJSONEncoder
-    )
-    schema = JSONBField(
-        default=dict, schema=get_resource_data_schema, encoder=DjangoJSONEncoder
-    )
+    metadata = models.JSONField(blank=True, null=True, encoder=DjangoJSONEncoder)
+    role = models.CharField(blank=True, null=True)
+    last_sync = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
+
+    objects = InheritanceManager()
 
     class Meta:
         rules_permissions = {
@@ -252,26 +130,62 @@ class Resource(RulesModel):
             "delete": rules.is_staff,
         }
 
-    def get_absolute_url(self):
-        return reverse(
-            "datasets:resource_detail",
-            kwargs={"dataset_pk": self.dataset_id, "pk": self.pk},
-        )
-
     def __str__(self):
         return self.title
 
-    def get_resource_path(self):
-        if not self.storage:
-            return self.path
+    def get_absolute_url(self):
+        return reverse(
+            "datasets:resource_detail",
+            kwargs={"pk": self.pk, "dataset_pk": self.dataset_id},
+        )
 
-        return self.storage.get_full_path(self.path)
+    @property
+    def type(self):
+        return None
 
-    def infer_schema(self) -> bool:
-        if self.type == schemas.resource_types.ResourceType.PARQUET:
-            path = self.get_resource_path()
-            self.schema["columns"] = inference.duckdb_inference(path)
-            self.save(update_fields=["schema"])
-            return True
+    def infer_metadata(self):
+        pass
 
-        return False
+
+class MapResource(Resource):
+    @property
+    def type(self):
+        return "map"
+
+
+class RasterResource(Resource):
+    @property
+    def type(self):
+        return "raster"
+
+    def infer_metadata(self):
+        with rio.open(
+            self.uri,
+            driver=self.metadata.get("driver", default=None),
+        ) as src:
+            self.metadata = {"bounds": src.bounds, **src.profile}
+            self.last_sync = {"timestamp": now()}
+            self.save(update_fields=["metadata", "last_sync"])
+
+
+class TabularResource(Resource):
+    @property
+    def type(self):
+        return "tabular"
+
+    def infer_metadata(self):
+        with fiona.open(
+            self.uri,
+            ignore_geometry=True,
+            layer=self.name,
+            driver=self.metadata.get("driver", default=None),
+        ) as src:
+            self.metadata = {"bounds": src.bounds, **src.profile}
+            self.last_sync = {"timestamp": now()}
+            self.save(update_fields=["metadata", "last_sync"])
+
+
+class PartitionedResource(Resource):
+    @property
+    def type(self):
+        return "partitioned"

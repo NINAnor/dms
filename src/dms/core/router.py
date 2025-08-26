@@ -13,7 +13,6 @@ router = routers.DefaultRouter()
 router.register("projects", projects_views.ProjectModelViewSet, basename="projects")
 router.register("dmps", projects_views.DMPModelViewSet, basename="dmps")
 router.register("datasets", datasets_views.DatasetViewSet, basename="datasets")
-router.register("storages", datasets_views.StorageViewSet, basename="storages")
 router.register("resources", datasets_views.ResourceViewSet, basename="resources")
 router.register(
     "datasets-relationships",

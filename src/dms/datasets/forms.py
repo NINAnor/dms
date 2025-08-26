@@ -4,11 +4,11 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from dal import autocomplete
 from django import forms
-from django.urls import reverse_lazy
+from django_svelte_jsoneditor.widgets import SvelteJSONEditorWidget
 
 from dms.projects.models import Project
 
-from .models import Dataset, DatasetRelationship, Resource, Storage
+from .models import Dataset, DatasetRelationship, Resource
 
 
 class DatasetForm(forms.ModelForm):
@@ -17,7 +17,6 @@ class DatasetForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = "post"
         self.helper.form_action = ""
-        # self.helper.include_media = False
         self.helper.add_input(Submit("submit", "Submit"))
 
         self.user = user
@@ -36,7 +35,7 @@ class DatasetForm(forms.ModelForm):
 
     class Meta:
         model = Dataset
-        fields = ["title", "project", "profile"]
+        fields = ["title", "project"]
 
 
 class DatasetUpdateForm(forms.ModelForm):
@@ -90,15 +89,13 @@ class ResourceForm(forms.ModelForm):
         self.helper.form_action = ""
         self.helper.add_input(Submit("submit", "Submit"))
 
-        self.fields["storage"].required = True
-
         self.user = user
         self.dataset = dataset
 
     def save(self, *args, **kwargs):
         instance = super().save(commit=False)
         if not instance.id:
-            instance.id = uuid.uuid5(self.dataset.id, instance.name)
+            instance.id = uuid.uuid4()
         if not instance.dataset_id:
             instance.dataset = self.dataset
         instance.save()
@@ -109,74 +106,25 @@ class ResourceForm(forms.ModelForm):
         model = Resource
         fields = [
             "title",
-            "profile",
-            "type",
-            "storage",
-            "path",
+            "name",
+            "uri",
         ]
 
-        widgets = {
-            "profile": forms.Select(
-                attrs={
-                    "hx-get": reverse_lazy("datasets:resource_type_list"),
-                    "hx-trigger": "load,change",
-                    "hx-target": "#id_type",
-                    "hx-include": "#id_profile",
-                }
-            ),
-            "type": forms.Select(choices=[]),
-        }
 
-
-class ResourceMetadataForm(BaseMetadataForm):
+class ResourceMetadataForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["schema"].widget.instance = self.instance
+        self.helper = FormHelper()
+        self.helper.form_method = "post"
+        self.helper.form_action = ""
+        self.helper.add_input(Submit("submit", "Submit"))
 
     class Meta:
         model = Resource
         fields = [
             "metadata",
-            "schema",
         ]
-
-
-class StorageForm(forms.ModelForm):
-    def __init__(self, *args, user, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper()
-        self.helper.form_method = "post"
-        self.helper.form_action = ""
-        # self.helper.include_media = False
-        self.helper.add_input(Submit("submit", "Submit"))
-
-        self.user = user
-        self.fields["project"].queryset = Project.objects.filter(
-            members__user=self.user
-        )
-        self.fields["project"].required = not user.is_staff
-
-    def save(self, *args, **kwargs):
-        instance = super().save(commit=False)
-        if not instance.id:
-            instance.id = uuid.uuid4()
-        instance.save()
-        self.save_m2m()
-        return instance
-
-    class Meta:
-        model = Storage
-        fields = ["title", "project", "type"]
-
-
-class StorageConfigForm(BaseMetadataForm):
-    metadata_field_name = "config"
-
-    class Meta:
-        model = Storage
-        fields = [
-            "config",
-        ]
+        widgets = {"metadata": SvelteJSONEditorWidget}
 
 
 class DatasetRelationshipForm(forms.ModelForm):
@@ -205,6 +153,6 @@ class DatasetRelationshipForm(forms.ModelForm):
         fields = [
             "source",
             "type",
-            "destination",
+            "target",
         ]
-        widgets = {"destination": autocomplete.ModelSelect2(url="autocomplete:dataset")}
+        widgets = {"target": autocomplete.ModelSelect2(url="autocomplete:dataset")}

@@ -1,8 +1,6 @@
 # from django.db.models import Prefetch
 # from django.urls import reverse_lazy
 
-from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import HttpResponse
 from django.urls import reverse
@@ -11,7 +9,6 @@ from django.views.generic import (
     DeleteView,
     DetailView,
     ListView,
-    TemplateView,
     UpdateView,
 )
 from django_filters.views import FilterView
@@ -24,10 +21,7 @@ from view_breadcrumbs import (
     UpdateBreadcrumbMixin,
 )
 
-from dms.shared.views import ActionView
-
-from . import schemas
-from .filters import DatasetFilter, DatasetRelationshipFilter, StorageFilter
+from .filters import DatasetFilter, DatasetRelationshipFilter
 from .forms import (
     DatasetForm,
     DatasetMetadataForm,
@@ -35,11 +29,9 @@ from .forms import (
     DatasetUpdateForm,
     ResourceForm,
     ResourceMetadataForm,
-    StorageConfigForm,
-    StorageForm,
 )
-from .models import Dataset, DatasetRelationship, Resource, Storage
-from .tables import DatasetRelationshipTable, DatasetTable, ResourceTable, StorageTable
+from .models import Dataset, DatasetRelationship, Resource
+from .tables import DatasetRelationshipTable, DatasetTable, ResourceTable
 
 
 class DatasetListView(
@@ -180,99 +172,6 @@ class ResourceMetadataUpdateView(
     form_class = ResourceMetadataForm
 
 
-class ResourceInferSchemaView(PermissionRequiredMixin, ActionView):
-    model = Resource
-    permission_required = "datasets.change_resource"
-
-    def get_success_url(self):
-        return reverse(
-            "datasets:resource_update_metadata",
-            kwargs={"pk": self.object.pk, "dataset_pk": self.object.dataset_id},
-        )
-
-    def execute(self):
-        obj = self.object
-        if obj.infer_schema():
-            messages.add_message(self.request, messages.SUCCESS, "Schema inferred")
-        else:
-            messages.add_message(
-                self.request, messages.WARNING, "Unable to infer schema of the resource"
-            )
-
-
-class StorageListView(
-    LoginRequiredMixin, ListBreadcrumbMixin, SingleTableMixin, FilterView
-):
-    model = Storage
-    table_class = StorageTable
-    filterset_class = StorageFilter
-
-    def get_queryset(self):
-        return super().get_queryset()
-
-
-class StorageDetailView(PermissionRequiredMixin, DetailView):
-    model = Storage
-    permission_required = "datasets.view_storage"
-
-
-class StorageCreateView(
-    PermissionRequiredMixin,
-    CreateView,
-):
-    permission_required = "datasets.add_storage"
-    model = Storage
-    form_class = StorageForm
-
-    def get_form_kwargs(self):
-        args = super().get_form_kwargs()
-        args["user"] = self.request.user
-        return args
-
-
-class StorageUpdateView(
-    PermissionRequiredMixin,
-    UpdateView,
-):
-    permission_required = "datasets.change_storage"
-    model = Storage
-    form_class = StorageForm
-
-    def get_form_kwargs(self):
-        args = super().get_form_kwargs()
-        args["user"] = self.request.user
-        return args
-
-
-class StorageConfigView(
-    PermissionRequiredMixin,
-    UpdateView,
-):
-    permission_required = "datasets.change_storage"
-    model = Storage
-    form_class = StorageConfigForm
-
-    def get_form_kwargs(self):
-        args = super().get_form_kwargs()
-        return args
-
-
-class ResourceMediaTypeOptionsView(TemplateView):
-    template_name = "datasets/options.html"
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-
-        ctx["options"] = []
-
-        profile = self.request.GET.get("profile")
-        if profile:
-            allowed = schemas.resource_types.RESOURCE_TYPE_MAP.get(profile, {})
-            ctx["options"] = list((k.value, k.label) for k in allowed.keys())
-
-        return ctx
-
-
 class DatasetRelationshipListView(
     PermissionRequiredMixin, SingleTableMixin, FilterView
 ):
@@ -337,6 +236,7 @@ class DatasetRelationshipUpdateView(PermissionRequiredMixin, UpdateView):
     model = DatasetRelationship
     form_class = DatasetRelationshipForm
     permission_required = "datasets.change_datasetrelationship"
+    slug_url_kwarg = "uuid"
 
     def get_template_names(self):
         if self.request.htmx:

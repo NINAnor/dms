@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from ..models import Dataset, DatasetRelationship, Resource, Storage
+from ..models import Dataset, DatasetRelationship, Resource
 
 
 class DatasetSerializer(serializers.HyperlinkedModelSerializer):
@@ -20,9 +20,7 @@ class DatasetSerializer(serializers.HyperlinkedModelSerializer):
             "last_modified_at",
             "project",
             "project_id",
-            "profile",
             "metadata",
-            "fetch",
             "version",
         )
 
@@ -40,7 +38,6 @@ class DatasetListSerializer(DatasetSerializer):
             "project",
             "project_id",
             "profile",
-            "fetch",
             "version",
         )
 
@@ -48,9 +45,6 @@ class DatasetListSerializer(DatasetSerializer):
 class ResourceSerializer(serializers.HyperlinkedModelSerializer):
     dataset = serializers.HyperlinkedRelatedField(
         view_name="api_v1:datasets-detail", read_only=True
-    )
-    storage = serializers.HyperlinkedRelatedField(
-        view_name="api_v1:storages-detail", read_only=True
     )
     url = serializers.HyperlinkedIdentityField(view_name="api_v1:resources-detail")
 
@@ -61,37 +55,12 @@ class ResourceSerializer(serializers.HyperlinkedModelSerializer):
             "id",
             "title",
             "name",
-            "path",
+            "uri",
             "created_at",
             "last_modified_at",
             "dataset_id",
             "dataset",
-            "storage_id",
-            "storage",
-            "profile",
-            "type",
-            "schema",
             "metadata",
-        )
-
-
-class StorageSerializer(serializers.HyperlinkedModelSerializer):
-    project = serializers.HyperlinkedRelatedField(
-        view_name="api_v1:projects-detail", read_only=True
-    )
-    url = serializers.HyperlinkedIdentityField(view_name="api_v1:storages-detail")
-
-    class Meta:
-        model = Storage
-        fields = (
-            "url",
-            "id",
-            "title",
-            "type",
-            "created_at",
-            "last_modified_at",
-            "project",
-            "project_id",
         )
 
 
@@ -99,7 +68,7 @@ class DatasetRelationshipSerializer(serializers.HyperlinkedModelSerializer):
     source = serializers.HyperlinkedRelatedField(
         view_name="api_v1:datasets-detail", read_only=True
     )
-    destination = serializers.HyperlinkedRelatedField(
+    target = serializers.HyperlinkedRelatedField(
         view_name="api_v1:datasets-detail", read_only=True
     )
     url = serializers.HyperlinkedIdentityField(
@@ -113,7 +82,7 @@ class DatasetRelationshipSerializer(serializers.HyperlinkedModelSerializer):
             "id",
             "source",
             "source_id",
-            "destination",
-            "destination_id",
+            "target",
+            "target_id",
             "type",
         )

@@ -24,24 +24,6 @@ class DatasetFilter(filters.FilterSet):
         fields = {"title": ["icontains"], "project": ["exact"], "version": ["exact"]}
 
 
-class StorageFilter(filters.FilterSet):
-    project = filters.ModelChoiceFilter(
-        queryset=Project.objects.all(),
-        widget=autocomplete.ModelSelect2(url="autocomplete:project"),
-        method="filter_by_project",
-        label="Project",
-    )
-
-    def filter_by_project(self, queryset, name, value):
-        if value:
-            return queryset.filter(project=value)
-        return queryset
-
-    class Meta:
-        model = models.Storage
-        fields = {"title": ["icontains"], "project": ["exact"], "type": ["exact"]}
-
-
 class ResourceFilter(filters.FilterSet):
     dataset__project = filters.ModelChoiceFilter(
         queryset=Project.objects.all(),
@@ -60,11 +42,8 @@ class ResourceFilter(filters.FilterSet):
         fields = {
             "title": ["icontains"],
             "name": ["exact"],
-            "storage": ["exact"],
             "dataset__project": ["exact"],
             "dataset": ["exact"],
-            "type": ["exact"],
-            "profile": ["exact"],
         }
 
 
@@ -73,6 +52,6 @@ class DatasetRelationshipFilter(filters.FilterSet):
         model = models.DatasetRelationship
         fields = (
             "source",
-            "destination",
+            "target",
             "type",
         )

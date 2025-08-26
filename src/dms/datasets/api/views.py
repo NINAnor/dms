@@ -2,7 +2,7 @@ from rest_framework.pagination import CursorPagination
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from .. import filters
-from ..models import Dataset, DatasetRelationship, Resource, Storage
+from ..models import Dataset, DatasetRelationship, Resource
 from . import serializers
 
 
@@ -21,13 +21,6 @@ class DatasetViewSet(ReadOnlyModelViewSet):
         if self.action == "list":
             return serializers.DatasetListSerializer
         return super().get_serializer_class()
-
-
-class StorageViewSet(ReadOnlyModelViewSet):
-    queryset = Storage.objects.all()
-    serializer_class = serializers.StorageSerializer
-    pagination_class = DefaultCursorPagination
-    filterset_class = filters.StorageFilter
 
 
 class ResourceViewSet(ReadOnlyModelViewSet):

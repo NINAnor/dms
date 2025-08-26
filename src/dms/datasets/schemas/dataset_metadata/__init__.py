@@ -262,15 +262,6 @@ schema = {
                 "type": "object",
                 "properties": {
                     "geoLocationPlace": {"type": "string"},
-                    "geoLocationBox": {
-                        "type": "object",
-                        "properties": {
-                            "westBoundLongitude": {"type": "number"},
-                            "eastBoundLongitude": {"type": "number"},
-                            "southBoundLatitude": {"type": "number"},
-                            "northBoundLatitude": {"type": "number"},
-                        },
-                    },
                 },
             },
         },

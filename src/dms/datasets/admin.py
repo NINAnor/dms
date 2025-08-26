@@ -1,57 +1,15 @@
 from django.contrib import admin
 from django.forms import ModelForm
-from django_svelte_jsoneditor.widgets import SvelteJSONEditorWidget
-from import_export.admin import ImportExportModelAdmin
-from jsonfield import JSONField
 
 from .models import (
     Dataset,
-    DatasetRelationship,
     Resource,
-    Schema,
-    Storage,
-    get_metadata_schema,
 )
-from .resources import SchemaResource
-
-
-@admin.register(Schema)
-class SchemaAdmin(ImportExportModelAdmin):
-    resource_classes = [SchemaResource]
-    formfield_overrides = {
-        JSONField: {
-            "widget": SvelteJSONEditorWidget,
-        }
-    }
-
-
-class DatasetForm(ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # manually set the current instance on the widget
-        if get_metadata_schema(self.instance):
-            self.fields["metadata"].widget.instance = self.instance
-        else:
-            self.fields["metadata"].widget = SvelteJSONEditorWidget()
-
-        self.fields["fetch"].widget = SvelteJSONEditorWidget()
 
 
 @admin.register(Dataset)
 class DatasetAdmin(admin.ModelAdmin):
-    form = DatasetForm
-
-
-class StorageForm(ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # manually set the current instance on the widget
-        self.fields["config"].widget.instance = self.instance
-
-
-@admin.register(Storage)
-class StorageAdmin(admin.ModelAdmin):
-    form = StorageForm
+    pass
 
 
 class ResourceForm(ModelForm):
@@ -65,8 +23,3 @@ class ResourceForm(ModelForm):
 @admin.register(Resource)
 class ResourceAdmin(admin.ModelAdmin):
     form = ResourceForm
-
-
-@admin.register(DatasetRelationship)
-class DatasetRelationshipAdmin(admin.ModelAdmin):
-    pass

@@ -6,7 +6,6 @@
     <h3 class="text-4xl mb-5">{{ object }}</h3>
     <div class="flex gap-5 mb-5">
         {% if object %}
-        <c-action-form action="{% url 'datasets:resource_infer_schema' pk=object.pk dataset_pk=object.dataset_id %}">Infer metadata</c-action-form>
         {% endif %}
     </div>
     {% crispy form %}
