@@ -110,6 +110,14 @@ class DatasetUpdateMetadataView(
         return reverse("datasets:dataset_detail", kwargs={"pk": self.object.pk})
 
 
+class DatasetDeleteView(PermissionRequiredMixin, DeleteView):
+    model = Dataset
+    permission_required = "datasets.delete_dataset"
+
+    def get_success_url(self):
+        return reverse("datasets:dataset_list")
+
+
 class ResourceDetailView(PermissionRequiredMixin, DetailView):
     model = Resource
     permission_required = "datasets.view_resource"

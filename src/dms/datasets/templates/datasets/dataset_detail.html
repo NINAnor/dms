@@ -20,6 +20,10 @@
         <a class="btn btn-primary" href="{% url 'datasets:dataset_relationship_list' pk=dataset.id %}">Relationships</a>
         <a class="btn btn-primary" href="{% url 'datasets:dataset_update' pk=dataset.id %}">Edit</a>
         <a class="btn btn-primary" href="{% url 'datasets:dataset_update_metadata' pk=dataset.id %}">Edit Metadata</a>
+        {% has_perm 'datasets.delete_dataset' user dataset as can_delete %}
+        {% if can_delete %}
+        <a class="btn btn-danger" href="{% url 'datasets:dataset_delete' pk=dataset.id %}">Delete</a>
+        {% endif %}
     </div>
 </div>
 

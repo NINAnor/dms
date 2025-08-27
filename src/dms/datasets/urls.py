@@ -48,6 +48,11 @@ urlpatterns = [
         name="dataset_update_metadata",
     ),
     path(
+        "datasets/<str:pk>/delete/",
+        views.DatasetDeleteView.as_view(),
+        name="dataset_delete",
+    ),
+    path(
         "datasets/<str:dataset_pk>/resources/register/",
         views.ResourceCreateView.as_view(),
         name="resource_create",
