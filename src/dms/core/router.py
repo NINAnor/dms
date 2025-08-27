@@ -15,6 +15,22 @@ router.register("dmps", projects_views.DMPModelViewSet, basename="dmps")
 router.register("datasets", datasets_views.DatasetViewSet, basename="datasets")
 router.register("resources", datasets_views.ResourceViewSet, basename="resources")
 router.register(
+    "mapresources", datasets_views.MapResourceViewSet, basename="mapresources"
+)
+router.register(
+    "rasterresources", datasets_views.RasterResourceViewSet, basename="rasterresources"
+)
+router.register(
+    "tabularresources",
+    datasets_views.TabularResourceViewSet,
+    basename="tabularresources",
+)
+router.register(
+    "partitionedresources",
+    datasets_views.PartitionedResourceViewSet,
+    basename="partitionedresources",
+)
+router.register(
     "datasets-relationships",
     datasets_views.DatasetRelationshipViewSet,
     basename="dataset-relationships",
