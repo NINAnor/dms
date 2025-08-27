@@ -508,7 +508,6 @@ SVELTE_JSONEDITOR_PROPS = {
 
 SENTRY_DSN = env("SENTRY_DSN", default=None)
 
-print(SENTRY_DSN)
 if SENTRY_DSN:
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
@@ -546,4 +545,4 @@ if SENTRY_DSN:
     }
 
 
-DATASETS_IPT_URLS = env.list("DATASETS_IPT_URLS")
+DATASETS_TITILER_URL = env("DATASETS_TITILER_URL")

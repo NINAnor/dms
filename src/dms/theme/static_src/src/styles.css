@@ -123,3 +123,13 @@ table.table thead th.asc.orderable a::after {
 .htmx-request.htmx-indicator {
   opacity: 1;
 }
+
+.svelte-jsoneditor-wrapper {
+  max-width: 100%;
+  width: auto !important;
+  min-height: auto !important;
+}
+
+.svelte-jsoneditor-wrapper>div {
+  min-height: 450px !important;
+}

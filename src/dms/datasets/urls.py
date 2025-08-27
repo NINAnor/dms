@@ -62,9 +62,45 @@ urlpatterns = [
         views.ResourceUpdateView.as_view(),
         name="resource_update",
     ),
+    # Type-specific resource URLs
     path(
-        "datasets/<str:dataset_pk>/resources/<str:pk>/edit/metadata/",
-        views.ResourceMetadataUpdateView.as_view(),
-        name="resource_update_metadata",
+        "datasets/<str:dataset_pk>/resources/map/register/",
+        views.MapResourceCreateView.as_view(),
+        name="mapresource_create",
+    ),
+    path(
+        "datasets/<str:dataset_pk>/resources/map/<str:pk>/edit/",
+        views.MapResourceUpdateView.as_view(),
+        name="mapresource_update",
+    ),
+    path(
+        "datasets/<str:dataset_pk>/resources/raster/register/",
+        views.RasterResourceCreateView.as_view(),
+        name="rasterresource_create",
+    ),
+    path(
+        "datasets/<str:dataset_pk>/resources/raster/<str:pk>/edit/",
+        views.RasterResourceUpdateView.as_view(),
+        name="rasterresource_update",
+    ),
+    path(
+        "datasets/<str:dataset_pk>/resources/tabular/register/",
+        views.TabularResourceCreateView.as_view(),
+        name="tabularresource_create",
+    ),
+    path(
+        "datasets/<str:dataset_pk>/resources/tabular/<str:pk>/edit/",
+        views.TabularResourceUpdateView.as_view(),
+        name="tabularresource_update",
+    ),
+    path(
+        "datasets/<str:dataset_pk>/resources/partitioned/register/",
+        views.PartitionedResourceCreateView.as_view(),
+        name="partitionedresource_create",
+    ),
+    path(
+        "datasets/<str:dataset_pk>/resources/partitioned/<str:pk>/edit/",
+        views.PartitionedResourceUpdateView.as_view(),
+        name="partitionedresource_update",
     ),
 ]

@@ -8,6 +8,7 @@
 const colors = require("tailwindcss/colors");
 
 module.exports = {
+  safelist: ["hidden"],
   content: [
     /**
      * HTML. Paths to Django template files that will contain Tailwind CSS classes.

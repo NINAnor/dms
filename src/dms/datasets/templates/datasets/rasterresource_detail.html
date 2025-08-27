@@ -36,6 +36,14 @@
             <c-json-object-viewer :dict="object.last_sync"></c-json-object-viewer>
         </c-accordion.content>
     </c-accordion.item>
+    {% if object.metadata.driver == 'GTiff' and object.metadata.tiled %}
+    <c-accordion.item value='item-2'>
+        <c-accordion.trigger value='item-2' class="text-2xl font-bold">Preview</c-accordion.trigger>
+        <c-accordion.content value='item-2'>
+            <img src="{{object.preview_url}}" />
+        </c-accordion.content>
+    </c-accordion.item>
+    {% endif %}
 </c-accordion>
 
 

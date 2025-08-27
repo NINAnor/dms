@@ -41,7 +41,6 @@ class ResourceFilter(filters.FilterSet):
         model = models.Resource
         fields = {
             "title": ["icontains"],
-            "name": ["exact"],
             "dataset__project": ["exact"],
             "dataset": ["exact"],
         }

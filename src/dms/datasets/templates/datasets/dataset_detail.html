@@ -42,10 +42,30 @@
         <c-accordion.trigger value='item-2' class="text-2xl font-bold">Resources</c-accordion.trigger>
         <c-accordion.content value='item-2'>
             <c-navigation-menu class="mb-4">
-                <c-navigation-menu.list class="items-center justify-start gap-8">
+                <c-navigation-menu.list class="items-center justify-start gap-2">
                     <c-navigation-menu.item>
                         <c-navigation-menu.link class="bg-secondary" href='{% url "datasets:resource_create" dataset_pk=dataset.pk %}'>
-                            <i class="fas fa-plus"></i> Register new Resource
+                            <i class="fas fa-plus"></i> Generic Resource
+                        </c-navigation-menu.link>
+                    </c-navigation-menu.item>
+                    <c-navigation-menu.item>
+                        <c-navigation-menu.link class="bg-blue-500 text-white" href='{% url "datasets:mapresource_create" dataset_pk=dataset.pk %}'>
+                            <i class="fas fa-map"></i> Map Resource
+                        </c-navigation-menu.link>
+                    </c-navigation-menu.item>
+                    <c-navigation-menu.item>
+                        <c-navigation-menu.link class="bg-green-500 text-white" href='{% url "datasets:rasterresource_create" dataset_pk=dataset.pk %}'>
+                            <i class="fas fa-image"></i> Raster Resource
+                        </c-navigation-menu.link>
+                    </c-navigation-menu.item>
+                    <c-navigation-menu.item>
+                        <c-navigation-menu.link class="bg-purple-500 text-white" href='{% url "datasets:tabularresource_create" dataset_pk=dataset.pk %}'>
+                            <i class="fas fa-table"></i> Tabular Resource
+                        </c-navigation-menu.link>
+                    </c-navigation-menu.item>
+                    <c-navigation-menu.item>
+                        <c-navigation-menu.link class="bg-orange-500 text-white" href='{% url "datasets:partitionedresource_create" dataset_pk=dataset.pk %}'>
+                            <i class="fas fa-th-large"></i> Partitioned Resource
                         </c-navigation-menu.link>
                     </c-navigation-menu.item>
                 </c-navigation-menu.list>

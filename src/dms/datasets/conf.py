@@ -3,4 +3,4 @@ from django.conf import settings  # noqa: F401
 
 
 class DatasetsConf(AppConf):
-    pass
+    TITILER_URL = "/titiler"

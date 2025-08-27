@@ -27,10 +27,21 @@ from .forms import (
     DatasetMetadataForm,
     DatasetRelationshipForm,
     DatasetUpdateForm,
+    MapResourceForm,
+    PartitionedResourceForm,
+    RasterResourceForm,
     ResourceForm,
-    ResourceMetadataForm,
+    TabularResourceForm,
 )
-from .models import Dataset, DatasetRelationship, Resource
+from .models import (
+    Dataset,
+    DatasetRelationship,
+    MapResource,
+    PartitionedResource,
+    RasterResource,
+    Resource,
+    TabularResource,
+)
 from .tables import DatasetRelationshipTable, DatasetTable, ResourceTable
 
 
@@ -103,6 +114,17 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
     model = Resource
     permission_required = "datasets.view_resource"
 
+    def get_object(self, queryset=None):
+        if queryset is None:
+            queryset = self.get_queryset()
+        # Use inheritance manager to get the correct subclass instance
+        return queryset.select_subclasses().get(pk=self.kwargs["pk"])
+
+    def get_template_names(self):
+        # Get the actual model class name (e.g., MapResource, RasterResource)
+        model_name = self.object.__class__.__name__.lower()
+        return [f"datasets/{model_name}_detail.html", "datasets/resource_detail.html"]
+
 
 class ResourceCreateView(
     PermissionRequiredMixin,
@@ -158,18 +180,9 @@ class ResourceUpdateView(
 
     def get_success_url(self):
         return reverse(
-            "datasets:resource_update_metadata",
+            "datasets:resource_detail",
             kwargs={"dataset_pk": self.kwargs.get("dataset_pk"), "pk": self.object.pk},
         )
-
-
-class ResourceMetadataUpdateView(
-    PermissionRequiredMixin,
-    UpdateView,
-):
-    permission_required = "datasets.change_resource"
-    model = Resource
-    form_class = ResourceMetadataForm
 
 
 class DatasetRelationshipListView(
@@ -277,3 +290,85 @@ class DatasetRelationshipDeleteView(PermissionRequiredMixin, DeleteView):
     def form_valid(self, form):
         self.object.delete()
         return HttpResponse("")
+
+
+# Mixins for Resource Views
+class ResourceViewMixin:
+    """Base mixin for resource views with common functionality."""
+
+    def get_template_names(self):
+        # Get the actual model class name (e.g., MapResource, RasterResource)
+        model_name = self.object.__class__.__name__.lower()
+        return [f"datasets/{model_name}_form.html", "datasets/resource_form.html"]
+
+    def get_dataset(self):
+        if hasattr(self.object, "dataset"):
+            return self.object.dataset
+        if not hasattr(self, "_dataset"):
+            self._dataset = Dataset.objects.get(pk=self.kwargs["dataset_pk"])
+        return self._dataset
+
+    def get_form_kwargs(self):
+        args = super().get_form_kwargs()
+        args["user"] = self.request.user
+        args["dataset"] = self.get_dataset()
+        return args
+
+    def get_success_url(self):
+        return reverse(
+            "datasets:resource_detail",
+            kwargs={"dataset_pk": self.kwargs.get("dataset_pk"), "pk": self.object.pk},
+        )
+
+
+# Type-specific Resource Views
+class MapResourceCreateView(PermissionRequiredMixin, ResourceViewMixin, CreateView):
+    model = MapResource
+    permission_required = "datasets.change_resource"
+    form_class = MapResourceForm
+
+
+class MapResourceUpdateView(PermissionRequiredMixin, ResourceViewMixin, UpdateView):
+    model = MapResource
+    permission_required = "datasets.change_resource"
+    form_class = MapResourceForm
+
+
+class RasterResourceCreateView(PermissionRequiredMixin, ResourceViewMixin, CreateView):
+    model = RasterResource
+    permission_required = "datasets.change_resource"
+    form_class = RasterResourceForm
+
+
+class RasterResourceUpdateView(PermissionRequiredMixin, ResourceViewMixin, UpdateView):
+    model = RasterResource
+    permission_required = "datasets.change_resource"
+    form_class = RasterResourceForm
+
+
+class TabularResourceCreateView(PermissionRequiredMixin, ResourceViewMixin, CreateView):
+    model = TabularResource
+    permission_required = "datasets.change_resource"
+    form_class = TabularResourceForm
+
+
+class TabularResourceUpdateView(PermissionRequiredMixin, ResourceViewMixin, UpdateView):
+    model = TabularResource
+    permission_required = "datasets.change_resource"
+    form_class = TabularResourceForm
+
+
+class PartitionedResourceCreateView(
+    PermissionRequiredMixin, ResourceViewMixin, CreateView
+):
+    model = PartitionedResource
+    permission_required = "datasets.change_resource"
+    form_class = PartitionedResourceForm
+
+
+class PartitionedResourceUpdateView(
+    PermissionRequiredMixin, ResourceViewMixin, UpdateView
+):
+    model = PartitionedResource
+    permission_required = "datasets.change_resource"
+    form_class = PartitionedResourceForm

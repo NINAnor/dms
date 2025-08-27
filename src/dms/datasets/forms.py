@@ -8,7 +8,15 @@ from django_svelte_jsoneditor.widgets import SvelteJSONEditorWidget
 
 from dms.projects.models import Project
 
-from .models import Dataset, DatasetRelationship, Resource
+from .models import (
+    Dataset,
+    DatasetRelationship,
+    MapResource,
+    PartitionedResource,
+    RasterResource,
+    Resource,
+    TabularResource,
+)
 
 
 class DatasetForm(forms.ModelForm):
@@ -106,25 +114,64 @@ class ResourceForm(forms.ModelForm):
         model = Resource
         fields = [
             "title",
-            "name",
             "uri",
-        ]
-
-
-class ResourceMetadataForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper()
-        self.helper.form_method = "post"
-        self.helper.form_action = ""
-        self.helper.add_input(Submit("submit", "Submit"))
-
-    class Meta:
-        model = Resource
-        fields = [
+            "description",
+            "role",
+            "access_type",
             "metadata",
         ]
         widgets = {"metadata": SvelteJSONEditorWidget}
+
+
+class MapResourceForm(ResourceForm):
+    class Meta(ResourceForm.Meta):
+        model = MapResource
+        fields = [
+            "title",
+            "uri",
+            "description",
+            "role",
+            "access_type",
+            "map_type",
+            "metadata",
+        ]
+
+
+class RasterResourceForm(ResourceForm):
+    class Meta(ResourceForm.Meta):
+        model = RasterResource
+        fields = [
+            "title",
+            "uri",
+            "description",
+            "role",
+            "access_type",
+            "titiler",
+            "metadata",
+        ]
+        widgets = {
+            "metadata": SvelteJSONEditorWidget,
+            "titiler": SvelteJSONEditorWidget,
+        }
+
+
+class TabularResourceForm(ResourceForm):
+    class Meta(ResourceForm.Meta):
+        model = TabularResource
+        fields = [
+            "title",
+            "uri",
+            "name",
+            "description",
+            "role",
+            "access_type",
+            "metadata",
+        ]
+
+
+class PartitionedResourceForm(ResourceForm):
+    class Meta(ResourceForm.Meta):
+        model = PartitionedResource
 
 
 class DatasetRelationshipForm(forms.ModelForm):

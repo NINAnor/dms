@@ -25,6 +25,7 @@ x-django-env: &django-env
   AWS_REQUEST_CHECKSUM_CALCULATION: WHEN_REQUIRED
   AWS_RESPONSE_CHECKSUM_VALIDATION: WHEN_REQUIRED
   DATASETS_IPT_URLS: ${DATASETS_IPT_URLS}
+  DATASETS_TITILER_URL: ${DATASETS_TITILER_URL:-/titiler}
 
 x-django-prod-env: &django-prod-env
   <<: *django-env
@@ -194,3 +195,21 @@ services:
     environment:
       MINIO_ROOT_USER: ${S3_ACCESS_KEY:-}
       MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-}
+
+  titiler:
+    image: ghcr.io/ninanor/titiler-app-titiler:next
+    environment:
+      - TITILER_API_CORS_ORIGINS=*
+      - TITILER_API_CACHECONTROL=no-cache
+      - TITILER_API_ROOT_PATH=/titiler
+      - FORWARDED_ALLOW_IPS=*
+      - REDIS_HOST=redis
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.titiler.rule=PathPrefix(`/titiler/`)"
+      - "traefik.http.routers.titiler.entrypoints=web"
+      - "traefik.http.routers.titiler.priority=20"
+      - "traefik.http.services.titiler.loadbalancer.server.port=80"
+
+  redis:
+    image: redis
