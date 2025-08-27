@@ -7,10 +7,3 @@
     <a class="btn btn-primary" href="{% url 'datasets:dataset_create' %}">Register</a>
 </div>
 {% endblock page-actions %}
-
-{% block before-filter %}
-<div class="alert alert-error my-3 flex flex-col">
-    <h2 class="text-bold">The Dataset section is a Work In Progress</h2>
-    <p class="text-sm text-medium">Data stored in this section should be considered temporary</p>
-</div>
-{% endblock %}
