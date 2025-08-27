@@ -31,6 +31,11 @@ class ResourceFilter(filters.FilterSet):
         method="filter_by_project",
         label="Project",
     )
+    dataset = filters.ModelChoiceFilter(
+        queryset=models.Dataset.objects.all(),
+        widget=autocomplete.ModelSelect2(url="autocomplete:dataset"),
+        label="Dataset",
+    )
 
     def filter_by_dataset__project(self, queryset, name, value):
         if value:

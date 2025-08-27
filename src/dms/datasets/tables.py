@@ -24,11 +24,16 @@ class ResourceTable(tables.Table):
     title = tables.LinkColumn()
     created_at = tables.DateColumn(format="d/m/Y")
     last_modified_at = tables.DateColumn(format="d/m/Y")
+    resource_type = tables.Column(empty_values=(), verbose_name="Type")
+
+    def render_resource_type(self, record):
+        return record.__class__.__name__
 
     class Meta:
         model = Resource
         fields = (
             "title",
+            "resource_type",
             "created_at",
             "last_modified_at",
             "uri",

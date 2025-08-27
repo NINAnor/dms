@@ -21,7 +21,7 @@ from view_breadcrumbs import (
     UpdateBreadcrumbMixin,
 )
 
-from .filters import DatasetFilter, DatasetRelationshipFilter
+from .filters import DatasetFilter, DatasetRelationshipFilter, ResourceFilter
 from .forms import (
     DatasetForm,
     DatasetMetadataForm,
@@ -55,6 +55,18 @@ class DatasetListView(
 
     def get_queryset(self):
         return super().get_queryset()
+
+
+class ResourceListView(
+    PermissionRequiredMixin, ListBreadcrumbMixin, SingleTableMixin, FilterView
+):
+    model = Resource
+    table_class = ResourceTable
+    filterset_class = ResourceFilter
+    permission_required = "datasets.view_resource"
+
+    def get_queryset(self):
+        return super().get_queryset().select_subclasses()
 
 
 class DatasetDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailView):

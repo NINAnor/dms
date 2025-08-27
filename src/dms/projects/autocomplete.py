@@ -30,3 +30,17 @@ class ProjectTopicAutocomplete(autocomplete.Select2QuerySetView):
     search_fields = [
         "id",
     ]
+
+
+class MyProjectAutocomplete(autocomplete.Select2QuerySetView):
+    model = Project
+    search_fields = [
+        "name",
+        "number",
+    ]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.request.user.is_authenticated:
+            qs = qs.filter(members__user=self.request.user)
+        return qs

@@ -44,6 +44,7 @@ class DatasetForm(forms.ModelForm):
     class Meta:
         model = Dataset
         fields = ["title", "project"]
+        widgets = {"project": autocomplete.ModelSelect2(url="autocomplete:my_project")}
 
 
 class DatasetUpdateForm(forms.ModelForm):
