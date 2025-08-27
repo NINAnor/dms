@@ -17,9 +17,15 @@
     <div class="flex gap-4">
         <a class="btn btn-primary" href="{% url 'datasets:dataset_detail' pk=object.dataset_id %}">Dataset</a>
         <a class="btn btn-primary" href="{{ object.edit_url }}">Edit</a>
+        {% has_perm 'datasets.change_resource' user object as can_change %}
+        {% if can_change %}
+        <c-action_form action="{% url 'datasets:resource_refresh_metadata' dataset_pk=object.dataset_id pk=object.pk %}" class="btn">
+            Refresh Metadata
+        </c-action_form>
+        {% endif %}
         {% has_perm 'datasets.delete_resource' user object as can_delete %}
         {% if can_delete %}
-        <a class="btn btn-danger" href="{% url 'datasets:resource_delete' dataset_pk=object.dataset_id pk=object.pk %}">Delete</a>
+        <a class="btn btn-error" href="{% url 'datasets:resource_delete' dataset_pk=object.dataset_id pk=object.pk %}">Delete</a>
         {% endif %}
     </div>
 </div>

@@ -21,6 +21,8 @@ from view_breadcrumbs import (
     UpdateBreadcrumbMixin,
 )
 
+from dms.shared.views import ActionView
+
 from .filters import DatasetFilter, DatasetRelationshipFilter, ResourceFilter
 from .forms import (
     DatasetForm,
@@ -407,4 +409,23 @@ class ResourceDeleteView(PermissionRequiredMixin, DeleteView):
         return reverse(
             "datasets:dataset_detail",
             kwargs={"pk": self.kwargs.get("dataset_pk")},
+        )
+
+
+class ResourceRefreshMetadataView(PermissionRequiredMixin, ActionView):
+    model = Resource
+    permission_required = "datasets.change_resource"
+
+    def get_object(self, queryset=None):
+        if queryset is None:
+            queryset = self.get_queryset()
+        return queryset.select_subclasses().get(pk=self.kwargs["pk"])
+
+    def execute(self):
+        self.object.infer_metadata()
+
+    def get_success_url(self):
+        return reverse(
+            "datasets:resource_detail",
+            kwargs={"dataset_pk": self.kwargs.get("dataset_pk"), "pk": self.object.pk},
         )
