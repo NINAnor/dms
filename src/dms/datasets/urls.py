@@ -62,6 +62,11 @@ urlpatterns = [
         views.ResourceUpdateView.as_view(),
         name="resource_update",
     ),
+    path(
+        "datasets/<str:dataset_pk>/resources/<str:pk>/delete/",
+        views.ResourceDeleteView.as_view(),
+        name="resource_delete",
+    ),
     # Type-specific resource URLs
     path(
         "datasets/<str:dataset_pk>/resources/map/register/",

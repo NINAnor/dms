@@ -372,3 +372,19 @@ class PartitionedResourceUpdateView(
     model = PartitionedResource
     permission_required = "datasets.change_resource"
     form_class = PartitionedResourceForm
+
+
+class ResourceDeleteView(PermissionRequiredMixin, DeleteView):
+    model = Resource
+    permission_required = "datasets.delete_resource"
+
+    def get_object(self, queryset=None):
+        if queryset is None:
+            queryset = self.get_queryset()
+        return queryset.select_subclasses().get(pk=self.kwargs["pk"])
+
+    def get_success_url(self):
+        return reverse(
+            "datasets:dataset_detail",
+            kwargs={"pk": self.kwargs.get("dataset_pk")},
+        )

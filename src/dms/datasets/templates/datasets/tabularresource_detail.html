@@ -18,6 +18,10 @@
     <div class="flex gap-4">
         <a class="btn btn-primary" href="{% url 'datasets:dataset_detail' pk=object.dataset_id %}">Dataset</a>
         <a class="btn btn-primary" href="{{ object.edit_url }}">Edit</a>
+        {% has_perm 'datasets.delete_resource' user object as can_delete %}
+        {% if can_delete %}
+        <a class="btn btn-danger" href="{% url 'datasets:resource_delete' dataset_pk=object.dataset_id pk=object.pk %}">Delete</a>
+        {% endif %}
     </div>
 </div>
 
