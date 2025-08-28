@@ -1,0 +1,45 @@
+name: CI
+
+# Enable Buildkit and let compose use it to speed up image building
+env:
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths-ignore: ["docs/**"]
+
+  push:
+    branches: ["main"]
+    paths-ignore: ["docs/**"]
+
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Setup secrets
+        run: cp .env.example .env
+
+      - name: Build the Stack
+        run: docker compose --profile dev build
+
+      - name: Run DB Migrations
+        run: docker compose --profile dev run --rm django-dev manage.py migrate
+
+      - name: Check openapi spec
+        run: docker compose --profile dev run --rm django-dev manage.py spectacular --validate
+
+      - name: Run Django Tests
+        run: docker compose --profile dev run django-dev uv run pytest
+
+      - name: Tear down the Stack
+        run: docker compose --profile dev down
