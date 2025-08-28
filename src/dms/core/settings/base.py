@@ -424,10 +424,12 @@ REST_AUTH = {
 
 # DRF Spectacular
 SPECTACULAR_SETTINGS = {
-    "TITLE": "dms API",
-    "DESCRIPTION": "APIs for interacting with the dms",
+    "TITLE": "DMS API",
+    "DESCRIPTION": "APIs for interacting with the DMS",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": False,
+    "COMPONENT_SPLIT_PATCH": True,
 }
 
 # CORS Headers
