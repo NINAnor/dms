@@ -37,7 +37,9 @@ class Dataset(RulesModel):
         db_constraint=False,
     )
     created_at = models.DateTimeField(
-        db_default=models.functions.Now(), verbose_name=_("Created at")
+        db_default=models.functions.Now(),
+        verbose_name=_("Created at"),
+        blank=True,
     )
     last_modified_at = models.DateTimeField(
         auto_now=True, verbose_name=_("Last modified at")
@@ -117,7 +119,7 @@ class Resource(LifecycleModelMixin, RulesModel):
         "Dataset", on_delete=models.CASCADE, related_name="resources"
     )
     created_at = models.DateTimeField(
-        db_default=models.functions.Now(), verbose_name=_("Created at")
+        db_default=models.functions.Now(), verbose_name=_("Created at"), blank=True
     )
     last_modified_at = models.DateTimeField(
         auto_now=True, verbose_name=_("Last modified at")

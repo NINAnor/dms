@@ -15,6 +15,7 @@ class DatasetSerializer(serializers.HyperlinkedModelSerializer):
     project = serializers.HyperlinkedRelatedField(
         view_name="api_v1:projects-detail", read_only=True
     )
+    project_id = serializers.CharField()
     url = serializers.HyperlinkedIdentityField(view_name="api_v1:datasets-detail")
 
     class Meta:
@@ -54,6 +55,7 @@ class ResourceSerializer(serializers.HyperlinkedModelSerializer):
         view_name="api_v1:datasets-detail", read_only=True
     )
     url = serializers.HyperlinkedIdentityField(view_name="api_v1:resources-detail")
+    dataset_id = serializers.CharField()
 
     class Meta:
         model = Resource
@@ -97,6 +99,7 @@ class MapResourceSerializer(serializers.HyperlinkedModelSerializer):
     dataset = serializers.HyperlinkedRelatedField(
         view_name="api_v1:datasets-detail", read_only=True
     )
+    dataset_id = serializers.CharField()
     url = serializers.HyperlinkedIdentityField(view_name="api_v1:mapresources-detail")
 
     class Meta:
@@ -125,6 +128,7 @@ class RasterResourceSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="api_v1:rasterresources-detail"
     )
+    dataset_id = serializers.CharField()
 
     class Meta:
         model = RasterResource
@@ -152,6 +156,7 @@ class TabularResourceSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="api_v1:tabularresources-detail"
     )
+    dataset_id = serializers.CharField()
 
     class Meta:
         model = TabularResource
@@ -179,6 +184,7 @@ class PartitionedResourceSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="api_v1:partitionedresources-detail"
     )
+    dataset_id = serializers.CharField()
 
     class Meta:
         model = PartitionedResource
