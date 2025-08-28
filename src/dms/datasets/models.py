@@ -26,7 +26,7 @@ from .schemas import dataset_metadata
 
 class Dataset(RulesModel):
     id = models.CharField(primary_key=True)
-    version = models.IntegerField(null=True, blank=True)
+    version = models.CharField(null=True, blank=True)
     title = models.CharField()
     name = AutoSlugField(populate_from="title")
     project = models.ForeignKey(
@@ -34,6 +34,7 @@ class Dataset(RulesModel):
         on_delete=models.PROTECT,
         related_name="datasets",
         null=True,
+        db_constraint=False,
     )
     created_at = models.DateTimeField(
         db_default=models.functions.Now(), verbose_name=_("Created at")
