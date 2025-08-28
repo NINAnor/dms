@@ -37,7 +37,7 @@ class ResourceFilter(filters.FilterSet):
         label="Dataset",
     )
 
-    def filter_by_dataset__project(self, queryset, name, value):
+    def filter_by_project(self, queryset, name, value):
         if value:
             return queryset.filter(dataset__project=value)
         return queryset

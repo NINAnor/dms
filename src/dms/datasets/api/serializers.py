@@ -45,7 +45,6 @@ class DatasetListSerializer(DatasetSerializer):
             "last_modified_at",
             "project",
             "project_id",
-            "profile",
             "version",
         )
 
@@ -62,7 +61,6 @@ class ResourceSerializer(serializers.HyperlinkedModelSerializer):
             "url",
             "id",
             "title",
-            "name",
             "uri",
             "created_at",
             "last_modified_at",
@@ -87,7 +85,6 @@ class DatasetRelationshipSerializer(serializers.HyperlinkedModelSerializer):
         model = DatasetRelationship
         fields = (
             "url",
-            "id",
             "source",
             "source_id",
             "target",
