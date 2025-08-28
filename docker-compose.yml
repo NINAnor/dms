@@ -26,6 +26,7 @@ x-django-env: &django-env
   AWS_RESPONSE_CHECKSUM_VALIDATION: WHEN_REQUIRED
   DATASETS_IPT_URLS: ${DATASETS_IPT_URLS}
   DATASETS_TITILER_URL: ${DATASETS_TITILER_URL:-/titiler}
+  DJANGO_ALLOWED_HOSTS: "localhost,django,${HOSTNAME:-}"
 
 x-django-prod-env: &django-prod-env
   <<: *django-env
@@ -34,7 +35,7 @@ x-django-prod-env: &django-prod-env
   DJANGO_ADMIN_URL: admin/
   DJANGO_SECURE_SSL_REDIRECT: False
   WEB_CONCURRENCY: 4
-  DJANGO_ALLOWED_HOSTS: "localhost,django"
+  DJANGO_ALLOWED_HOSTS: "localhost,django,${HOSTNAME:-}"
 
 x-django-dev-env: &django-dev-env
   <<: *django-env
