@@ -219,9 +219,7 @@ class DatasetRelationshipListView(
         return (
             super()
             .get_queryset()
-            .filter(
-                Q(source_id=self.kwargs["pk"]) | Q(destination_id=self.kwargs["pk"])
-            )
+            .filter(Q(source_id=self.kwargs["pk"]) | Q(target_id=self.kwargs["pk"]))
         )
 
 

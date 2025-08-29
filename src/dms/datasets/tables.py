@@ -44,5 +44,5 @@ class ResourceTable(tables.Table):
 class DatasetRelationshipTable(tables.Table):
     class Meta:
         model = DatasetRelationship
-        fields = ("id", "source", "destination", "type")
+        fields = ("id", "source", "target", "type")
         template_name = "django_tables2/bootstrap.html"
