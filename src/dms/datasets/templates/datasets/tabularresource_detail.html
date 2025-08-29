@@ -2,6 +2,44 @@
 {% load static %}
 
 {% block resource_specific_content %}
+{% if object.metadata.driver %}
+<c-accordion.item value='item-2'>
+    <c-accordion.trigger value='item-2' class="text-2xl font-bold">Snippets</c-accordion.trigger>
+    <c-accordion.content value='item-2'>
+        <c-tabs default_value='r'>
+            <c-tabs.list>
+                <c-tabs.trigger value='r'>R</c-tabs.trigger>
+                <c-tabs.trigger value='python'>Python</c-tabs.trigger>
+                {% if object.metadata.driver == 'Parquet' %}
+                <c-tabs.trigger value='duckdb'>DuckDB</c-tabs.trigger>
+                {% endif %}
+
+            </c-tabs.list>
+            <c-tabs.content value='r'>
+                <pre>
+                    <code class="language-r">
+
+                    </code>
+                </pre>
+            </c-tabs.content>
+            <c-tabs.content value='python'>
+                <pre><code class="language-python">import fiona
+
+with fiona.open("{{ object.uri }}") as src:
+    for feature in src:
+        print(feature)
+                </code></pre>
+            </c-tabs.content>
+
+            <c-tabs.content value='duckdb'>
+                <pre><code class="language-sql">
+from read_parquet('{{ object.uri }}');
+                </code></pre>
+            </c-tabs.content>
+        </c-tabs>
+    </c-accordion.content>
+</c-accordion.item>
+{% endif %}
 {% if object.metadata.driver == 'Parquet' %}
 <c-accordion.item value='item-2'>
     <c-accordion.trigger value='item-2' class="text-2xl font-bold">Preview</c-accordion.trigger>
@@ -14,9 +52,15 @@
 
 {% block body_javascript %}
     {{ block.super }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/r.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/sql.min.js"></script>
     {% if object.metadata.driver == 'Parquet' %}
     <link rel="stylesheet" href="{% static 'css/parquet.css' %}">
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="{% static 'js/parquet-preview.js' %}" data-type="module" type="text/babel"></script>
     {% endif %}
+    <script>hljs.highlightAll();</script>
 {% endblock body_javascript %}
