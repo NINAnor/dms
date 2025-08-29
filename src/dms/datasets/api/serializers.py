@@ -69,6 +69,9 @@ class ResourceSerializer(serializers.HyperlinkedModelSerializer):
             "dataset_id",
             "dataset",
             "metadata",
+            "role",
+            "access_type",
+            "description",
         )
 
 
