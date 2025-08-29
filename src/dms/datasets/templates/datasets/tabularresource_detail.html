@@ -52,15 +52,9 @@ from read_parquet('{{ object.uri }}');
 
 {% block body_javascript %}
     {{ block.super }}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/r.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/sql.min.js"></script>
     {% if object.metadata.driver == 'Parquet' %}
     <link rel="stylesheet" href="{% static 'css/parquet.css' %}">
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="{% static 'js/parquet-preview.js' %}" data-type="module" type="text/babel"></script>
     {% endif %}
-    <script>hljs.highlightAll();</script>
 {% endblock body_javascript %}
