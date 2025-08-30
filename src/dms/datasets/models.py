@@ -2,6 +2,7 @@ from urllib.parse import urlencode
 
 import fiona
 import rasterio as rio
+import requests
 import rules
 from autoslug import AutoSlugField
 from django.core.serializers.json import DjangoJSONEncoder
@@ -160,8 +161,38 @@ class Resource(LifecycleModelMixin, RulesModel):
     def type(self):
         return None
 
-    def infer_metadata(self):
-        pass
+    def _get_http_headers(self):
+        """Extract Last-Modified and ETag headers for HTTP resources."""
+        if not self.uri.startswith("http"):
+            return {}
+
+        try:
+            response = requests.head(self.uri, timeout=30)
+            headers = {}
+
+            if "Last-Modified" in response.headers:
+                headers["last_modified"] = response.headers["Last-Modified"]
+
+            return headers
+        except requests.RequestException:
+            return {}
+
+    def infer_metadata(self, deferred=True):
+        if deferred:
+            # For base Resource class, just extract HTTP headers
+            self._extract_and_save_http_headers()
+        else:
+            self._extract_and_save_http_headers()
+
+    def _extract_and_save_http_headers(self):
+        """Extract and save HTTP headers for HTTP-based URIs."""
+        http_headers = self._get_http_headers()
+        if http_headers:
+            if not self.metadata:
+                self.metadata = {}
+            self.metadata["http_headers"] = http_headers
+            self.last_sync = {"timestamp": now(), "status": "ok"}
+            self.save(update_fields=["metadata", "last_sync"])
 
     @hook(
         AFTER_SAVE,
@@ -262,6 +293,12 @@ class RasterResource(Resource):
                         for s in stats
                     ],
                 }
+
+                # Add HTTP headers to metadata if present
+                http_headers = self._get_http_headers()
+                if http_headers:
+                    metadata["http_headers"] = http_headers
+
                 self.metadata = metadata
                 self.last_sync = {"timestamp": now(), "status": "ok"}
                 self.save(update_fields=["metadata", "last_sync"])
@@ -317,6 +354,11 @@ class TabularResource(Resource):
                     metadata["bounds"] = src.bounds
                 else:
                     metadata["bounds"] = None
+
+                # Add HTTP headers to metadata if present
+                http_headers = self._get_http_headers()
+                if http_headers:
+                    metadata["http_headers"] = http_headers
 
                 self.metadata = metadata
                 self.last_sync = {"timestamp": now(), "status": "ok"}
