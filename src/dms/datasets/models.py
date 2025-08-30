@@ -13,6 +13,7 @@ from django_jsonform.models.fields import JSONField as JSONBField
 from django_lifecycle import AFTER_SAVE, LifecycleModelMixin, hook
 from django_lifecycle.conditions import WhenFieldHasChanged
 from model_utils.managers import InheritanceManager
+from procrastinate.contrib.django import app
 from rasterio.errors import RasterioError
 from rules.contrib.models import RulesModel
 
@@ -218,7 +219,13 @@ class RasterResource(Resource):
         ]
         return settings.DATASETS_TITILER_URL + "/cog/preview/?" + urlencode(params)
 
-    def infer_metadata(self):
+    def infer_metadata(self, deferred=True):
+        if deferred:
+            app.configure_task(
+                name="dms.datasets.tasks.infer_raster_metadata_task"
+            ).defer(resource_id=self.pk)
+            return
+
         try:
             with rio.open(
                 self.uri,
@@ -279,7 +286,13 @@ class TabularResource(Resource):
     def type(self):
         return "tabular"
 
-    def infer_metadata(self):
+    def infer_metadata(self, deferred=True):
+        if deferred:
+            app.configure_task(
+                name="dms.datasets.tasks.infer_tabular_metadata_task"
+            ).defer(resource_id=self.pk)
+            return
+
         try:
             with fiona.open(
                 self.uri,

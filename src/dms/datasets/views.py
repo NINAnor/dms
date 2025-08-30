@@ -1,6 +1,7 @@
 # from django.db.models import Prefetch
 # from django.urls import reverse_lazy
 
+from django.contrib import messages
 from django.db.models import Q
 from django.http import HttpResponse
 from django.urls import reverse
@@ -334,6 +335,17 @@ class ResourceViewMixin:
         args["dataset"] = self.get_dataset()
         return args
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        # Add message for new resource creation (only on CreateView)
+        if hasattr(self, "object") and self.object._state.adding:
+            messages.info(
+                self.request,
+                "Metadata collection has been queued and"
+                " will be processed asynchronously.",
+            )
+        return response
+
     def get_success_url(self):
         return reverse(
             "datasets:resource_detail",
@@ -421,6 +433,10 @@ class ResourceRefreshMetadataView(PermissionRequiredMixin, ActionView):
 
     def execute(self):
         self.object.infer_metadata()
+        messages.info(
+            self.request,
+            "Metadata collection has been queued and will be processed asynchronously.",
+        )
 
     def get_success_url(self):
         return reverse(
