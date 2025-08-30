@@ -179,13 +179,11 @@ class Resource(LifecycleModelMixin, RulesModel):
 
     def infer_metadata(self, deferred=True):
         if deferred:
-            # For base Resource class, just extract HTTP headers
-            self._extract_and_save_http_headers()
-        else:
-            self._extract_and_save_http_headers()
+            app.configure_task(name="dms.datasets.tasks.infer_metadata_task").defer(
+                resource_id=self.pk
+            )
+            return
 
-    def _extract_and_save_http_headers(self):
-        """Extract and save HTTP headers for HTTP-based URIs."""
         http_headers = self._get_http_headers()
         if http_headers:
             if not self.metadata:
@@ -252,9 +250,9 @@ class RasterResource(Resource):
 
     def infer_metadata(self, deferred=True):
         if deferred:
-            app.configure_task(
-                name="dms.datasets.tasks.infer_raster_metadata_task"
-            ).defer(resource_id=self.pk)
+            app.configure_task(name="dms.datasets.tasks.infer_metadata_task").defer(
+                resource_id=self.pk
+            )
             return
 
         try:
@@ -325,9 +323,9 @@ class TabularResource(Resource):
 
     def infer_metadata(self, deferred=True):
         if deferred:
-            app.configure_task(
-                name="dms.datasets.tasks.infer_tabular_metadata_task"
-            ).defer(resource_id=self.pk)
+            app.configure_task(name="dms.datasets.tasks.infer_metadata_task").defer(
+                resource_id=self.pk
+            )
             return
 
         try:
