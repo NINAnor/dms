@@ -269,7 +269,7 @@ class Migration(migrations.Migration):
                 (
                     "titiler",
                     models.JSONField(
-                        default=dict, verbose_name="Titiler configuration"
+                        default=dict, verbose_name="Titiler configuration", blank=True
                     ),
                 ),
             ],

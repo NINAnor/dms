@@ -234,7 +234,9 @@ class RasterResource(Resource):
     def type(self):
         return "raster"
 
-    titiler = models.JSONField(default=dict, verbose_name="Titiler configuration")
+    titiler = models.JSONField(
+        default=dict, verbose_name="Titiler configuration", blank=True
+    )
 
     @property
     def preview_url(self):
