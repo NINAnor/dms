@@ -1,4 +1,7 @@
+from rest_framework.decorators import action
 from rest_framework.pagination import CursorPagination
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rules.contrib.rest_framework import AutoPermissionViewSetMixin
 
@@ -12,6 +15,7 @@ from ..models import (
     Resource,
     TabularResource,
 )
+from ..schemas import dataset_metadata
 from . import serializers
 
 
@@ -26,10 +30,24 @@ class DatasetViewSet(AutoPermissionViewSetMixin, ModelViewSet):
     pagination_class = DefaultCursorPagination
     filterset_class = filters.DatasetFilter
 
+    permission_type_map = {
+        **AutoPermissionViewSetMixin.permission_type_map,
+        "metadata_schema": "view",
+    }
+
     def get_serializer_class(self):
         if self.action == "list":
             return serializers.DatasetListSerializer
         return super().get_serializer_class()
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="metadata-schema",
+        permission_classes=[AllowAny],
+    )
+    def metadata_schema(self, request):
+        return Response(data=dataset_metadata.schema)
 
 
 class ResourceViewSet(AutoPermissionViewSetMixin, ModelViewSet):
