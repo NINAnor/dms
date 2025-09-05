@@ -20,6 +20,10 @@ def resource_in_user_projects(user, resource):
         return False
     if not resource:
         return True
+    if not resource.dataset.project_id and user.is_staff:
+        return True
     if resource.dataset.project:
-        return resource.dataset.project.filter(members__user=user).exists()
+        return Project.objects.filter(
+            members__user=user, datasets=resource.dataset
+        ).exists()
     return False
