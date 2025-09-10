@@ -50,7 +50,7 @@ dependencies = [
   "djangorestframework-simplejwt",
   # gis
   "pygeometa @ git+https://github.com/nicokant/pygeometa@gbif-eml#egg=pygeometa",
-  # "gdal==3.11.2",
+  "gdal==3.11.2",
   "pyproj",
   # queue
   "procrastinate[django]>=3.0.0",
@@ -79,7 +79,10 @@ dependencies = [
   "pydantic>=2.11.4",
   "duckdb>=1.2.2",
   "fiona[s3]>=1.10.1",
-  "rasterio>=1.4.3"
+  "rasterio>=1.4.3",
+  "pandoc",
+  "pylatex",
+  "langdetect"
 ]
 description = "Add your description here"
 license = {text = "GPLv3"}

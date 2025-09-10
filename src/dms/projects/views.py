@@ -1,4 +1,5 @@
 from django.db.models import Prefetch
+from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, UpdateView
 from django_filters.views import FilterView
@@ -16,6 +17,7 @@ from dms.services.tables import ServiceTable
 
 from .filters import DMPFilter, ProjectFilter
 from .forms import DMPForm, ProjectForm
+from .libs.render_latex import render_to_format
 from .models import DMP, Project, ProjectsConfiguration
 from .tables import DMPTable, ProjectTable
 
@@ -83,6 +85,43 @@ class DMPDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailView):
         ctx = super().get_context_data(**kwargs)
         ctx["projects_config"] = ProjectsConfiguration.get_solo()
         return ctx
+
+
+class DMPPreviewView(PermissionRequiredMixin, DetailView):
+    model = DMP
+    permission_required = "projects.view_dmp"
+
+    formats = {
+        "html": {"content_type": "text/html", "ext": "html"},
+        "latex": {"content_type": "text/plain", "ext": "tex"},
+        "pdf": {"content_type": "application/pdf", "ext": "pdf"},
+        "docx": {"content_type": "application/vnd.openxmlformats", "ext": "docx"},
+    }
+
+    def render_to_response(self, context, **response_kwargs):
+        # Get format from query parameter, default to html
+        format_param = self.request.GET.get("format", "html").lower()
+
+        # Validate format parameter
+        if format_param not in self.formats.keys():
+            selected_format = self.formats["html"]
+            format_param = "html"
+        else:
+            selected_format = self.formats[format_param]
+
+        conf = ProjectsConfiguration.objects.select_related("dmp_survey_config").first()
+        result = render_to_format(
+            conf.dmp_survey_config.config, self.object.data, output_format=format_param
+        )
+
+        # Set filename for download
+        filename = f"dmp_{self.object.name}.{selected_format['ext']}"
+
+        response = HttpResponse(result, content_type=selected_format["content_type"])
+        if format_param != "html":
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+        return response
 
 
 class DMPCreateView(PermissionRequiredMixin, CreateBreadcrumbMixin, CreateView):

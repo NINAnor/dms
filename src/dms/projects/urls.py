@@ -17,6 +17,7 @@ urlpatterns = [
     path("dmps/", views.DMPListView.as_view(), name="dmp_list"),
     path("dmps/create/", views.DMPCreateView.as_view(), name="dmp_create"),
     path("dmps/<int:pk>/", views.DMPDetailView.as_view(), name="dmp_detail"),
+    path("dmps/<int:pk>/preview/", views.DMPPreviewView.as_view(), name="dmp_preview"),
     path("dmps/<int:pk>/edit/", views.DMPUpdateView.as_view(), name="dmp_update"),
     path("dmps/<int:pk>/delete/", views.DMPDeleteView.as_view(), name="dmp_delete"),
 ]

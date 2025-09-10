@@ -26,6 +26,20 @@
             <option value="{{ code }}" {% if current_language == code %}selected{% endif %}>{{ name }}</option>
             {% endfor %}
         </select>
+
+        {% url 'projects:dmp_preview' pk=dmp.id as preview_url %}
+
+        <a class="btn btn-secondary" href="{{ preview_url }}" target="_blank">Preview</a>
+
+        <details class="dropdown">
+            <summary class="btn btn-secondary">Download</summary>
+            <ul class="dropdown-content menu bg-base-100 z-10 w-52 p-2 shadow-lg">
+                <li><a class="no-underline hover:bg-secondary hover:text-secondary-content" target="_blank" href="{{ preview_url }}">HTML</a></li>
+                <li><a class="no-underline hover:bg-secondary hover:text-secondary-content" target="_blank" href="{{preview_url}}?format=pdf">PDF</a></li>
+                <li><a class="no-underline hover:bg-secondary hover:text-secondary-content" target="_blank" href="{{preview_url}}?format=latex">LaTex</a></li>
+                <li><a class="no-underline hover:bg-secondary hover:text-secondary-content" target="_blank" href="{{preview_url}}?format=docx">Microsoft Word</a></li>
+            </ul>
+        </details>
         {% if dmp.project %}
         <a class="btn btn-primary" href="{% url 'projects:project_detail' pk=dmp.project_id %}">Project</a>
         {% endif %}
