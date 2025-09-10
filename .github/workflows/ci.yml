@@ -39,7 +39,7 @@ jobs:
         run: docker compose --profile dev run --rm django-dev manage.py spectacular --validate
 
       - name: Run Django Tests
-        run: docker compose --profile dev run django-dev uv run pytest
+        run: docker compose --profile dev run django-dev uv run pytest src
 
       - name: Tear down the Stack
         run: docker compose --profile dev down
