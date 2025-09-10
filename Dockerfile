@@ -1,6 +1,6 @@
 ARG TESTING_MODULE="dms.core.settings.test"
 
-FROM ghcr.io/osgeo/gdal:ubuntu-full-3.10.1 AS base
+FROM ghcr.io/osgeo/gdal:ubuntu-full-3.11.2 AS base
 ENV UV_LINK_MODE=copy
 ENV UV_COMPILE_BYTECODE=1
 # install uv
