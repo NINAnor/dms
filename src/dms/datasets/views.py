@@ -1,5 +1,6 @@
 # from django.db.models import Prefetch
 # from django.urls import reverse_lazy
+import json
 
 from django.contrib import messages
 from django.db.models import Q
@@ -13,6 +14,7 @@ from django.views.generic import (
     UpdateView,
 )
 from django_filters.views import FilterView
+from django_svelte_jsoneditor.widgets import SvelteJSONEditorWidget
 from django_tables2.views import SingleTableMixin
 from rules.contrib.views import PermissionRequiredMixin
 from view_breadcrumbs import (
@@ -79,6 +81,16 @@ class DatasetDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailVi
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["resource_table"] = ResourceTable(self.object.resources.all())
+
+        widget = SvelteJSONEditorWidget(
+            props={"mode": "view", "readOnly": True, "navigationBar": False},
+            attrs={"id": "metadata_preview"},
+            wrapper_class="svelte-jsoneditor-wrapper",
+        )
+        ctx["metadata_preview"] = widget.render(
+            name="metadata_preview", value=json.dumps(self.object.metadata, indent=2)
+        )
+
         return ctx
 
 
@@ -142,6 +154,19 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
             queryset = self.get_queryset()
         # Use inheritance manager to get the correct subclass instance
         return queryset.select_subclasses().get(pk=self.kwargs["pk"])
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+
+        widget = SvelteJSONEditorWidget(
+            props={"mode": "view", "readOnly": True, "navigationBar": False},
+            attrs={"id": "metadata_preview"},
+            wrapper_class="svelte-jsoneditor-wrapper",
+        )
+        ctx["metadata_preview"] = widget.render(
+            name="metadata_preview", value=json.dumps(self.object.metadata, indent=2)
+        )
+        return ctx
 
     def get_template_names(self):
         # Get the actual model class name (e.g., MapResource, RasterResource)

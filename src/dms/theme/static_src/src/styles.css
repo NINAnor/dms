@@ -125,11 +125,11 @@ table.table thead th.asc.orderable a::after {
 }
 
 .svelte-jsoneditor-wrapper {
-  max-width: 100%;
   width: auto !important;
   min-height: auto !important;
+  @apply max-w-full;
 }
 
 .svelte-jsoneditor-wrapper>div {
-  min-height: 450px !important;
+  @apply max-h-[40rem] overflow-auto;
 }
