@@ -19,6 +19,9 @@
         </p>
     </div>
     <div class="flex gap-4">
+        {% if not dmp.is_external %}
+        {% url 'projects:dmp_preview' pk=dmp.id as preview_url %}
+
         <select id="language-select" name="language" x-data @change="setLocale($event.target.value)">
             {% get_current_language as current_language %}
             {% get_languages as languages %}
@@ -26,9 +29,6 @@
             <option value="{{ code }}" {% if current_language == code %}selected{% endif %}>{{ name }}</option>
             {% endfor %}
         </select>
-
-        {% url 'projects:dmp_preview' pk=dmp.id as preview_url %}
-
         <a class="btn btn-secondary" href="{{ preview_url }}" target="_blank">Preview</a>
 
         <details class="dropdown">
@@ -40,6 +40,10 @@
                 <li><a class="no-underline hover:bg-secondary hover:text-secondary-content" target="_blank" href="{{preview_url}}?format=docx">Microsoft Word</a></li>
             </ul>
         </details>
+        {% elif dmp.external_file %}
+            <a class="btn btn-secondary" href="{{ dmp.external_file.url }}" target="_blank">Download</a>
+        {% endif %}
+
         {% if dmp.project %}
         <a class="btn btn-primary" href="{% url 'projects:project_detail' pk=dmp.project_id %}">Project</a>
         {% endif %}
@@ -53,7 +57,9 @@
 </div>
 
 <div class="mt-5">
-    {% if projects_config.dmp_survey_config %}
+    {% if dmp.is_external %}
+    <p>Reference to the external DMP:<br /><b>{{ dmp.external_reference|default_if_none:"No reference provided"}}</b></p>
+    {% elif projects_config.dmp_survey_config %}
     <div id="surveyContainer"></div>
     {% csrf_token %}
     {% else %}
@@ -72,14 +78,16 @@
 
 
 {% block css %}
+{% if not dmp.is_external %}
 <link href="https://unpkg.com/survey-core/survey-core.min.css" type="text/css" rel="stylesheet">
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+{% endif %}
 {% endblock %}
 
 
 {% block body_javascript %}
 {{ block.super }}
-{% if projects_config.dmp_survey_config %}
+{% if projects_config.dmp_survey_config and not dmp.is_external %}
 
 {% url 'api_v1:dmps-detail' pk=dmp.id as dmp_api_url %}
 {{ dmp_api_url|safe|json_script:"dmp_api_url" }}
@@ -92,8 +100,6 @@
 <script src="https://unpkg.com/survey-core/survey.i18n.min.js"></script>
 <script src="https://unpkg.com/dompurify@3.2.4/dist/purify.min.js"></script>
 <script src="https://unpkg.com/marked@15.0.7/marked.min.js"></script>
-
-
 
 <script src="{% static 'projects/dmp.js' %}"></script>
 {% endif %}

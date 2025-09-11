@@ -58,7 +58,4 @@ class DMPForm(forms.ModelForm):
 
     class Meta:
         model = DMP
-        fields = [
-            "name",
-            "project",
-        ]
+        fields = ["name", "project", "external_reference", "external_file"]

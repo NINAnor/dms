@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import rules
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -68,6 +70,10 @@ class Section(models.Model):
         return self.text
 
 
+def upload_external_dmp(instance, filename):
+    return f"dmps/{instance.id}/external{Path(filename).suffix}"
+
+
 class DMP(RulesModel):
     name = models.CharField()
     data = models.JSONField(null=True, blank=True)
@@ -78,8 +84,24 @@ class DMP(RulesModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    external_reference = models.CharField(
+        null=True,
+        blank=True,
+        help_text="URL or reference to an external DMP",
+    )
+    external_file = models.FileField(
+        upload_to=upload_external_dmp,
+        null=True,
+        blank=True,
+        help_text="Upload the external DMP",
+    )
+
     def get_absolute_url(self):
         return reverse("projects:dmp_detail", kwargs={"pk": self.pk})
+
+    @property
+    def is_external(self):
+        return bool(self.external_reference or self.external_file)
 
     class Meta:
         rules_permissions = {
