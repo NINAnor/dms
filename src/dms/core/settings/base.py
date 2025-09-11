@@ -246,8 +246,10 @@ if AWS_ACCESS_KEY_ID := env("DJANGO_AWS_ACCESS_KEY_ID", default=None):
 
     AWS_S3_SIGNATURE_VERSION = env("AWS_S3_SIGNATURE_VERSION", default="s3v4")
 
-    MEDIA_URL = f"{AWS_S3_ENDPOINT_URL}/{MEDIA_BASE_LOCATION}/"
-    STORAGES["default"]["backend"] = "dms.core.storages.MediaRootS3Boto3Storage"
+    MEDIA_URL = (
+        f"{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/{MEDIA_BASE_LOCATION}/"
+    )
+    STORAGES["default"]["BACKEND"] = "dms.core.storages.MediaRootS3Boto3Storage"
 
 
 # TEMPLATES
@@ -345,6 +347,11 @@ LOGGING = {
     },
     "loggers": {
         "rules": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+        "storages": {
             "handlers": ["console"],
             "level": "DEBUG",
             "propagate": True,
