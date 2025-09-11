@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block resource_specific_content %}
-{% if object.metadata.driver %}
+{% if object.metadata.driverShortName %}
 <c-accordion.item value='item-2'>
     <c-accordion.trigger value='item-2' class="text-2xl font-bold">Snippets</c-accordion.trigger>
     <c-accordion.content value='item-2'>
@@ -40,7 +40,7 @@ from read_parquet('{{ object.uri }}');
     </c-accordion.content>
 </c-accordion.item>
 {% endif %}
-{% if object.metadata.driver == 'Parquet' %}
+{% if object.metadata.driverShortName == 'Parquet' %}
 <c-accordion.item value='item-2'>
     <c-accordion.trigger value='item-2' class="text-2xl font-bold">Preview</c-accordion.trigger>
     <c-accordion.content value='item-2'>
@@ -52,7 +52,7 @@ from read_parquet('{{ object.uri }}');
 
 {% block body_javascript %}
     {{ block.super }}
-    {% if object.metadata.driver == 'Parquet' %}
+    {% if object.metadata.driverShortName == 'Parquet' %}
     <link rel="stylesheet" href="{% static 'css/parquet.css' %}">
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="{% static 'js/parquet-preview.js' %}" data-type="module" type="text/babel"></script>

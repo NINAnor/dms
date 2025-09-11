@@ -1,7 +1,5 @@
 from urllib.parse import urlencode
 
-import fiona
-import rasterio as rio
 import requests
 import rules
 from autoslug import AutoSlugField
@@ -14,8 +12,8 @@ from django_jsonform.models.fields import JSONField as JSONBField
 from django_lifecycle import AFTER_SAVE, LifecycleModelMixin, hook
 from django_lifecycle.conditions import WhenFieldHasChanged
 from model_utils.managers import InheritanceManager
+from osgeo import gdal
 from procrastinate.contrib.django import app
-from rasterio.errors import RasterioError
 from rules.contrib.models import RulesModel
 
 from .conf import settings
@@ -24,6 +22,8 @@ from .rules import (
     resource_in_user_projects,
 )
 from .schemas import dataset_metadata
+
+gdal.UseExceptions()
 
 
 class Dataset(RulesModel):
@@ -245,9 +245,24 @@ class RasterResource(Resource):
             **self.titiler,
             "url": self.uri,
         }
-        params = [(k, v) for k, v in params.items()] + [
-            ("rescale", f"{s['min']},{s['max']}") for s in self.metadata["statistics"]
-        ]
+        print(self.metadata["bands"])
+        params = (
+            [(k, v) for k, v in params.items()]
+            + [
+                (
+                    "rescale",
+                    f"{band['minimum']},{band['maximum']}",
+                )
+                for band in self.metadata["bands"]
+            ]
+            + [
+                (
+                    "bidx",
+                    f"{band['band']}",
+                )
+                for band in self.metadata["bands"]
+            ]
+        )
         return settings.DATASETS_TITILER_URL + "/cog/preview/?" + urlencode(params)
 
     def infer_metadata(self, deferred=True):
@@ -258,51 +273,25 @@ class RasterResource(Resource):
             return
 
         try:
-            with rio.open(
-                self.uri,
-                driver=self.metadata.get("driver", None) if self.metadata else None,
-            ) as src:
-                stats = src.stats(approx=True)
-                metadata = {
-                    "bounds": src.bounds,
-                    "driver": src.driver,
-                    "crs": src.crs.to_string(),
-                    "dtypes": src.dtypes,
-                    "nodata": src.nodata,
-                    "width": src.width,
-                    "height": src.height,
-                    "count": src.count,
-                    "tiled": src.is_tiled,
-                    "compression": str(src.compression),
-                    "descriptions": src.descriptions,
-                    "indexes": src.indexes,
-                    "interleaving": str(src.interleaving),
-                    "tags": src.tags(),
-                    "photometric": src.photometric,
-                    "offsets": src.offsets,
-                    "name": src.name,
-                    "colorinterp": src.colorinterp,
-                    "resolution": src.res,
-                    "statistics": [
-                        {
-                            "min": s.min,
-                            "max": s.max,
-                            "mean": s.mean,
-                            "std": s.std,
-                        }
-                        for s in stats
-                    ],
-                }
+            # Disable permenent auxillary files to prevent GDAL
+            # creating a stats file with a remote resource
+            with gdal.config_options({"GDAL_PAM_ENABLED": "NO"}):
+                with gdal.Run(
+                    "raster",
+                    "info",
+                    input=self.uri,
+                    stats=True,
+                ) as alg:
+                    metadata = alg.Output()
+                    # Add HTTP headers to metadata if present
+                    http_headers = self._get_http_headers()
+                    if http_headers:
+                        metadata["http_headers"] = http_headers
 
-                # Add HTTP headers to metadata if present
-                http_headers = self._get_http_headers()
-                if http_headers:
-                    metadata["http_headers"] = http_headers
-
-                self.metadata = metadata
-                self.last_sync = {"timestamp": now(), "status": "ok"}
-                self.save(update_fields=["metadata", "last_sync"])
-        except RasterioError as e:
+                    self.metadata = metadata
+                    self.last_sync = {"timestamp": now(), "status": "ok"}
+                    self.save(update_fields=["metadata", "last_sync"])
+        except Exception as e:
             self.last_sync = {"status": "fail", "timestamp": now(), "error": str(e)}
             self.metadata = {}
             self.save(update_fields=["last_sync", "metadata"])
@@ -331,29 +320,16 @@ class TabularResource(Resource):
             return
 
         try:
-            with fiona.open(
-                self.uri,
-                ignore_geometry=False,
-                layer=self.name,
-                driver=self.metadata.get("driver", None) if self.metadata else None,
-            ) as src:
-                geometry = (
-                    src.schema["geometry"]
-                    if src.schema.get("geometry") and src.schema["geometry"] != "None"
-                    else None
-                )
-                metadata = {
-                    "driver": src.driver,
-                    "properties": src.schema["properties"],
-                    "crs": src.crs.to_string(),
-                    "geometry": geometry,
-                    "tags": src.tags(),
-                }
-
-                if geometry:
-                    metadata["bounds"] = src.bounds
-                else:
-                    metadata["bounds"] = None
+            extra = {}
+            if self.name:
+                extra["layer"] = self.name
+            with gdal.Run(
+                "vector",
+                "info",
+                input=self.uri,
+                **extra,
+            ) as alg:
+                metadata = alg.Output()
 
                 # Add HTTP headers to metadata if present
                 http_headers = self._get_http_headers()
@@ -364,7 +340,7 @@ class TabularResource(Resource):
                 self.last_sync = {"timestamp": now(), "status": "ok"}
                 self.save(update_fields=["metadata", "last_sync"])
 
-        except fiona.errors.FionaError as e:
+        except Exception as e:
             self.last_sync = {"status": "fail", "timestamp": now(), "error": str(e)}
             self.metadata = {}
             self.save(update_fields=["last_sync", "metadata"])

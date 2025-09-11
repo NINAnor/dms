@@ -1,7 +1,7 @@
 {% extends 'datasets/resource_detail_base.html' %}
 
 {% block resource_specific_content %}
-{% if object.metadata.driver == 'GTiff' and object.metadata.tiled %}
+{% if object.metadata.driverShortName == 'GTiff' and object.metadata.metadata.IMAGE_STRUCTURE.LAYOUT == 'COG' %}
 <c-accordion.item value='item-2'>
     <c-accordion.trigger value='item-2' class="text-2xl font-bold">Preview</c-accordion.trigger>
     <c-accordion.content value='item-2'>

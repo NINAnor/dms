@@ -50,7 +50,7 @@ dependencies = [
   "djangorestframework-simplejwt",
   # gis
   "pygeometa @ git+https://github.com/nicokant/pygeometa@gbif-eml#egg=pygeometa",
-  # "gdal==3.11.2",
+  "gdal==3.11.2",
   "pyproj",
   # queue
   "procrastinate[django]>=3.0.0",
@@ -65,7 +65,7 @@ dependencies = [
   "django-autoslug>=1.9.9",
   "pyjwt[crypto]>=2.9.0",
   "django-jsonform>=2.23.2",
-  "django-svelte-jsoneditor>=0.4.2",
+  "django-svelte-jsoneditor>=0.4.4",
   "jsonfield>=3.1.0",
   "django-cotton>=2.0.3",
   "django-htmx>=1.23.0",
@@ -78,8 +78,6 @@ dependencies = [
   "s3fs>=2025.3.2",
   "pydantic>=2.11.4",
   "duckdb>=1.2.2",
-  "fiona[s3]>=1.10.1",
-  "rasterio>=1.4.3",
   "pandoc",
   "pylatex",
   "langdetect"
