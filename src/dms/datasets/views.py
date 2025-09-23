@@ -201,7 +201,7 @@ class ResourceCreateView(
 
     def get_success_url(self):
         return reverse(
-            "datasets:resource_update_metadata",
+            "datasets:resource_detail",
             kwargs={"dataset_pk": self.kwargs.get("dataset_pk"), "pk": self.object.pk},
         )
 
