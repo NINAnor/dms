@@ -26,6 +26,7 @@ from view_breadcrumbs import (
 
 from dms.shared.views import ActionView
 
+from .conf import settings
 from .filters import DatasetFilter, DatasetRelationshipFilter, ResourceFilter
 from .forms import (
     DatasetForm,
@@ -166,6 +167,7 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
         ctx["metadata_preview"] = widget.render(
             name="metadata_preview", value=json.dumps(self.object.metadata, indent=2)
         )
+        ctx["NINA_MAP_PREVIEW"] = settings.DATASETS_NINA_MAP_PREVIEW
         return ctx
 
     def get_template_names(self):

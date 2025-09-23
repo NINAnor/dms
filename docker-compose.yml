@@ -26,6 +26,7 @@ x-django-env: &django-env
   AWS_RESPONSE_CHECKSUM_VALIDATION: WHEN_REQUIRED
   DATASETS_TITILER_URL: ${DATASETS_TITILER_URL:-/titiler}
   DJANGO_ALLOWED_HOSTS: "localhost,django,${HOSTNAME:-}"
+  DATASETS_NINA_MAP_PREVIEW: ${DATASETS_NINA_MAP_PREVIEW:-}
 
 x-django-prod-env: &django-prod-env
   <<: *django-env
