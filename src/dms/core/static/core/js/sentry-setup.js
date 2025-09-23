@@ -10,10 +10,10 @@ Sentry.init({
     }),
   ],
   tracesSampleRate: 0.2,
-  beforeSend(event, hint) {
-    if (event.exception && event.event_id) {
-      Sentry.showReportDialog({ eventId: event.event_id });
-    }
-    return event;
-  },
+  // beforeSend(event, hint) {
+  //   if (event.exception && event.event_id) {
+  //     Sentry.showReportDialog({ eventId: event.event_id });
+  //   }
+  //   return event;
+  // },
 });
