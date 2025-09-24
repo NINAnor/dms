@@ -81,7 +81,9 @@ class DatasetDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailVi
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["resource_table"] = ResourceTable(self.object.resources.all())
+        ctx["resource_table"] = ResourceTable(
+            self.object.resources.select_subclasses().all()
+        )
 
         widget = SvelteJSONEditorWidget(
             props={"mode": "view", "readOnly": True, "navigationBar": False},
