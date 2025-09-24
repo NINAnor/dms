@@ -13,6 +13,7 @@ from view_breadcrumbs import (
     UpdateBreadcrumbMixin,
 )
 
+from dms.datasets.tables import DatasetTable
 from dms.services.tables import ServiceTable
 
 from .filters import DMPFilter, ProjectFilter
@@ -53,7 +54,8 @@ class ProjectDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailVi
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["services"] = ServiceTable(self.object.services.all())
+        ctx["services"] = ServiceTable(self.object.services.all(), prefix="services-")
+        ctx["datasets"] = DatasetTable(self.object.datasets.all(), prefix="datasets-")
         return ctx
 
 
