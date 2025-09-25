@@ -38,6 +38,7 @@ class DMPTable(tables.Table):
     name = tables.LinkColumn()
     created_at = tables.DateColumn(format="d/m/Y")
     modified_at = tables.DateColumn(format="d/m/Y")
+    featured_at = tables.BooleanColumn(verbose_name="Featured")
 
     class Meta:
         model = DMP

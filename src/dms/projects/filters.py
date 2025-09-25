@@ -16,6 +16,12 @@ class DMPFilter(filters.FilterSet):
         method="filter_by_project",
         label="Project",
     )
+    featured = filters.BooleanFilter(method="filter_by_featured", label="Featured")
+
+    def filter_by_featured(self, queryset, name, value):
+        if value is not None:
+            return queryset.filter(featured_at__isnull=not value)
+        return queryset
 
     def filter_by_project(self, queryset, name, value):
         if value:

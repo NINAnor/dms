@@ -95,6 +95,7 @@ class DMP(RulesModel):
         blank=True,
         help_text="Upload the external DMP",
     )
+    featured_at = models.DateTimeField(null=True, blank=True)
 
     def get_absolute_url(self):
         return reverse("projects:dmp_detail", kwargs={"pk": self.pk})

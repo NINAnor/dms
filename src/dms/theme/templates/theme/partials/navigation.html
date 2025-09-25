@@ -20,7 +20,7 @@
           {% if user.is_authenticated %}
           <c-navigation-menu.trigger index='0'>{{ user }}</c-navigation-menu.trigger>
           <c-navigation-menu.content index='0' class="bg-white md:w-[10rem]" >
-            <c-navigation-menu.link  href="{% url 'projects:dmp_list' %}">
+            <c-navigation-menu.link  href="{% url 'projects:dmp_list-personal' %}">
                 <i class="fas fa-file-shield"></i>
                 {% trans 'My DMPs' %}
             </c-navigation-menu.link >

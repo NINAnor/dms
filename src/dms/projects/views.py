@@ -1,4 +1,4 @@
-from django.db.models import Prefetch
+from django.db.models import F, Prefetch
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, UpdateView
@@ -72,6 +72,32 @@ class DMPListView(
     table_class = DMPTable
     filterset_class = DMPFilter
     permission_required = "projects.view_dmp"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .order_by(F("featured_at").desc(nulls_last=True), "-updated_at")
+        )
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["title"] = "DMPs"
+        return ctx
+
+
+class MyDMPListView(
+    PermissionRequiredMixin, ListBreadcrumbMixin, SingleTableMixin, FilterView
+):
+    model = DMP
+    table_class = DMPTable
+    filterset_class = DMPFilter
+    permission_required = "projects.view_dmp"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["title"] = "My DMPs"
+        return ctx
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
