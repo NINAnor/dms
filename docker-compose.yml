@@ -27,6 +27,7 @@ x-django-env: &django-env
   DATASETS_TITILER_URL: ${DATASETS_TITILER_URL:-/titiler}
   DJANGO_ALLOWED_HOSTS: "localhost,django,${HOSTNAME:-}"
   DATASETS_NINA_MAP_PREVIEW: ${DATASETS_NINA_MAP_PREVIEW:-}
+  FASTDOC_CONVERT_API_URL: http://fastdoc:8000/convert
 
 x-django-prod-env: &django-prod-env
   <<: *django-env
@@ -211,6 +212,9 @@ services:
       - "traefik.http.routers.titiler.entrypoints=web"
       - "traefik.http.routers.titiler.priority=20"
       - "traefik.http.services.titiler.loadbalancer.server.port=80"
+
+  fastdoc:
+    image: ghcr.io/ninanor/fastdoc:main
 
   redis:
     image: redis

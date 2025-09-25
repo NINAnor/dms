@@ -1,3 +1,5 @@
+import requests
+from django.conf import settings
 from django.db.models import F, Prefetch
 from django.http import HttpResponse
 from django.urls import reverse_lazy
@@ -18,7 +20,7 @@ from dms.services.tables import ServiceTable
 
 from .filters import DMPFilter, ProjectFilter
 from .forms import DMPForm, ProjectForm
-from .libs.render_latex import render_to_format
+from .libs.render_latex import render_to_tex
 from .models import DMP, Project, ProjectsConfiguration
 from .tables import DMPTable, ProjectTable
 
@@ -138,14 +140,29 @@ class DMPPreviewView(PermissionRequiredMixin, DetailView):
             selected_format = self.formats[format_param]
 
         conf = ProjectsConfiguration.objects.select_related("dmp_survey_config").first()
-        result = render_to_format(
-            conf.dmp_survey_config.config, self.object.data, output_format=format_param
+
+        latex_content = render_to_tex(conf.dmp_survey_config.config, self.object.data)
+        if format_param == "latex":
+            return latex_content
+
+        response = requests.post(
+            settings.FASTDOC_CONVERT_API_URL,
+            json={
+                "text": latex_content,
+                "input_format": "latex",
+                "output_format": format_param,
+            },
+            timeout=20,
         )
+        # NOTE: timeout is not handled intentionally
+        # TODO: move this in queue and save the outputs to s3
 
         # Set filename for download
         filename = f"dmp_{self.object.name}.{selected_format['ext']}"
 
-        response = HttpResponse(result, content_type=selected_format["content_type"])
+        response = HttpResponse(
+            response.content, content_type=response.headers["Content-Type"]
+        )
         if format_param != "html":
             response["Content-Disposition"] = f'attachment; filename="{filename}"'
 

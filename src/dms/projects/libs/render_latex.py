@@ -1,6 +1,5 @@
 from typing import Any
 
-import pandoc
 from langdetect import detect
 from pylatex import Command, Document, Itemize, Section, Subsection
 from pylatex.package import Package
@@ -182,15 +181,3 @@ def render_to_tex(
         render_page_content(doc, page, result_data, detected_lang)
 
     return doc.dumps()
-
-
-def render_to_format(
-    dmp_template: dict,
-    result_data: dict,
-    output_format: str = "html",
-):
-    latex_content = render_to_tex(dmp_template, result_data)
-    if format == "latex":
-        return latex_content
-    doc = pandoc.read(latex_content, format="latex")
-    return pandoc.write(doc, format=output_format)

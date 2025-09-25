@@ -8,8 +8,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.5.31 /uv /uvx /bin/
 RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     --mount=target=/var/cache/apt,type=cache,sharing=locked \
     apt-get update && apt-get install --no-install-recommends -yq \
-    gettext curl build-essential python3-dev libldap2-dev libsasl2-dev ldap-utils git \
-    pandoc lmodern texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
+    gettext curl build-essential python3-dev libldap2-dev libsasl2-dev ldap-utils git
 WORKDIR /app
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh && bash nodesource_setup.sh
 RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \

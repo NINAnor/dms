@@ -27,9 +27,6 @@ dependencies = [
   "django-widget-tweaks",
   # django-utils-app
   "django-solo",
-  "django-treebeard>=4.7",
-  "django-countries-plus",
-  "django-languages-plus",
   # auth
   "django-allauth==65.5.0",
   "django-allauth-ui==1.7.1",
@@ -49,7 +46,6 @@ dependencies = [
   "drf-standardized-errors[openapi]",
   "djangorestframework-simplejwt",
   # gis
-  "pygeometa @ git+https://github.com/nicokant/pygeometa@gbif-eml#egg=pygeometa",
   "gdal==3.11.2",
   "pyproj",
   # queue
@@ -68,7 +64,6 @@ dependencies = [
   "django-svelte-jsoneditor>=0.4.4",
   "django-cotton>=2.0.3",
   "django-htmx>=1.23.0",
-  "pandoc",
   "pylatex",
   "langdetect"
 ]

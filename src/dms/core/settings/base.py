@@ -100,7 +100,6 @@ THIRD_PARTY_APPS = [
     "health_check.contrib.migrations",
     "psqlextra",
     "solo",
-    "polymorphic",
     "corsheaders",
     "rest_framework",
     "rest_framework.authtoken",
@@ -557,3 +556,4 @@ if SENTRY_DSN:
 
 DATASETS_TITILER_URL = env("DATASETS_TITILER_URL", default="/titiler")
 DATASETS_NINA_MAP_PREVIEW = env("DATASETS_NINA_MAP_PREVIEW", default=None)
+FASTDOC_CONVERT_API_URL = env("FASTDOC_CONVERT_API_URL", default=None)
