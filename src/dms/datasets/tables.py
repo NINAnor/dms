@@ -13,6 +13,7 @@ class DatasetTable(tables.Table):
         fields = (
             "title",
             "name",
+            "version",
             "created_at",
             "last_modified_at",
             "project",
@@ -37,6 +38,23 @@ class ResourceTable(tables.Table):
             "created_at",
             "last_modified_at",
             "uri",
+        )
+        template_name = "django_tables2/bootstrap.html"
+
+
+class ResourceListTable(ResourceTable):
+    dataset = tables.LinkColumn()
+    project = tables.LinkColumn()
+
+    class Meta(ResourceTable.Meta):
+        fields = (
+            "title",
+            "resource_type",
+            "created_at",
+            "last_modified_at",
+            "uri",
+            "dataset",
+            "project",
         )
         template_name = "django_tables2/bootstrap.html"
 

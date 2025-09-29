@@ -36,6 +36,31 @@ class ResourceFilter(filters.FilterSet):
         widget=autocomplete.ModelSelect2(url="autocomplete:dataset"),
         label="Dataset",
     )
+    resource_type = filters.ChoiceFilter(
+        method="filter_by_resource_type",
+        label="Resource Type",
+        choices=[
+            ("resource", "Resource"),
+            ("mapresource", "Map Resource"),
+            ("tabularresource", "Tabular Resource"),
+            ("rasterresource", "Raster Resource"),
+            # ("partitioinedresource", "Partitioned Resource"),
+        ],
+    )
+
+    def filter_by_resource_type(self, queryset, name, value):
+        if value:
+            if value == "resource":
+                filterset = {
+                    "mapresource__isnull": True,
+                    "tabularresource__isnull": True,
+                    "rasterresource__isnull": True,
+                    # "partitionedresource__isnull": True,
+                }
+            else:
+                filterset = {value + "__isnull": False}
+            return queryset.filter(**filterset)
+        return queryset
 
     def filter_by_project(self, queryset, name, value):
         if value:

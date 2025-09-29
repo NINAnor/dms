@@ -48,7 +48,12 @@ from .models import (
     Resource,
     TabularResource,
 )
-from .tables import DatasetRelationshipTable, DatasetTable, ResourceTable
+from .tables import (
+    DatasetRelationshipTable,
+    DatasetTable,
+    ResourceListTable,
+    ResourceTable,
+)
 
 
 class DatasetListView(
@@ -67,12 +72,17 @@ class ResourceListView(
     PermissionRequiredMixin, ListBreadcrumbMixin, SingleTableMixin, FilterView
 ):
     model = Resource
-    table_class = ResourceTable
+    table_class = ResourceListTable
     filterset_class = ResourceFilter
     permission_required = "datasets.view_resource"
 
     def get_queryset(self):
-        return super().get_queryset().select_subclasses()
+        return (
+            super()
+            .get_queryset()
+            .select_subclasses()
+            .select_related("dataset", "dataset__project")
+        )
 
 
 class DatasetDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailView):
