@@ -3,6 +3,7 @@ from .shared import SHARED_DEFS
 
 schema = {
     "type": "object",
+    "help_text": "Based on DataCite: https://datacite-metadata-schema.readthedocs.io/en/4.6/",
     "required": [
         "creators",
         "language",
@@ -21,13 +22,12 @@ schema = {
                     "alternateIdentifierType": {
                         "type": "string",
                         "title": "Type",
-                        "help_text": "The name of the agency that generated the other identifier",
-                        "enum": [{"title": "DOI", "value": "DOI"}],
+                        "help_text": "The name of the agency that generated the identifier",
                     },
                 },
             },
-            "title": "Other Identifiers",
-            "help_text": "Another unique identifier for the Dataset (e.g. producer's or another repository's identifier)",
+            "title": "Identifiers",
+            "help_text": "Unique identifiers for the Dataset",
         },
         "creators": {
             "type": "list",
@@ -45,6 +45,8 @@ schema = {
                     },
                     "titleType": {
                         "type": "string",
+                        "title": "Type",
+                        "default": "Subtitle",
                         "enum": [
                             "AlternativeTitle",
                             "Subtitle",
@@ -59,6 +61,7 @@ schema = {
         },
         "publicationYear": {
             "type": "number",
+            "title": "Publication Year",
             "help_text": "The year when the data was or will be made publicly available",
         },
         "subjects": {
@@ -68,23 +71,28 @@ schema = {
                 "properties": {
                     "subject": {
                         "type": "string",
+                        "help_text": "Subject, keyword, classification code, or key phrase describing the resource.",
                     },
                     "subjectScheme": {
                         "type": "string",
-                        "help_text": "The name of the subject scheme or classification code or authority if one is used",
-                        "examples": [
-                            "Library of Congress Subject Headings (LCSH)",
-                            "ANZSRC Fields of Research",
-                        ],
+                        "title": "The name of the subject scheme or classification",
+                        "help_text": "The name of the subject scheme or classification code or authority if one is used Examples: Library of Congress Subject Headings (LCSH), ANZSRC Fields of Research",
                     },
-                    "schemeURI": {"type": "string", "format": "uri"},
+                    "schemeURI": {
+                        "type": "string",
+                        "format": "uri",
+                        "help_text": "The URI of the subject identifier scheme, Example: https://id.loc.gov/authorities/subjects.html",
+                    },
                     "valueURI": {
                         "type": "string",
                         "format": "uri",
+                        "help_text": "The URI of the subject term. Example: https://id.loc.gov/authorities/subjects/sh85118622.html",
                     },
                     "classificationCode": {
                         "type": "string",
-                        "help_text": "The classification code used for the subject term in the subject scheme.",
+                        "title": "Classification Code",
+                        "help_text": "Example: 310607 (where 310607 is the classification code associated with the subject term “Nanobiotechnology” in the ANZSRC Fields of Research subject scheme)"
+                        "The classificationCode sub-property may be used for subject schemes, like ANZSRC, which do not have valueURIs for each subject term.",
                     },
                 },
             },
@@ -220,15 +228,35 @@ schema = {
         },
         "rightsList": {
             "type": "list",
+            "title": "Licenses and Rights",
+            "help_text": "Information about licenses and rights held in and over the Dataset",
             "items": {
                 "type": "object",
                 "properties": {
-                    "rights": {"type": "string"},
-                    "rightsURI": {"type": "string"},
-                    "rightsIdentifier": {"type": "string"},
+                    "rights": {
+                        "type": "string",
+                        "title": "License description",
+                        "widget": "textarea",
+                        "help_text": "Provide a rights management statement for the resource or reference a service providing such information."
+                        "Include embargo information if applicable. Use the complete title of a license and include version information if applicable.",
+                    },
+                    "rightsURI": {
+                        "type": "string",
+                        "title": "The URI of the license",
+                        "help_text": "Example: https://creativecommons.org/licenses/by/3.0/de/",
+                    },
+                    "rightsIdentifier": {
+                        "type": "string",
+                        "title": "A short, standardized version of the license name",
+                        "help_text": "A short, standardized version of the license name, e.g. as provided by SPDX (https://spdx.org/licenses/)",
+                    },
                     "schemeUri": {
                         "type": "string",
-                        "default": "https://spdx.org/licenses/",
+                        "title": "The URI of the license scheme",
+                        "help_text": "Example: https://spdx.org/licenses/",
+                        "enum": [
+                            "https://spdx.org/licenses/",
+                        ],
                     },
                 },
                 "required": [
@@ -241,9 +269,10 @@ schema = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "description": {"type": "string"},
                     "descriptionType": {
                         "type": "string",
+                        "default": "Abstract",
+                        "title": "Type",
                         "enum": [
                             "Abstract",
                             "Methods",
@@ -253,15 +282,7 @@ schema = {
                             "Other",
                         ],
                     },
-                },
-            },
-        },
-        "geoLocations": {
-            "type": "list",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "geoLocationPlace": {"type": "string"},
+                    "description": {"type": "string", "widget": "textarea"},
                 },
             },
         },
