@@ -6,21 +6,27 @@
 
 {% block article %}
   <div>
-    <div class="flex my-5 justify-between items-center">
-      <h1 class="font-bold text-4xl">{% block page-title %}{% endblock %}</h1>
-      {% block page-actions %}{% endblock page-actions %}
-    </div>
-    {% block before-filter %}{% endblock %}
-    {% if filter %}
-    <form method="get" class="py-3 px-4 border mb-3 ">
-      <div class="flex flex-wrap gap-4">
-          {{ filter.form | crispy }}
+    <div class="flex gap-8">
+      <div class="order-2 grow">
+        <div class="flex my-5 justify-between items-center">
+          <h1 class="font-bold text-4xl">{% block page-title %}{% endblock %}</h1>
+          {% block page-actions %}{% endblock page-actions %}
+        </div>
+        {% render_table table %}
+        {% block after-table %}{% endblock %}
       </div>
-        <button class="btn bg-primary" type="submit">Search</button>
-    </form>
-    {% endif %}
-    {% render_table table %}
-    {% block after-table %}{% endblock %}
+      <div class="order-1">
+        {% block before-filter %}{% endblock %}
+        {% if filter %}
+        <form method="get" class="py-3 px-4 border mb-3 ">
+          <div class="flex flex-col gap-4">
+              {{ filter.form | crispy }}
+          </div>
+            <button class="btn btn-primary" type="submit">Search</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
   </div>
 {% endblock article %}
 
