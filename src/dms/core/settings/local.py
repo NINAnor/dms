@@ -83,3 +83,5 @@ SOCIALACCOUNT_ADAPTER = "dms.users.adapters.SocialAccountAdapter"
 # ------------------------------------------------------------------------------
 INSTALLED_APPS += ["django_migration_linter"]
 MIGRATION_LINTER_OVERRIDE_MAKEMIGRATIONS = True
+
+MIGRATION_LINTER_OPTIONS = {"sql-analyser": "postgresql"}

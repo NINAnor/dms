@@ -164,6 +164,28 @@ class DatasetDeleteView(PermissionRequiredMixin, DeleteView):
         return reverse("datasets:dataset_list")
 
 
+class DatasetCloneView(PermissionRequiredMixin, ActionView):
+    model = Dataset
+    permission_required = "datasets.edit_dataset"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("project")
+            .prefetch_related("contributor_roles", "tags")
+        )
+
+    def execute(self):
+        self.cloned_dataset = self.object.clone()
+        messages.success(
+            self.request, f'Dataset "{self.object.title}" was successfully cloned.'
+        )
+
+    def get_success_url(self):
+        return reverse("datasets:dataset_detail", kwargs={"pk": self.cloned_dataset.pk})
+
+
 class ResourceDetailView(PermissionRequiredMixin, DetailView):
     model = Resource
     permission_required = "datasets.view_resource"

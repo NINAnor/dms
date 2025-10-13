@@ -76,6 +76,11 @@ urlpatterns = [
         views.DatasetDeleteView.as_view(),
         name="dataset_delete",
     ),
+    path(
+        "datasets/<str:pk>/clone/",
+        views.DatasetCloneView.as_view(),
+        name="dataset_clone",
+    ),
     # Resources
     path(
         "datasets/<str:dataset_pk>/resources/register/",

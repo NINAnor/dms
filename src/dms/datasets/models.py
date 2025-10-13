@@ -1,3 +1,4 @@
+import uuid
 from urllib.parse import urlencode
 
 import requests
@@ -33,7 +34,7 @@ gdal.UseExceptions()
 
 
 class Dataset(RulesModel):
-    id = models.CharField(primary_key=True)
+    id = models.CharField(primary_key=True, default=uuid.uuid4)
     version = models.CharField(null=True, blank=True)
     title = models.CharField()
     name = AutoSlugField(populate_from="title")
@@ -66,6 +67,34 @@ class Dataset(RulesModel):
 
     def get_absolute_url(self):
         return reverse("datasets:dataset_detail", kwargs={"pk": self.pk})
+
+    def clone(self):
+        """
+        Create a clone of the current dataset.
+        """
+        old_instance = self
+
+        # Create new instance with a new UUID
+        new_instance = Dataset.objects.create(
+            title=self.title,
+            version=self.version,
+            project=self.project,
+            metadata=self.metadata,
+            embargo_end_date=self.embargo_end_date,
+        )
+
+        # Copy many-to-many relationships
+        # Tags
+        for tag in old_instance.tags.all():
+            new_instance.tags.add(tag)
+
+        # Contributors (through DatasetContribution)
+        for contribution in old_instance.contributor_roles.all():
+            DatasetContribution.objects.create(
+                dataset=new_instance, user=contribution.user, roles=contribution.roles
+            )
+
+        return new_instance
 
     @cached_property
     def under_embargo(self):
