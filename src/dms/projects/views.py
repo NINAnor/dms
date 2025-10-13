@@ -51,7 +51,7 @@ class ProjectDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailVi
             super()
             .get_queryset()
             .select_related("category", "section")
-            .prefetch_related("tags", Prefetch("members__user"), "services")
+            .prefetch_related("tags", Prefetch("members__user"), "services", "topics")
         )
 
     def get_context_data(self, **kwargs):
