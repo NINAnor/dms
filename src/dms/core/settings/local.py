@@ -78,3 +78,8 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 # ALLAUTH
 # ------------------------------------------------------------------------------
 SOCIALACCOUNT_ADAPTER = "dms.users.adapters.SocialAccountAdapter"
+
+# MIGRATION LINTER
+# ------------------------------------------------------------------------------
+INSTALLED_APPS += ["django_migration_linter"]
+MIGRATION_LINTER_OVERRIDE_MAKEMIGRATIONS = True

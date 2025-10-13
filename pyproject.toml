@@ -25,6 +25,7 @@ dependencies = [
   "rules>=3.3",
   "django-filter>=24.2",
   "django-widget-tweaks",
+  "django-deprecate-fields",
   # django-utils-app
   "django-solo",
   # auth
@@ -81,7 +82,8 @@ dev = [
   "pre-commit",
   "django-debug-toolbar",
   "django-extensions",
-  "ruff"
+  "ruff",
+  "django-migration-linter"
 ]
 ldap = ["python-ldap", "django-auth-ldap"]
 prod = ["gunicorn"]
