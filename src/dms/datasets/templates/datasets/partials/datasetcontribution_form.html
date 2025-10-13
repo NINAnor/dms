@@ -1,0 +1,31 @@
+{% load crispy_forms_tags static %}
+
+<div hx-target="this">
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+        {% if object %}
+        <form method="POST" action="">
+            {% csrf_token %}
+            <div class="flex gap-4 items-center">
+                {{ form | crispy }}
+                <button class="btn btn-primary" type="submit" hx-post="{% url 'datasets:dataset_contribution_update' dataset_pk=view.kwargs.dataset_pk user_pk=object.user_id %}" hx-swap="outerHTML" hx-indicator="#spinner_{{object.uuid}}">
+                    Update
+                </button>
+                <button class="btn btn-error" type="submit" hx-post="{% url 'datasets:dataset_contribution_delete' dataset_pk=view.kwargs.dataset_pk user_pk=object.user_id %}" hx-swap="outerHTML" hx-indicator="#spinner_{{object.uuid}}" hx-confirm="Are you sure you wish to delete this contributor?">
+                    Delete
+                </button>
+                <i id="spinner_{{object.uuid}}" class="fas fa-spinner fa-spin htmx-indicator"></i>
+        </div>
+        </form>
+        {% else %}
+        <form method="POST" action="" id="create-form">
+            {% csrf_token %}
+            {{ form | crispy }}
+            <button class="btn btn-primary" hx-post="{% url 'datasets:dataset_contribution_create' dataset_pk=view.kwargs.dataset_pk %}" hx-swap="outerHTML" hx-indicator="#spinner_create">
+                Create <i id="spinner_create" class="fas fa-spinner fa-spin htmx-indicator"></i>
+            </button>
+        </form>
+        {% endif %}
+        </div>
+    </div>
+</div>

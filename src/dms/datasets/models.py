@@ -6,8 +6,11 @@ from autoslug import AutoSlugField
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone as tz
+from django.utils.functional import cached_property
 from django.utils.timezone import now
 from django.utils.translation import gettext as _
+from django_jsonform.models.fields import ArrayField
 from django_jsonform.models.fields import JSONField as JSONBField
 from django_lifecycle import AFTER_SAVE, LifecycleModelMixin, hook
 from django_lifecycle.conditions import WhenFieldHasChanged
@@ -15,6 +18,9 @@ from model_utils.managers import InheritanceManager
 from osgeo import gdal
 from procrastinate.contrib.django import app
 from rules.contrib.models import RulesModel
+from taggit.managers import TaggableManager
+
+from dms.core.models import GenericStringTaggedItem
 
 from .conf import settings
 from .rules import (
@@ -49,12 +55,24 @@ class Dataset(RulesModel):
     metadata = JSONBField(
         schema=dataset_metadata.schema, default=dict, encoder=DjangoJSONEncoder
     )
+    embargo_end_date = models.DateField(null=True, blank=True)
+    contributors = models.ManyToManyField(
+        "users.User", through="DatasetContribution", blank=True
+    )
+    tags = TaggableManager(through=GenericStringTaggedItem, blank=True)
 
     def __str__(self):
         return self.title
 
     def get_absolute_url(self):
         return reverse("datasets:dataset_detail", kwargs={"pk": self.pk})
+
+    @cached_property
+    def under_embargo(self):
+        return (
+            self.embargo_end_date
+            and self.embargo_end_date > tz.localtime(tz.now()).date()
+        )
 
     class Meta:
         rules_permissions = {
@@ -94,12 +112,63 @@ class DatasetRelationship(RulesModel):
         }
 
 
+class ContributionType(models.TextChoices):
+    """
+    https://datacite-metadata-schema.readthedocs.io/en/4.6/appendices/appendix-1/contributorType/
+    """
+
+    PROJECT_LEADER = "ProjectLeader", "Project Leader"
+    DATA_MANAGER = "DataManager", "Data Manager"
+    DATA_COLLECTOR = "DataCollector", "Data Collector"
+    DATA_CURATOR = "DataCurator", "Data Curator"
+    PROJECT_MANAGER = "ProjectManager", "Project Manager"
+    CONTACT_PERSON = "ContactPerson", "Contact Person"
+    OTHER = "Other", "Other"
+    PROJECT_MEMBER = "ProjectMember", "Project Member"
+    RESEARCHER = "Researcher", "Researcher"
+
+    @classmethod
+    def SCHEMA(self):
+        return {
+            "type": "array",
+            "uniqueItems": True,
+            "items": {
+                "type": "string",
+                "choices": [
+                    {"label": label, "value": value}
+                    for value, label in ContributionType.choices
+                ],
+            },
+        }
+
+
+class DatasetContribution(RulesModel):
+    pk = models.CompositePrimaryKey("dataset_id", "user_id")
+    uuid = models.UUIDField(db_default=models.Func(function="gen_random_uuid"))
+    dataset = models.ForeignKey(
+        "Dataset", on_delete=models.CASCADE, related_name="contributor_roles"
+    )
+    user = models.ForeignKey(
+        "users.User", on_delete=models.PROTECT, related_name="dataset_contributions"
+    )
+    roles = ArrayField(models.CharField(choices=ContributionType.choices), default=list)
+
+    class Meta:
+        rules_permissions = {
+            "add": rules.is_authenticated,
+            "view": rules.always_allow,
+            "change": resource_in_user_projects,
+            "delete": resource_in_user_projects,
+        }
+
+
 class Resource(LifecycleModelMixin, RulesModel):
     class Role(models.TextChoices):
         DATA = "data", "Data"
         PRESENTATION = "presentation", "Presentation"
         DOCUMENTATION = "documentation", "Documentation"
         METADATA = "metadata", "Metadata"
+        RAW_DATA = "raw_data", "Raw Data"
 
     class AccessType(models.TextChoices):
         PUBLIC = "public", "Public"
@@ -135,6 +204,7 @@ class Resource(LifecycleModelMixin, RulesModel):
     last_sync = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
 
     objects = InheritanceManager()
+    tags = TaggableManager(through=GenericStringTaggedItem, blank=True)
 
     class Meta:
         rules_permissions = {
@@ -245,7 +315,6 @@ class RasterResource(Resource):
             **self.titiler,
             "url": self.uri,
         }
-        print(self.metadata["bands"])
         params = (
             [(k, v) for k, v in params.items()]
             + [

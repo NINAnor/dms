@@ -1,6 +1,12 @@
 import django_tables2 as tables
 
-from .models import Dataset, DatasetRelationship, Resource
+from .models import (
+    ContributionType,
+    Dataset,
+    DatasetContribution,
+    DatasetRelationship,
+    Resource,
+)
 
 
 class DatasetTable(tables.Table):
@@ -64,3 +70,21 @@ class DatasetRelationshipTable(tables.Table):
         model = DatasetRelationship
         fields = ("id", "source", "target", "type")
         template_name = "django_tables2/bootstrap.html"
+
+
+CONTRIBUTION_TYPE = dict(ContributionType.choices)
+
+
+class DatasetContributionTable(tables.Table):
+    # user = tables.LinkColumn()
+
+    class Meta:
+        model = DatasetContribution
+        template_name = "django_tables2/bootstrap.html"
+        fields = (
+            "user",
+            "roles",
+        )
+
+    def render_roles(self, record):
+        return ", ".join(map(lambda r: CONTRIBUTION_TYPE[r], record.roles))

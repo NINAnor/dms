@@ -13,6 +13,7 @@ urlpatterns = [
     path(
         "datasets/<str:pk>/", views.DatasetDetailView.as_view(), name="dataset_detail"
     ),
+    # Dataset Relationships
     path(
         "datasets/<str:pk>/relationships/",
         views.DatasetRelationshipListView.as_view(),
@@ -38,6 +39,28 @@ urlpatterns = [
         views.DatasetRelationshipDeleteView.as_view(),
         name="dataset_relationship_delete",
     ),
+    # Dataset Contributions
+    path(
+        "datasets/<str:dataset_pk>/contributions/edit/",
+        views.DatasetContributionManageView.as_view(),
+        name="dataset_contribution_manage",
+    ),
+    path(
+        "datasets/<str:dataset_pk>/contributions/create/",
+        views.DatasetContributionCreateView.as_view(),
+        name="dataset_contribution_create",
+    ),
+    path(
+        "datasets/<str:dataset_pk>/contributions/edit/<int:user_pk>/",
+        views.DatasetContributionUpdateView.as_view(),
+        name="dataset_contribution_update",
+    ),
+    path(
+        "datasets/<str:dataset_pk>/contributions/delete/<int:user_pk>/",
+        views.DatasetContributionDeleteView.as_view(),
+        name="dataset_contribution_delete",
+    ),
+    # Dataset
     path(
         "datasets/<str:pk>/edit/",
         views.DatasetUpdateView.as_view(),
@@ -53,6 +76,7 @@ urlpatterns = [
         views.DatasetDeleteView.as_view(),
         name="dataset_delete",
     ),
+    # Resources
     path(
         "datasets/<str:dataset_pk>/resources/register/",
         views.ResourceCreateView.as_view(),

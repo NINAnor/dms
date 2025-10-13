@@ -4,12 +4,17 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from dal import autocomplete
 from django import forms
+from django.contrib.auth import get_user_model
+from django.db import models
+from django_jsonform.widgets import JSONFormWidget
 from django_svelte_jsoneditor.widgets import SvelteJSONEditorWidget
 
 from dms.projects.models import Project
 
 from .models import (
+    ContributionType,
     Dataset,
+    DatasetContribution,
     DatasetRelationship,
     MapResource,
     PartitionedResource,
@@ -17,6 +22,8 @@ from .models import (
     Resource,
     TabularResource,
 )
+
+User = get_user_model()
 
 
 class DatasetForm(forms.ModelForm):
@@ -43,8 +50,13 @@ class DatasetForm(forms.ModelForm):
 
     class Meta:
         model = Dataset
-        fields = ["title", "project"]
-        widgets = {"project": autocomplete.ModelSelect2(url="autocomplete:my_project")}
+        fields = ["title", "project", "embargo_end_date"]
+        widgets = {
+            "project": autocomplete.ModelSelect2(url="autocomplete:my_project"),
+            "embargo_end_date": forms.DateInput(
+                format="%Y-%m-%d", attrs={"type": "date"}
+            ),
+        }
 
 
 class DatasetUpdateForm(forms.ModelForm):
@@ -65,9 +77,12 @@ class DatasetUpdateForm(forms.ModelForm):
 
     class Meta:
         model = Dataset
-        fields = [
-            "title",
-        ]
+        fields = ["title", "embargo_end_date"]
+        widgets = {
+            "embargo_end_date": forms.DateInput(
+                format="%Y-%m-%d", attrs={"type": "date"}
+            ),
+        }
 
 
 class BaseMetadataForm(forms.ModelForm):
@@ -204,3 +219,47 @@ class DatasetRelationshipForm(forms.ModelForm):
             "target",
         ]
         widgets = {"target": autocomplete.ModelSelect2(url="autocomplete:dataset")}
+
+
+class DatasetContributorForm(forms.ModelForm):
+    def __init__(self, *args, dataset, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_method = "post"
+        self.helper.form_action = ""
+        self.helper.add_input(Submit("submit", "Submit", **{"hr-post": "."}))
+        self.dataset = dataset
+
+        # Get all the users that are part of the project,
+        # exclude those that already have a role
+        qs = models.Q(
+            pk__in=dataset.project.memberships.values_list("id", flat=True)
+        ) & ~models.Q(
+            pk__in=dataset.contributor_roles.values_list("user_id", flat=True)
+        )
+
+        # Include the selected user if the form is an update form
+        if self.initial:
+            qs = qs | models.Q(pk=self.initial["user"])
+
+        self.fields["user"].queryset = User.objects.filter(qs)
+
+    def clean_roles(self):
+        return list(dict.fromkeys(self.cleaned_data["roles"]))
+
+    def save(self, *args, **kwargs):
+        instance = super().save(commit=False)
+        instance.dataset = self.dataset
+        instance.save()
+        self.save_m2m()
+        return instance
+
+    class Meta:
+        model = DatasetContribution
+        fields = [
+            "user",
+            "roles",
+        ]
+        widgets = {
+            "roles": JSONFormWidget(schema=ContributionType.SCHEMA),
+        }

@@ -31,6 +31,7 @@ schema = {
         },
         "creators": {
             "type": "list",
+            "help_text": "External creators of the Dataset",
             "items": SHARED_DEFS["person"],
             "minItems": 1,
             "skos:exactMatch": "http://purl.org/dc/terms/creator",
@@ -99,6 +100,7 @@ schema = {
         },
         "contributors": {
             "type": "list",
+            "help_text": "External contributors to the Dataset",
             "items": SHARED_DEFS["contributor"],
         },
         "language": {
@@ -285,6 +287,23 @@ schema = {
                     "description": {"type": "string", "widget": "textarea"},
                 },
             },
+        },
+        "geoLocations": {
+            "type": "list",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "geoLocationPoint": SHARED_DEFS["geoLocationPoint"],
+                    "geoLocationBox": SHARED_DEFS["geoLocationBox"],
+                    "geoLocationPlace": {
+                        "type": "string",
+                        "title": "Place",
+                        "help_text": "Name of the geographic location",
+                    },
+                },
+            },
+            "skos:exactMatch": "http://purl.org/dc/terms/spatial",
+            "help_text": "Geographic information about the Dataset",
         },
     },
 }

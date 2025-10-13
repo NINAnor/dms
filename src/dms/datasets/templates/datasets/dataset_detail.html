@@ -6,6 +6,8 @@
 {% block article %}
 {% load render_table from django_tables2 %}
 
+{% has_perm 'datasets.change_dataset' user dataset as can_change %}
+
 
 <div class="flex items-center justify-between">
     <div>
@@ -18,8 +20,11 @@
     <div class="flex gap-4">
         {% if dataset.project %}<a class="btn btn-primary" href="{% url 'projects:project_detail' pk=dataset.project_id %}">Project</a>{% endif %}
         <a class="btn btn-primary" href="{% url 'datasets:dataset_relationship_list' pk=dataset.id %}">Relationships</a>
+        {% if can_change %}
         <a class="btn btn-primary" href="{% url 'datasets:dataset_update' pk=dataset.id %}">Edit</a>
         <a class="btn btn-primary" href="{% url 'datasets:dataset_update_metadata' pk=dataset.id %}">Edit Metadata</a>
+        <a class="btn btn-primary" href="{% url 'datasets:dataset_contribution_manage' dataset_pk=dataset.pk %}">Contributions</a>
+        {% endif %}
         {% has_perm 'datasets.delete_dataset' user dataset as can_delete %}
         {% if can_delete %}
         <a class="btn btn-danger" href="{% url 'datasets:dataset_delete' pk=dataset.id %}">Delete</a>
@@ -27,16 +32,31 @@
     </div>
 </div>
 
-<c-accordion type='multiple' open="{'item-1': true, 'item-2': true}" class="mt-4">
+<c-accordion type='multiple' open="{'item-1': true, 'item-2': true, 'contrib': true}" class="mt-4">
     <c-accordion.item value='item-1'>
         <c-accordion.trigger value='item-1' class="text-2xl font-bold">Metadata</c-accordion.trigger>
         <c-accordion.content value='item-1'>
             {{ metadata_preview|safe }}
         </c-accordion.content>
     </c-accordion.item>
+    <c-accordion.item value='contrib'>
+        <c-accordion.trigger value='contrib' class="text-2xl font-bold">Contributors</c-accordion.trigger>
+        <c-accordion.content value='contrib'>
+            {% render_table contributor_table %}
+        </c-accordion.content>
+    </c-accordion.item>
+    {% if dataset.under_embargo %}
+    <div class="alert alert-warning mt-4">
+        <div>
+            <i class="fas fa-lock"></i> This dataset is under embargo until {{ dataset.embargo_end_date }}.
+        </div>
+    </div>
+    {% endif %}
+    {% if not dataset.under_embargo or can_change %}
     <c-accordion.item value='item-2'>
         <c-accordion.trigger value='item-2' class="text-2xl font-bold">Resources</c-accordion.trigger>
         <c-accordion.content value='item-2'>
+            {% if can_change %}
             <c-navigation-menu class="mb-4">
                 <c-navigation-menu.list class="items-center justify-start gap-2">
                     <c-navigation-menu.item>
@@ -68,10 +88,12 @@
                     {% endcomment %}
                 </c-navigation-menu.list>
             </c-navigation-menu>
+            {% endif %}
             {% render_table resource_table %}
         </c-accordion.content>
     </c-accordion.item>
-</c-accordion>
+    {% endif %}
 
+</c-accordion>
 
 {% endblock article %}

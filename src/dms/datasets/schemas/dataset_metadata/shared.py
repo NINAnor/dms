@@ -105,6 +105,29 @@ SHARED_DEFS = {
             "email",
         ],
     },
+    "geoLocationPoint": {
+        "type": "object",
+        "properties": {
+            "pointLongitude": {"type": "number", "minimum": -180, "maximum": 180},
+            "pointLatitude": {"type": "number", "minimum": -90, "maximum": 90},
+        },
+        "required": ["pointLongitude", "pointLatitude"],
+    },
+    "geoLocationBox": {
+        "type": "object",
+        "properties": {
+            "westBoundLongitude": {"type": "number", "minimum": -180, "maximum": 180},
+            "eastBoundLongitude": {"type": "number", "minimum": -180, "maximum": 180},
+            "southBoundLatitude": {"type": "number", "minimum": -90, "maximum": 90},
+            "northBoundLatitude": {"type": "number", "minimum": -90, "maximum": 90},
+        },
+        "required": [
+            "westBoundLongitude",
+            "eastBoundLongitude",
+            "southBoundLatitude",
+            "northBoundLatitude",
+        ],
+    },
 }
 
 

@@ -29,6 +29,7 @@ from dms.shared.views import ActionView
 from .conf import settings
 from .filters import DatasetFilter, DatasetRelationshipFilter, ResourceFilter
 from .forms import (
+    DatasetContributorForm,
     DatasetForm,
     DatasetMetadataForm,
     DatasetRelationshipForm,
@@ -41,6 +42,7 @@ from .forms import (
 )
 from .models import (
     Dataset,
+    DatasetContribution,
     DatasetRelationship,
     MapResource,
     PartitionedResource,
@@ -49,6 +51,7 @@ from .models import (
     TabularResource,
 )
 from .tables import (
+    DatasetContributionTable,
     DatasetRelationshipTable,
     DatasetTable,
     ResourceListTable,
@@ -91,6 +94,9 @@ class DatasetDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailVi
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        ctx["contributor_table"] = DatasetContributionTable(
+            self.object.contributor_roles.all()
+        )
         ctx["resource_table"] = ResourceTable(
             self.object.resources.select_subclasses().all()
         )
@@ -482,3 +488,101 @@ class ResourceRefreshMetadataView(PermissionRequiredMixin, ActionView):
             "datasets:resource_detail",
             kwargs={"dataset_pk": self.kwargs.get("dataset_pk"), "pk": self.object.pk},
         )
+
+
+class DatasetContributionManageView(PermissionRequiredMixin, ListView):
+    model = DatasetContribution
+    queryset = DatasetContribution.objects.all()
+    permission_required = "datasets.change_datasetcontribution"
+
+    def get_template_names(self):
+        if self.request.htmx:
+            return "datasets/partials/form.html"
+        return super().get_template_names()
+
+    def get_queryset(self):
+        return super().get_queryset().filter(dataset_id=self.kwargs["dataset_pk"])
+
+
+class DatasetContributionCreateView(PermissionRequiredMixin, CreateView):
+    form_class = DatasetContributorForm
+    permission_required = "datasets.change_datasetcontribution"
+    model = DatasetContribution
+
+    def get_template_names(self):
+        if self.request.htmx:
+            return "datasets/partials/datasetcontribution_form.html"
+        return super().get_template_names()
+
+    def get_queryset(self):
+        return super().get_queryset().filter(dataset_id=self.kwargs["dataset_pk"])
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["dataset"] = Dataset.objects.get(pk=self.kwargs["dataset_pk"])
+        return kwargs
+
+    def get_success_url(self):
+        return reverse(
+            "datasets:dataset_contribution_update",
+            kwargs={
+                "dataset_pk": self.kwargs["dataset_pk"],
+                "user_pk": self.object.user_id,
+            },
+        )
+
+
+class DatasetContributionUpdateView(PermissionRequiredMixin, UpdateView):
+    model = DatasetContribution
+    form_class = DatasetContributorForm
+    permission_required = "datasets.change_datasetcontribution"
+    slug_url_kwarg = "user_pk"
+    slug_field = "user_id"
+
+    def get_template_names(self):
+        if self.request.htmx:
+            return "datasets/partials/datasetcontribution_form.html"
+        return super().get_template_names()
+
+    def get_queryset(self):
+        return super().get_queryset().filter(dataset_id=self.kwargs["dataset_pk"])
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["dataset"] = Dataset.objects.get(pk=self.kwargs["dataset_pk"])
+        kwargs["prefix"] = f"DC{self.object.user_id}"
+        return kwargs
+
+    def get_success_url(self):
+        return reverse(
+            "datasets:dataset_contribution_update",
+            kwargs={
+                "dataset_pk": self.kwargs["dataset_pk"],
+                "user_pk": self.object.user_id,
+            },
+        )
+
+
+class DatasetContributionDeleteView(PermissionRequiredMixin, DeleteView):
+    model = DatasetContribution
+    permission_required = "datasets.delete_datasetcontribution"
+    slug_url_kwarg = "user_pk"
+    slug_field = "user_id"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .filter(
+                dataset_id=self.kwargs["dataset_pk"], user_id=self.kwargs["user_pk"]
+            )
+        )
+
+    def get_template_names(self):
+        if self.request.htmx:
+            return "datasets/partials/datasetcontribution_form.html"
+        return super().get_template_names()
+
+    def form_valid(self, form):
+        self.object.delete()
+        return HttpResponse("")
