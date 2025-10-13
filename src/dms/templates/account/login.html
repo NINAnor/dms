@@ -9,6 +9,7 @@
     {% if not SOCIALACCOUNT_ONLY %}
         {% url 'account_login' as action_url %}
         {% #form form=form url=action_url button_text=heading %}
+        <div class="alert alert-warning text-sm px-2 py-1 rounded-sm mt-1">Do not use your email address, just the username</div>
         {% if form.remember %}
         <div class="items-start my-2 form-control">
             <label class="cursor-pointer label">
