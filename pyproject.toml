@@ -66,7 +66,8 @@ dependencies = [
   "django-cotton>=2.0.3",
   "django-htmx>=1.23.0",
   "pylatex",
-  "langdetect"
+  "langdetect",
+  "django-vite"
 ]
 description = "Add your description here"
 license = {text = "GPLv3"}

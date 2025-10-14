@@ -16,7 +16,7 @@ RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     apt-get update && apt-get install -y --fix-missing nodejs
 
 FROM base AS app
-COPY pyproject.toml uv.lock entrypoint.sh README.md .
+COPY pyproject.toml uv.lock entrypoint.sh README.md ./
 COPY src/dms/manage.py src/dms/__init__.py src/dms/
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
@@ -24,6 +24,24 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 FROM scratch AS source
 WORKDIR /app
 COPY src src
+
+
+FROM node:22-slim AS frontend-base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+WORKDIR /app
+COPY src/dms/frontend/package.json src/dms/frontend/pnpm-lock.yaml ./
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+
+FROM frontend-base AS frontend
+COPY src/dms/frontend/src src
+COPY src/dms/frontend/vite.config.ts src/dms/frontend/eslint.config.js src/dms/frontend/*.json src/dms/frontend/.prettierignore ./
+
+FROM frontend AS frontend-prod
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm run build
 
 FROM app AS production
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -54,6 +72,7 @@ COPY --from=production /app .
 COPY --from=translation /app/src/dms/locale /app/src/dms/locale
 COPY --from=source /app .
 COPY --from=tailwind /app/src/dms/theme/static /app/src/dms/theme/static
+COPY --from=frontend-prod /app/static /app/src/frontend/static
 RUN mkdir media
 ENTRYPOINT ["./entrypoint.sh"]
 

@@ -24,10 +24,11 @@ from view_breadcrumbs import (
     UpdateBreadcrumbMixin,
 )
 
+from dms.frontend.views import FrontendMixin
 from dms.shared.views import ActionView
 
 from .conf import settings
-from .filters import DatasetFilter, DatasetRelationshipFilter, ResourceFilter
+from .filters import DatasetFilter, ResourceFilter
 from .forms import (
     DatasetContributorForm,
     DatasetForm,
@@ -275,13 +276,11 @@ class ResourceUpdateView(
         )
 
 
-class DatasetRelationshipListView(
-    PermissionRequiredMixin, SingleTableMixin, FilterView
-):
+class DatasetRelationshipListView(PermissionRequiredMixin, FrontendMixin, ListView):
     queryset = DatasetRelationship.objects.all()
     table_class = DatasetRelationshipTable
     permission_required = "datasets.list_datasetrelationship"
-    filterset_class = DatasetRelationshipFilter
+    frontend_module = "relationships"
 
     def get_queryset(self):
         return (

@@ -123,12 +123,14 @@ THIRD_PARTY_APPS = [
     "django_cotton",
     "django_htmx",
     "slippers",
+    "django_vite",
 ]
 
 LOCAL_APPS = [
     "dms.core",
     "dms.users",
     "dms.theme",
+    "dms.frontend",
     "dms.projects",
     "dms.surveys",
     "dms.datasets",
@@ -553,6 +555,12 @@ if SENTRY_DSN:
         },
     }
 
+DJANGO_VITE = {
+    "default": {
+        "static_url_prefix": "frontend",
+        "dev_mode": DEBUG,
+    }
+}
 
 DATASETS_TITILER_URL = env("DATASETS_TITILER_URL", default="/titiler")
 DATASETS_NINA_MAP_PREVIEW = env("DATASETS_NINA_MAP_PREVIEW", default=None)

@@ -170,6 +170,18 @@ services:
       - "traefik.http.services.static.loadbalancer.server.port=80"
       - "traefik.http.routers.static.priority=10"
 
+  frontend:
+    profiles:
+      - dev
+    build:
+      target: frontend
+    command: pnpm run dev --host 0.0.0.0 --cors
+    ports:
+      - 5173:5173
+    volumes:
+      - ./src/dms/frontend/src:/app/src
+      - ./src/dms/frontend/vite.config.ts:/app/vite.config.ts
+
   traefik:
     image: traefik:v3
     command:
