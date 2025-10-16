@@ -84,6 +84,6 @@ SOCIALACCOUNT_ADAPTER = "dms.users.adapters.SocialAccountAdapter"
 INSTALLED_APPS += ["django_migration_linter"]
 MIGRATION_LINTER_OVERRIDE_MAKEMIGRATIONS = True
 
-MIGRATION_LINTER_OPTIONS = {"sql-analyser": "postgresql"}
+MIGRATION_LINTER_OPTIONS = {"sql_analyser": "postgresql"}
 
 DJANGO_VITE["default"]["dev_mode"] = True  # noqa: F405
