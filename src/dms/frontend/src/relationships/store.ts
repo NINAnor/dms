@@ -1,9 +1,10 @@
 import { create } from 'zustand';
 import { addEdge, applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 
-import { type AppState } from './types';
+import { AppNode, Dataset, type AppState } from './types';
 import { config } from './config';
 import { graphLayout } from './utils';
+import toast from 'react-hot-toast';
 
 const initialNodes = graphLayout(config.nodes, config.edges);
 
@@ -48,6 +49,31 @@ const useStore = create<AppState>((set, get) => ({
         return e;
       }),
     });
+  },
+  addDataset: (dataset: Dataset) => {
+    const { nodes, edges } = get();
+    set({
+      nodes: graphLayout(
+        [
+          ...nodes,
+          {
+            id: dataset.id,
+            type: 'dataset',
+            data: {
+              url: dataset.url,
+              relationshipTypes: [],
+              label: dataset.title,
+            },
+            position: {
+              x: 0,
+              y: 0,
+            },
+          },
+        ],
+        edges,
+      ),
+    });
+    toast.success('Successfully loaded ' + dataset.title);
   },
 }));
 

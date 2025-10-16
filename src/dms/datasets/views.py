@@ -334,6 +334,8 @@ class DatasetRelationshipListView(PermissionRequiredMixin, FrontendMixin, ListVi
             for value, label in RelationshipType.choices
         ]
 
+        initial["urls"] = {"datasetList": reverse("api_v1:datasets-list")}
+
         return initial
 
 

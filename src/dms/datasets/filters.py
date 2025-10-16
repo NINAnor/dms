@@ -1,5 +1,6 @@
 import django_filters as filters
 from dal import autocomplete
+from django.contrib.postgres.search import SearchQuery, SearchVector
 
 from dms.projects.models import Project
 
@@ -13,11 +14,19 @@ class DatasetFilter(filters.FilterSet):
         method="filter_by_project",
         label="Project",
     )
+    search = filters.CharFilter(field_name="search", method="search_fulltext")
 
     def filter_by_project(self, queryset, name, value):
         if value:
             return queryset.filter(project=value)
         return queryset
+
+    def search_fulltext(self, queryset, field_name, value):
+        if not value:
+            return queryset
+        return queryset.annotate(
+            search=SearchVector("title", "name", "metadata")
+        ).filter(search=SearchQuery(value))
 
     class Meta:
         model = models.Dataset

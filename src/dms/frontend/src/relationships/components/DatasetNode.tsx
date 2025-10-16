@@ -29,11 +29,16 @@ export function DatasetNode({ data, selected, id, ...props }: NodeProps<AppNode>
             value={selectedRel}
             onChange={e => setSelectedRel(e.target.value)}
           >
-            {config.relTypes.map((rt: Option) => (
-              <option key={rt.value} value={rt.value}>
-                {rt.label}
-              </option>
-            ))}
+            <option value="" disabled>
+              -- Select a relationship --
+            </option>
+            {config.relTypes
+              .filter((rt: Option) => !data.relationshipTypes.includes(rt.value))
+              .map((rt: Option) => (
+                <option key={rt.value} value={rt.value}>
+                  {rt.label}
+                </option>
+              ))}
           </select>
           <button
             className="btn btn-outline text-primary rounded-s-none border-s-0"

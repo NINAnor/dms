@@ -6,6 +6,12 @@ export type AppNode = Node<{
   url: string;
 }>;
 
+export type Dataset = {
+  id: string;
+  url: string;
+  title: string;
+};
+
 export type AppState = {
   nodes: AppNode[];
   edges: Edge[];
@@ -16,6 +22,7 @@ export type AppState = {
   setEdges: (edges: Edge[]) => void;
   applyLayout: () => void;
   addRelTypeToNode: (id: string, relationshipType: string) => void;
+  addDataset: (dataset: Dataset) => void;
 };
 
 export type Option = {
