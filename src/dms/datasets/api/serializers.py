@@ -82,20 +82,36 @@ class DatasetRelationshipSerializer(serializers.HyperlinkedModelSerializer):
     target = serializers.HyperlinkedRelatedField(
         view_name="api_v1:datasets-detail", read_only=True
     )
-    url = serializers.HyperlinkedIdentityField(
-        view_name="api_v1:dataset-relationships-detail"
-    )
+
+    class Meta:
+        model = DatasetRelationship
+        fields = ("source", "source_id", "target", "target_id", "type", "uuid", "url")
+        extra_kwargs = {
+            "url": {
+                "view_name": "api_v1:dataset-relationships-detail",
+                "lookup_field": "uuid",
+            }
+        }
+
+
+class DatasetRelationshipCreateSerializer(serializers.ModelSerializer):
+    uuid = serializers.UUIDField(read_only=True)
 
     class Meta:
         model = DatasetRelationship
         fields = (
             "url",
+            "uuid",
             "source",
-            "source_id",
             "target",
-            "target_id",
             "type",
         )
+        extra_kwargs = {
+            "url": {
+                "view_name": "api_v1:dataset-relationships-detail",
+                "lookup_field": "uuid",
+            }
+        }
 
 
 class MapResourceSerializer(serializers.HyperlinkedModelSerializer):

@@ -1,6 +1,6 @@
 import Dagre from '@dagrejs/dagre';
 import { Edge } from '@xyflow/react';
-import { AppNode } from './types';
+import { AppNode, Relationship } from './types';
 
 export function graphLayout(nodes: AppNode[], edges: Edge[]): AppNode[] {
   const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
@@ -26,4 +26,13 @@ export function graphLayout(nodes: AppNode[], edges: Edge[]): AppNode[] {
 
     return { ...node, position: { x, y } };
   });
+}
+
+export function relToEdge(rel: Relationship): Edge {
+  return {
+    id: rel.uuid,
+    source: rel.source_id,
+    target: rel.target_id,
+    sourceHandle: rel.type,
+  };
 }

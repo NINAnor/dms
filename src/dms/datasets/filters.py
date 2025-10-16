@@ -1,6 +1,7 @@
 import django_filters as filters
 from dal import autocomplete
 from django.contrib.postgres.search import SearchQuery, SearchVector
+from django.db.models import Q
 
 from dms.projects.models import Project
 
@@ -86,6 +87,14 @@ class ResourceFilter(filters.FilterSet):
 
 
 class DatasetRelationshipFilter(filters.FilterSet):
+    involves = filters.CharFilter(method="filter_by_dataset")
+
+    def filter_by_dataset(self, queryset, name, value):
+        if not value:
+            return queryset
+
+        return queryset.filter(Q(source_id=value) | Q(target_id=value)).distinct()
+
     class Meta:
         model = models.DatasetRelationship
         fields = (

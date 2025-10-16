@@ -57,11 +57,22 @@ class ResourceViewSet(AutoPermissionViewSetMixin, ModelViewSet):
     filterset_class = filters.ResourceFilter
 
 
+class RelCursorPagination(CursorPagination):
+    page_size = 200
+    ordering = ["source_id", "target_id", "type"]
+
+
 class DatasetRelationshipViewSet(AutoPermissionViewSetMixin, ModelViewSet):
     queryset = DatasetRelationship.objects.all()
     serializer_class = serializers.DatasetRelationshipSerializer
-    pagination_class = DefaultCursorPagination
+    pagination_class = RelCursorPagination
     filterset_class = filters.DatasetRelationshipFilter
+    lookup_field = "uuid"
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return serializers.DatasetRelationshipCreateSerializer
+        return super().get_serializer_class()
 
 
 class MapResourceViewSet(AutoPermissionViewSetMixin, ModelViewSet):

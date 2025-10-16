@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import { addEdge, applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
+import { addEdge, applyNodeChanges, applyEdgeChanges, Edge } from '@xyflow/react';
 
-import { AppNode, Dataset, type AppState } from './types';
-import { config } from './config';
-import { graphLayout } from './utils';
+import { Dataset, Relationship, type AppState } from './types';
+import { client, config } from './config';
+import { graphLayout, relToEdge } from './utils';
 import toast from 'react-hot-toast';
 
 const initialNodes = graphLayout(config.nodes, config.edges);
@@ -12,20 +12,52 @@ const initialNodes = graphLayout(config.nodes, config.edges);
 const useStore = create<AppState>((set, get) => ({
   nodes: initialNodes ?? [],
   edges: config.edges ?? [],
+  edgeIndex: new Set(config.edges.map((e: Edge) => e.id)),
   onNodesChange: changes => {
     set({
       nodes: applyNodeChanges(changes, get().nodes),
     });
   },
   onEdgesChange: changes => {
-    set({
-      edges: applyEdgeChanges(changes, get().edges),
+    const promises = changes.map(async c => {
+      if (c.type == 'remove') {
+        try {
+          await client.delete(`${config.urls.datasetRelationshipList}${c.id}/`);
+          return c;
+        } catch (e) {
+          console.error(e);
+          toast.error('Failed');
+          return null;
+        }
+      }
+
+      return c;
+    });
+    Promise.all(promises).then(ch => {
+      return set({
+        edges: applyEdgeChanges(
+          ch.filter(o => o !== null),
+          get().edges,
+        ),
+      });
     });
   },
   onConnect: connection => {
-    set({
-      edges: addEdge({ ...connection, id: crypto.randomUUID() }, get().edges),
-    });
+    client
+      .post(config.urls.datasetRelationshipList, {
+        source: connection.source,
+        target: connection.target,
+        type: connection.sourceHandle,
+      })
+      .then(response => {
+        set({
+          edges: addEdge({ ...connection, id: response.data.uuid }, get().edges),
+        });
+      })
+      .catch(e => {
+        console.error(e);
+        toast.error('failed');
+      });
   },
   setNodes: nodes => {
     set({ nodes });
@@ -50,9 +82,13 @@ const useStore = create<AppState>((set, get) => ({
       }),
     });
   },
-  addDataset: (dataset: Dataset) => {
-    const { nodes, edges } = get();
+  addDataset: (dataset: Dataset, relationships: Relationship[]) => {
+    const { nodes, edges, edgeIndex } = get();
+
+    const newEdges = [...edges, ...relationships.filter(r => !edgeIndex.has(r.uuid)).map(r => relToEdge(r))];
+
     set({
+      edgeIndex: new Set(newEdges.map(e => e.id)),
       nodes: graphLayout(
         [
           ...nodes,
@@ -61,7 +97,9 @@ const useStore = create<AppState>((set, get) => ({
             type: 'dataset',
             data: {
               url: dataset.url,
-              relationshipTypes: [],
+              relationshipTypes: Array.from(
+                new Set(relationships.filter(r => r.source_id == dataset.id).map(r => r.type)),
+              ),
               label: dataset.title,
             },
             position: {
@@ -70,8 +108,9 @@ const useStore = create<AppState>((set, get) => ({
             },
           },
         ],
-        edges,
+        newEdges,
       ),
+      edges: newEdges,
     });
     toast.success('Successfully loaded ' + dataset.title);
   },

@@ -1,14 +1,17 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Panel } from '@xyflow/react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { client, config } from '../config';
 import useStore from '../store';
 import { Dataset } from '../types';
 import classNames from 'classnames';
+import { useShallow } from 'zustand/react/shallow';
 
 export function ManageNode() {
   const [search, setSearch] = useState('');
   const [collapsed, setCollapsed] = useState(true);
+  const nodeIds = useStore(useShallow(state => state.nodes.map(n => n.id)));
+  const queryClient = useQueryClient();
   const query = useMemo(
     () => ({
       queryKey: ['dataset', search],
@@ -31,6 +34,23 @@ export function ManageNode() {
   const { isPending, error, data, isSuccess } = useQuery(query);
   const addDataset = useStore(state => state.addDataset);
 
+  const addDatasetAndEdges = async (ds: Dataset) => {
+    const data = await queryClient.fetchQuery({
+      queryKey: ['dataset', ds.id, 'edges'],
+      queryFn: async () => {
+        const res = await client.get(config.urls.datasetRelationshipList, {
+          params: {
+            involves: ds.id,
+          },
+        });
+
+        return res.data;
+      },
+    });
+
+    addDataset(ds, data.results);
+  };
+
   return (
     <Panel position="top-right" className="bg-white p-2 border-2 rounded w-[24rem]">
       <div className="flex justify-between">
@@ -52,14 +72,16 @@ export function ManageNode() {
               </div>
             )}
             {isSuccess &&
-              data.results.map((r: Dataset) => (
-                <div key={r.id}>
-                  <button className="p-1 border-primary rounded mr-2" onClick={() => addDataset(r)}>
-                    <i className="fas fa-plus"></i>
-                  </button>
-                  {r.title}
-                </div>
-              ))}
+              data.results
+                .filter((r: Dataset) => !nodeIds.includes(r.id))
+                .map((r: Dataset) => (
+                  <div key={r.id}>
+                    <button className="p-1 border-primary rounded mr-2" onClick={() => addDatasetAndEdges(r)}>
+                      <i className="fas fa-plus"></i>
+                    </button>
+                    {r.title}
+                  </div>
+                ))}
           </div>
         </>
       )}

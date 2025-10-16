@@ -23,7 +23,7 @@ export function DatasetNode({ data, selected, id, ...props }: NodeProps<AppNode>
       })}
     >
       <NodeToolbar isVisible={selected} position={Position.Top} align="center">
-        <div className="flex">
+        <div className="flex bg-white">
           <select
             className="border-primary text-primary rounded-s-lg"
             value={selectedRel}

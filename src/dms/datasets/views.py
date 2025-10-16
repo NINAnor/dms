@@ -286,7 +286,20 @@ class DatasetRelationshipListView(PermissionRequiredMixin, FrontendMixin, ListVi
         return (
             super()
             .get_queryset()
-            .filter(Q(source_id=self.kwargs["pk"]) | Q(target_id=self.kwargs["pk"]))
+            .filter(
+                Q(source_id=self.kwargs["pk"])
+                | Q(target_id=self.kwargs["pk"])
+                | Q(source__target_rels__source_id=self.kwargs["pk"])
+                | Q(source__target_rels__target_id=self.kwargs["pk"])
+                | Q(source__source_rels__target_id=self.kwargs["pk"])
+                | Q(source__source_rels__source_id=self.kwargs["pk"])
+                #
+                | Q(target__target_rels__source_id=self.kwargs["pk"])
+                | Q(target__target_rels__target_id=self.kwargs["pk"])
+                | Q(target__source_rels__source_id=self.kwargs["pk"])
+                | Q(target__source_rels__target_id=self.kwargs["pk"])
+            )
+            .distinct()
         )
 
     def get_initial_data(self):
@@ -305,7 +318,7 @@ class DatasetRelationshipListView(PermissionRequiredMixin, FrontendMixin, ListVi
                 "data": {
                     "label": ds.title,
                     "relationshipTypes": list(
-                        ds.source_rels.values_list("type", flat=True)
+                        set(ds.source_rels.values_list("type", flat=True))
                     ),
                     "url": reverse("datasets:dataset_detail", kwargs={"pk": ds.id}),
                 },
@@ -334,7 +347,10 @@ class DatasetRelationshipListView(PermissionRequiredMixin, FrontendMixin, ListVi
             for value, label in RelationshipType.choices
         ]
 
-        initial["urls"] = {"datasetList": reverse("api_v1:datasets-list")}
+        initial["urls"] = {
+            "datasetList": reverse("api_v1:datasets-list"),
+            "datasetRelationshipList": reverse("api_v1:dataset-relationships-list"),
+        }
 
         return initial
 

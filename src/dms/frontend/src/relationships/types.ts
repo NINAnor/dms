@@ -12,9 +12,17 @@ export type Dataset = {
   title: string;
 };
 
+export type Relationship = {
+  uuid: string;
+  source_id: string;
+  target_id: string;
+  type: string;
+};
+
 export type AppState = {
   nodes: AppNode[];
   edges: Edge[];
+  edgeIndex: Set<string>;
   onNodesChange: OnNodesChange<AppNode>;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
@@ -22,7 +30,7 @@ export type AppState = {
   setEdges: (edges: Edge[]) => void;
   applyLayout: () => void;
   addRelTypeToNode: (id: string, relationshipType: string) => void;
-  addDataset: (dataset: Dataset) => void;
+  addDataset: (dataset: Dataset, relationships: Relationship[]) => void;
 };
 
 export type Option = {
