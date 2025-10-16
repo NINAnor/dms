@@ -38,6 +38,8 @@ module.exports = {
     /* JS 2: Process all JavaScript files in the project. */
     "../../**/*.js",
     "../../**/*.jsx",
+    "../../**/*.tsx",
+    "../../**/*.ts",
 
     /**
      * Python: If you use Tailwind CSS classes in Python, uncomment the following line
