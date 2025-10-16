@@ -19,26 +19,6 @@ urlpatterns = [
         views.DatasetRelationshipListView.as_view(),
         name="dataset_relationship_list",
     ),
-    path(
-        "datasets/<str:dataset_pk>/relationships/edit/",
-        views.DatasetRelationshipManageView.as_view(),
-        name="dataset_relationship_manage",
-    ),
-    path(
-        "datasets/<str:dataset_pk>/relationships/create/",
-        views.DatasetRelationshipCreateView.as_view(),
-        name="dataset_relationship_create",
-    ),
-    path(
-        "datasets/<str:dataset_pk>/relationships/edit/<str:pk>/",
-        views.DatasetRelationshipUpdateView.as_view(),
-        name="dataset_relationship_update",
-    ),
-    path(
-        "datasets/<str:dataset_pk>/relationships/delete/<str:pk>/",
-        views.DatasetRelationshipDeleteView.as_view(),
-        name="dataset_relationship_delete",
-    ),
     # Dataset Contributions
     path(
         "datasets/<str:dataset_pk>/contributions/edit/",

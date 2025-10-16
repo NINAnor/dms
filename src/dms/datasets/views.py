@@ -33,7 +33,6 @@ from .forms import (
     DatasetContributorForm,
     DatasetForm,
     DatasetMetadataForm,
-    DatasetRelationshipForm,
     DatasetUpdateForm,
     MapResourceForm,
     PartitionedResourceForm,
@@ -48,6 +47,7 @@ from .models import (
     MapResource,
     PartitionedResource,
     RasterResource,
+    RelationshipType,
     Resource,
     TabularResource,
 )
@@ -289,94 +289,52 @@ class DatasetRelationshipListView(PermissionRequiredMixin, FrontendMixin, ListVi
             .filter(Q(source_id=self.kwargs["pk"]) | Q(target_id=self.kwargs["pk"]))
         )
 
+    def get_initial_data(self):
+        initial = super().get_initial_data()
+        qs = self.get_queryset()
 
-class DatasetRelationshipManageView(PermissionRequiredMixin, ListView):
-    model = DatasetRelationship
-    queryset = DatasetRelationship.objects.all()
-    permission_required = "datasets.change_datasetrelationship"
+        datasets = Dataset.objects.filter(
+            Q(id=self.kwargs["pk"])
+            | Q(target_rels__source_id=self.kwargs["pk"])
+            | Q(source_rels__target_id=self.kwargs["pk"])
+        ).prefetch_related("source_rels")
 
-    def get_template_names(self):
-        if self.request.htmx:
-            return "datasets/partials/form.html"
-        return super().get_template_names()
+        initial["nodes"] = [
+            {
+                "id": ds.id,
+                "data": {
+                    "label": ds.title,
+                    "relationshipTypes": list(
+                        ds.source_rels.values_list("type", flat=True)
+                    ),
+                    "url": reverse("datasets:dataset_detail", kwargs={"pk": ds.id}),
+                },
+                "position": {
+                    "y": 0,
+                    "x": 0,
+                },
+                "type": "dataset",
+            }
+            for ds in datasets
+        ]
 
-    def get_queryset(self):
-        return super().get_queryset().filter(source_id=self.kwargs["dataset_pk"])
+        initial["edges"] = [
+            {
+                "id": rel.uuid,
+                "source": rel.source_id,
+                "target": rel.target_id,
+                "sourceHandle": rel.type,
+                "type": "smart",
+            }
+            for rel in qs.all()
+        ]
 
+        initial["relTypes"] = [
+            {"label": label, "value": value}
+            for value, label in RelationshipType.choices
+        ]
 
-class DatasetRelationshipCreateView(PermissionRequiredMixin, CreateView):
-    form_class = DatasetRelationshipForm
-    permission_required = "datasets.change_datasetrelationship"
-    model = DatasetRelationship
-
-    def get_template_names(self):
-        if self.request.htmx:
-            return "datasets/partials/form.html"
-        return super().get_template_names()
-
-    def get_queryset(self):
-        return super().get_queryset().filter(source_id=self.kwargs["dataset_pk"])
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-
-        kwargs["user"] = self.request.user
-        kwargs["source"] = Dataset.objects.get(pk=self.kwargs["dataset_pk"])
-
-        return kwargs
-
-    def get_success_url(self):
-        return reverse(
-            "datasets:dataset_relationship_update",
-            kwargs={"dataset_pk": self.kwargs["dataset_pk"], "pk": self.object.pk},
-        )
-
-
-class DatasetRelationshipUpdateView(PermissionRequiredMixin, UpdateView):
-    model = DatasetRelationship
-    form_class = DatasetRelationshipForm
-    permission_required = "datasets.change_datasetrelationship"
-    slug_url_kwarg = "uuid"
-
-    def get_template_names(self):
-        if self.request.htmx:
-            return "datasets/partials/form.html"
-        return super().get_template_names()
-
-    def get_queryset(self):
-        return super().get_queryset().filter(source_id=self.kwargs["dataset_pk"])
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-
-        kwargs["user"] = self.request.user
-        kwargs["source"] = Dataset.objects.get(pk=self.kwargs["dataset_pk"])
-        kwargs["prefix"] = f"DR{self.object.id}"
-
-        return kwargs
-
-    def get_success_url(self):
-        return reverse(
-            "datasets:dataset_relationship_update",
-            kwargs={"dataset_pk": self.kwargs["dataset_pk"], "pk": self.object.pk},
-        )
-
-
-class DatasetRelationshipDeleteView(PermissionRequiredMixin, DeleteView):
-    model = DatasetRelationship
-    permission_required = "datasets.delete_datasetrelationship"
-
-    def get_queryset(self):
-        return super().get_queryset().filter(source_id=self.kwargs["dataset_pk"])
-
-    def get_template_names(self):
-        if self.request.htmx:
-            return "datasets/partials/form.html"
-        return super().get_template_names()
-
-    def form_valid(self, form):
-        self.object.delete()
-        return HttpResponse("")
+        return initial
 
 
 # Mixins for Resource Views
