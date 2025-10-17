@@ -2,7 +2,7 @@ from rest_framework.decorators import action
 from rest_framework.pagination import CursorPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import GenericViewSet, ModelViewSet, mixins
 from rules.contrib.rest_framework import AutoPermissionViewSetMixin
 
 from .. import filters
@@ -62,8 +62,14 @@ class RelCursorPagination(CursorPagination):
     ordering = ["source_id", "target_id", "type"]
 
 
-class DatasetRelationshipViewSet(AutoPermissionViewSetMixin, ModelViewSet):
-    queryset = DatasetRelationship.objects.all()
+class DatasetRelationshipViewSet(
+    AutoPermissionViewSetMixin,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    GenericViewSet,
+):
+    queryset = DatasetRelationship.objects.all().select_related("source", "target")
     serializer_class = serializers.DatasetRelationshipSerializer
     pagination_class = RelCursorPagination
     filterset_class = filters.DatasetRelationshipFilter
@@ -73,6 +79,23 @@ class DatasetRelationshipViewSet(AutoPermissionViewSetMixin, ModelViewSet):
         if self.action == "create":
             return serializers.DatasetRelationshipCreateSerializer
         return super().get_serializer_class()
+
+    def perform_create(self, serializer):
+        if self.request.user.has_perm(
+            "datasets.change_dataset", serializer.validated_data.get("source")
+        ) or self.request.user.has_perm(
+            "datasets.change_dataset", serializer.validated_data.get("target")
+        ):
+            return super().perform_create(serializer)
+        raise serializers.serializers.ValidationError("You are not authorized")
+
+    def perform_destroy(self, instance):
+        if self.request.user.has_perm(
+            "datasets.change_dataset", instance.source
+        ) or self.request.user.has_perm("datasets.change_dataset", instance.target):
+            return super().perform_destroy(instance)
+
+        raise serializers.serializers.ValidationError("You are not authorized")
 
 
 class MapResourceViewSet(AutoPermissionViewSetMixin, ModelViewSet):

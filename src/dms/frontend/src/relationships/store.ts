@@ -24,9 +24,14 @@ const useStore = create<AppState>((set, get) => ({
         try {
           await client.delete(`${config.urls.datasetRelationshipList}${c.id}/`);
           return c;
-        } catch (e) {
+        } catch (e: any) {
           console.error(e);
-          toast.error('Failed');
+          const errors = e?.response?.data?.errors;
+          if (Array.isArray(errors)) {
+            errors.forEach((err: { detail: string }) => toast.error(err.detail));
+          } else if (e?.message) {
+            toast.error(String(e.message));
+          }
           return null;
         }
       }
@@ -49,14 +54,14 @@ const useStore = create<AppState>((set, get) => ({
         target: connection.target,
         type: connection.sourceHandle,
       })
-      .then(response => {
-        set({
-          edges: addEdge({ ...connection, id: response.data.uuid }, get().edges),
-        });
-      })
-      .catch(e => {
+      .catch((e: any) => {
         console.error(e);
-        toast.error('failed');
+        const errors = e?.response?.data?.errors;
+        if (Array.isArray(errors)) {
+          errors.forEach((err: { detail: string }) => toast.error(err.detail));
+        } else if (e?.message) {
+          toast.error(String(e.message));
+        }
       });
   },
   setNodes: nodes => {
