@@ -1,4 +1,4 @@
-install spatial; load spatial;
+{% if spatial %}install spatial; load spatial;{% endif %}
 install httpfs; load httpfs;
 
 select * from '{{ uri }}';

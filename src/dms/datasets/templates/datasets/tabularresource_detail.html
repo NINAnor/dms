@@ -2,29 +2,6 @@
 {% load static %}
 
 {% block resource_specific_content %}
-{% if object.metadata.driverShortName %}
-<c-accordion.item value='item-4'>
-    <c-accordion.trigger value='item-4' class="text-2xl font-bold">Snippets</c-accordion.trigger>
-    <c-accordion.content value='item-4'>
-        <c-tabs>
-            <c-tabs.list>
-                {% for snippet in snippets %}
-                <c-tabs.trigger value='{{ snippet.template }}'>{{ snippet.title }}</c-tabs.trigger>
-                {% endfor %}
-            </c-tabs.list>
-            {% for snippet in snippets %}
-                <c-tabs.content value='{{ snippet.template }}'>
-                <pre>
-                    <code class="language-{{snippet.lang}}">
-{% include snippet.template with uri=object.uri %}
-                    </code>
-                </pre>
-                </c-tabs.content>
-            {% endfor %}
-        </c-tabs>
-    </c-accordion.content>
-</c-accordion.item>
-{% endif %}
 {% if object.metadata.driverShortName == 'Parquet' %}
 <c-accordion.item value='item-2'>
     <c-accordion.trigger value='item-2' class="text-2xl font-bold">Preview</c-accordion.trigger>

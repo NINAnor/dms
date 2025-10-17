@@ -259,6 +259,29 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
     def get_context_mapresource(self):
         return {"NINA_MAP_PREVIEW": settings.DATASETS_NINA_MAP_PREVIEW}
 
+    def get_context_rasterresource(self):
+        snippets = []
+
+        BASE_TEMPLATE_PATH = "datasets/snippets/"
+
+        if self.object.metadata["driverShortName"]:
+            snippets.append(
+                {
+                    "template": BASE_TEMPLATE_PATH + "r-terra",
+                    "lang": "r",
+                    "title": "R (Terra)",
+                }
+            )
+            snippets.append(
+                {
+                    "template": BASE_TEMPLATE_PATH + "python-rasterio",
+                    "lang": "python",
+                    "title": "Python (Rasterio)",
+                }
+            )
+
+        return {"snippets": snippets}
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 

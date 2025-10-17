@@ -9,10 +9,8 @@ con <- dbConnect(duckdb())
 # NOTE: DuckDB is able to process larger than memory datasets
 dbExecute(con, "SET memory_limit = '2GB'")
 
-dbExecute(con, "install spatial; load spatial; install httpfs; load httpfs;")
+dbExecute(con, "{% if spatial %}install spatial; load spatial; {% endif %}install httpfs; load httpfs;")
 
-# Print out all the available tables
 dbGetQuery(con, "describe from '{{ uri }}'")
 
-# Count elements in each table
 dbGetQuery(con, "select * from {{ uri }}")

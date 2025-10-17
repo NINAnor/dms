@@ -1,0 +1,13 @@
+import rasterio
+import matplotlib.pyplot as plt
+
+try:
+    with rasterio.open("{{ uri }}") as src:
+        img_array = src.read()
+        plt.imshow(img_array[0], cmap='gray')
+        plt.axis('off')
+        plt.show()
+except FileNotFoundError:
+    print("Error: The specified GeoTIFF file was not found.")
+except Exception as e:
+    print(f"An error occurred: {e}")
