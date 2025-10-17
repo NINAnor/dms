@@ -1,0 +1,4 @@
+install spatial; load spatial;
+install httpfs; load httpfs;
+
+select * from '{{ uri }}';

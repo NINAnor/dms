@@ -3,39 +3,24 @@
 
 {% block resource_specific_content %}
 {% if object.metadata.driverShortName %}
-<c-accordion.item value='item-2'>
-    <c-accordion.trigger value='item-2' class="text-2xl font-bold">Snippets</c-accordion.trigger>
-    <c-accordion.content value='item-2'>
-        <c-tabs default_value='r'>
+<c-accordion.item value='item-4'>
+    <c-accordion.trigger value='item-4' class="text-2xl font-bold">Snippets</c-accordion.trigger>
+    <c-accordion.content value='item-4'>
+        <c-tabs>
             <c-tabs.list>
-                <c-tabs.trigger value='r'>R</c-tabs.trigger>
-                <c-tabs.trigger value='python'>Python</c-tabs.trigger>
-                {% if object.metadata.driver == 'Parquet' %}
-                <c-tabs.trigger value='duckdb'>DuckDB</c-tabs.trigger>
-                {% endif %}
-
+                {% for snippet in snippets %}
+                <c-tabs.trigger value='{{ snippet.template }}'>{{ snippet.title }}</c-tabs.trigger>
+                {% endfor %}
             </c-tabs.list>
-            <c-tabs.content value='r'>
+            {% for snippet in snippets %}
+                <c-tabs.content value='{{ snippet.template }}'>
                 <pre>
-                    <code class="language-r">
-
+                    <code class="language-{{snippet.lang}}">
+{% include snippet.template with uri=object.uri %}
                     </code>
                 </pre>
-            </c-tabs.content>
-            <c-tabs.content value='python'>
-                <pre><code class="language-python">import fiona
-
-with fiona.open("{{ object.uri }}") as src:
-    for feature in src:
-        print(feature)
-                </code></pre>
-            </c-tabs.content>
-
-            <c-tabs.content value='duckdb'>
-                <pre><code class="language-sql">
-from read_parquet('{{ object.uri }}');
-                </code></pre>
-            </c-tabs.content>
+                </c-tabs.content>
+            {% endfor %}
         </c-tabs>
     </c-accordion.content>
 </c-accordion.item>

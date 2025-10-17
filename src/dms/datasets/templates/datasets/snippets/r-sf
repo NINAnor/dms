@@ -1,0 +1,3 @@
+library(sfarrow)
+
+dataset <- st_read_parquet("{{ uri }}")

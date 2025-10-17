@@ -1,0 +1,10 @@
+import duckdb
+
+duckdb.sql('''
+install spatial;
+load spatial;
+install httpfs;
+load httpfs;
+''')
+
+duckdb.read_parquet('{{ uri }}')

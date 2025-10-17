@@ -197,6 +197,68 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
         # Use inheritance manager to get the correct subclass instance
         return queryset.select_subclasses().get(pk=self.kwargs["pk"])
 
+    def _get_model_name(self):
+        return self.object.__class__.__name__.lower()
+
+    def get_context_tabularresource(self):
+        snippets = []
+
+        BASE_TEMPLATE_PATH = "datasets/snippets/"
+
+        try:
+            is_spatial = len(self.object.metadata["layers"][0]["geometryFields"]) > 0
+        except Exception:
+            is_spatial = False
+
+        if self.object.metadata["driverShortName"] == "Parquet":
+            snippets.append(
+                {
+                    "template": BASE_TEMPLATE_PATH + "r-duckdb-parquet",
+                    "lang": "r",
+                    "title": "R (DuckDB)",
+                    "spatial": is_spatial,
+                }
+            )
+            snippets.append(
+                {
+                    "template": BASE_TEMPLATE_PATH + "python-duckdb-parquet",
+                    "lang": "python",
+                    "title": "Python (DuckDB)",
+                    "spatial": is_spatial,
+                }
+            )
+            if is_spatial:
+                snippets.append(
+                    {
+                        "template": BASE_TEMPLATE_PATH + "python-geopandas",
+                        "lang": "python",
+                        "title": "Python (GeoPandas)",
+                        "spatial": is_spatial,
+                    }
+                )
+                snippets.append(
+                    {
+                        "template": BASE_TEMPLATE_PATH + "r-sf",
+                        "lang": "r",
+                        "title": "R (Simple Feature Objects)",
+                        "spatial": is_spatial,
+                    }
+                )
+
+            snippets.append(
+                {
+                    "template": BASE_TEMPLATE_PATH + "duckdb-sql",
+                    "lang": "sql",
+                    "title": "DuckDB (SQL)",
+                    "spatial": is_spatial,
+                }
+            )
+
+        return {"snippets": snippets}
+
+    def get_context_mapresource(self):
+        return {"NINA_MAP_PREVIEW": settings.DATASETS_NINA_MAP_PREVIEW}
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
@@ -208,12 +270,14 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
         ctx["metadata_preview"] = widget.render(
             name="metadata_preview", value=json.dumps(self.object.metadata, indent=2)
         )
-        ctx["NINA_MAP_PREVIEW"] = settings.DATASETS_NINA_MAP_PREVIEW
-        return ctx
+
+        return (
+            ctx | getattr(self, f"get_context_{self._get_model_name()}", lambda: {})()
+        )
 
     def get_template_names(self):
         # Get the actual model class name (e.g., MapResource, RasterResource)
-        model_name = self.object.__class__.__name__.lower()
+        model_name = self._get_model_name()
         return [f"datasets/{model_name}_detail.html", "datasets/resource_detail.html"]
 
 

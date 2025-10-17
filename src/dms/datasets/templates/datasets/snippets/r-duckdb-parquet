@@ -1,0 +1,18 @@
+library(duckdb)
+
+con <- dbConnect(duckdb())
+
+# Always specify a memory limit, especially when you execute this on a shared server(rstudio.nina.no)
+# duckdb by default try to use up to 80% of your RAM
+# but doesn't know if you have other processes consuming RAM at the same time
+# Always set a sane default to avoid crashing your system
+# NOTE: DuckDB is able to process larger than memory datasets
+dbExecute(con, "SET memory_limit = '2GB'")
+
+dbExecute(con, "install spatial; load spatial; install httpfs; load httpfs;")
+
+# Print out all the available tables
+dbGetQuery(con, "describe from '{{ uri }}'")
+
+# Count elements in each table
+dbGetQuery(con, "select * from {{ uri }}")
