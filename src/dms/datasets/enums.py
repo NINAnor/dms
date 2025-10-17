@@ -1,0 +1,43 @@
+from django.db import models
+
+
+class RelationshipType(models.TextChoices):
+    """
+    DataCite Metadata Schema v4.6 RelationType
+    https://datacite-metadata-schema.readthedocs.io/en/4.6/appendices/appendix-1/relationType/
+    """
+
+    IS_CITED_BY = "IsCitedBy", "Is cited by"
+    CITES = "Cites", "Cites"
+    IS_SUPPLEMENT_TO = "IsSupplementTo", "Is supplement to"
+    IS_SUPPLEMENTED_BY = "IsSupplementedBy", "Is supplemented by"
+    IS_CONTINUED_BY = "IsContinuedBy", "Is continued by"
+    CONTINUES = "Continues", "Continues"
+    IS_DESCRIBED_BY = "IsDescribedBy", "Is described by"
+    DESCRIBES = "Describes", "Describes"
+    HAS_METADATA = "HasMetadata", "Has metadata"
+    IS_METADATA_FOR = "IsMetadataFor", "Is metadata for"
+    HAS_VERSION = "HasVersion", "Has version"
+    IS_VERSION_OF = "IsVersionOf", "Is version of"
+    IS_NEW_VERSION_OF = "IsNewVersionOf", "Is new version of"
+    IS_PREVIOUS_VERSION_OF = "IsPreviousVersionOf", "Is previous version of"
+    IS_PART_OF = "IsPartOf", "Is part of"
+    HAS_PART = "HasPart", "Has part"
+    IS_PUBLISHED_IN = "IsPublishedIn", "Is published in"
+    IS_REFERENCED_BY = "IsReferencedBy", "Is referenced by"
+    REFERENCES = "References", "References"
+    IS_DOCUMENTED_BY = "IsDocumentedBy", "Is documented by"
+    DOCUMENTS = "Documents", "Documents"
+    IS_COMPILED_BY = "IsCompiledBy", "Is compiled by"
+    COMPILES = "Compiles", "Compiles"
+    IS_VARIANT_FORM_OF = "IsVariantFormOf", "Is variant form of"
+    IS_ORIGINAL_FORM_OF = "IsOriginalFormOf", "Is original form of"
+    IS_IDENTICAL_TO = "IsIdenticalTo", "Is identical to"
+    IS_REVIEWED_BY = "IsReviewedBy", "Is reviewed by"
+    REVIEWS = "Reviews", "Reviews"
+    IS_DERIVED_FROM = "IsDerivedFrom", "Is derived from"
+    IS_SOURCE_OF = "IsSourceOf", "Is source of"
+    REQUIRES = "Requires", "Requires"
+    IS_REQUIRED_BY = "IsRequiredBy", "Is required by"
+    IS_OBSOLETED_BY = "IsObsoletedBy", "Is obsoleted by"
+    OBSOLETES = "Obsoletes", "Obsoletes"

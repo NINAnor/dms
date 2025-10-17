@@ -1,4 +1,5 @@
 # ruff: noqa: E501
+from ...enums import RelationshipType
 from .shared import SHARED_DEFS
 
 schema = {
@@ -119,46 +120,7 @@ schema = {
                 "properties": {
                     "relationType": {
                         "type": "string",
-                        "enum": [
-                            "IsCitedBy",
-                            "Cites",
-                            "IsSupplementTo",
-                            "IsSupplementedBy",
-                            "IsContinuedBy",
-                            "Continues",
-                            "IsDescribedBy",
-                            "Describes",
-                            "HasMetadata",
-                            "IsMetadataFor",
-                            "HasVersion",
-                            "IsVersionOf",
-                            "IsNewVersionOf",
-                            "IsPreviousVersionOf",
-                            "IsPartOf",
-                            "HasPart",
-                            "IsPublishedIn",
-                            "IsReferencedBy",
-                            "References",
-                            "IsDocumentedBy",
-                            "Documents",
-                            "IsCompiledBy",
-                            "Compiles",
-                            "IsVariantFormOf",
-                            "IsOriginalFormOf",
-                            "IsIdenticalTo",
-                            "IsReviewedBy",
-                            "Reviews",
-                            "IsDerivedFrom",
-                            "IsSourceOf",
-                            "IsRequiredBy",
-                            "Requires",
-                            "IsObsoletedBy",
-                            "Obsoletes",
-                            "IsCollectedBy",
-                            "Collects",
-                            "IsTranslationOf",
-                            "HasTranslation",
-                        ],
+                        "enum": map(lambda x, y: x, RelationshipType.choices),
                     },
                     "relatedIdentifier": {
                         "type": "string",

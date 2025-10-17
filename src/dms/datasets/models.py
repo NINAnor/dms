@@ -24,6 +24,7 @@ from taggit.managers import TaggableManager
 from dms.core.models import GenericStringTaggedItem
 
 from .conf import settings
+from .enums import RelationshipType
 from .rules import (
     dataset_in_user_projects,
     resource_in_user_projects,
@@ -110,15 +111,6 @@ class Dataset(RulesModel):
             "change": dataset_in_user_projects,
             "delete": rules.is_staff,
         }
-
-
-class RelationshipType(models.TextChoices):
-    CITES = "Cites", "Cites"
-    REFERENCES = "References", "References"
-    IS_PART_OF = "IsPartOf", "Is part of"
-    IS_DERIVED_FROM = "IsDerivedFrom", "Is derived from"
-    IS_TRANSLATION_OF = "IsTranslationOf", "Is translation of"
-    IS_VERSION_OF = "IsVersionOf", "Is version of"
 
 
 class DatasetRelationship(RulesModel):
