@@ -279,7 +279,7 @@ class ResourceUpdateView(
 class DatasetRelationshipListView(PermissionRequiredMixin, FrontendMixin, ListView):
     queryset = DatasetRelationship.objects.all()
     table_class = DatasetRelationshipTable
-    permission_required = "datasets.list_datasetrelationship"
+    permission_required = "datasets.view_datasetrelationship"
     frontend_module = "relationships"
 
     def get_queryset(self):
