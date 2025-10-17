@@ -15,7 +15,9 @@ class DatasetFilter(filters.FilterSet):
         method="filter_by_project",
         label="Project",
     )
-    search = filters.CharFilter(field_name="search", method="search_fulltext")
+    search = filters.CharFilter(
+        label="Search", field_name="search", method="search_fulltext"
+    )
 
     def filter_by_project(self, queryset, name, value):
         if value:
@@ -31,7 +33,7 @@ class DatasetFilter(filters.FilterSet):
 
     class Meta:
         model = models.Dataset
-        fields = {"title": ["icontains"], "project": ["exact"], "version": ["exact"]}
+        fields = {"project": ["exact"], "version": ["exact"]}
 
 
 class ResourceFilter(filters.FilterSet):
