@@ -210,7 +210,7 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
         except Exception:
             is_spatial = False
 
-        if self.object.metadata["driverShortName"] == "Parquet":
+        if self.object.metadata.get("driverShortName") == "Parquet":
             snippets.append(
                 {
                     "template": BASE_TEMPLATE_PATH + "r-duckdb-parquet",
@@ -264,7 +264,7 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
 
         BASE_TEMPLATE_PATH = "datasets/snippets/"
 
-        if self.object.metadata["driverShortName"]:
+        if self.object.metadata.get("driverShortName"):
             snippets.append(
                 {
                     "template": BASE_TEMPLATE_PATH + "r-terra",
