@@ -15,6 +15,7 @@ urlpatterns = [
     path("", include("dms.projects.urls", namespace="projects")),
     path("", include("dms.datasets.urls", namespace="datasets")),
     path("services/", include("dms.services.urls", namespace="services")),
+    path("", include("dms.nva.urls", namespace="nva")),
     path("", include("dms.theme.urls")),
 ]
 

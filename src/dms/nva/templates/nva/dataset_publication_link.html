@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% translate "Link NVA Publications" %} - {{ dataset }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex align-items-center mb-4">
+                <a href="{% url 'datasets:dataset_detail' dataset.pk %}" class="btn btn-outline-secondary me-3">
+                    <i class="bi bi-arrow-left"></i>
+                    {% translate "Back" %}
+                </a>
+                <div>
+                    <h1 class="mb-0">{% translate "Link NVA Publications" %}</h1>
+                    <h4 class="text-muted mb-0">{{ dataset }}</h4>
+                </div>
+            </div>
+
+            {% crispy form %}
+        </div>
+    </div>
+</div>
+{% endblock %}
