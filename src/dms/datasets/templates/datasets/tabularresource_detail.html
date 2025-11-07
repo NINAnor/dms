@@ -12,14 +12,16 @@
     </c-accordion.content>
 </c-accordion.item>
 {% endif %}
+{% comment %}
 {% if object.metadata.driverShortName == 'Parquet' %}
-<c-accordion.item value='item-2'>
-    <c-accordion.trigger value='item-2' class="text-2xl font-bold">Preview</c-accordion.trigger>
-    <c-accordion.content value='item-2'>
+<c-accordion.item value='preview'>
+    <c-accordion.trigger value='preview' class="text-2xl font-bold">Preview</c-accordion.trigger>
+    <c-accordion.content value='preview'>
         <div id="parquet-preview" data-url="{{ object.uri }}"></div>
     </c-accordion.content>
 </c-accordion.item>
 {% endif %}
+{% endcomment %}
 {% endblock resource_specific_content %}
 
 {% block body_javascript %}
