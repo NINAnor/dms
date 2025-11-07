@@ -1,11 +1,15 @@
+import json
+import logging
 import uuid
 from urllib.parse import urlencode
 
 import requests
 import rules
 from autoslug import AutoSlugField
+from django.contrib.gis.db import models as gis_models
+from django.contrib.gis.geos import GEOSGeometry, Polygon
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db import models
+from django.db import models, transaction
 from django.urls import reverse
 from django.utils import timezone as tz
 from django.utils.functional import cached_property
@@ -16,7 +20,7 @@ from django_jsonform.models.fields import JSONField as JSONBField
 from django_lifecycle import AFTER_SAVE, LifecycleModelMixin, hook
 from django_lifecycle.conditions import WhenFieldHasChanged
 from model_utils.managers import InheritanceManager
-from osgeo import gdal
+from osgeo import gdal  # type: ignore[import]
 from procrastinate.contrib.django import app
 from rules.contrib.models import RulesModel
 from taggit.managers import TaggableManager
@@ -63,6 +67,12 @@ class Dataset(RulesModel):
     )
     tags = TaggableManager(through=GenericStringTaggedItem, blank=True)
 
+    extent = gis_models.GeometryField(
+        null=True,
+        blank=True,
+        verbose_name="Spatial Extent",
+    )
+
     def __str__(self):
         return self.title
 
@@ -96,6 +106,19 @@ class Dataset(RulesModel):
             )
 
         return new_instance
+
+    def compute_extent(self):
+        self.extent = None
+        for r in self.resources.exclude(extent=None):
+            if self.extent:
+                self.extent = self.extent.union(r.extent)
+            else:
+                self.extent = r.extent
+
+        if self.extent:
+            self.extent = Polygon.from_bbox(self.extent.extent)
+
+        self.save(update_fields=["extent"])
 
     @cached_property
     def under_embargo(self):
@@ -226,6 +249,8 @@ class Resource(LifecycleModelMixin, RulesModel):
 
     objects = InheritanceManager()
     tags = TaggableManager(through=GenericStringTaggedItem, blank=True)
+
+    extent = gis_models.GeometryField(null=True, blank=True)
 
     class Meta:
         rules_permissions = {
@@ -380,11 +405,13 @@ class RasterResource(Resource):
 
                     self.metadata = metadata
                     self.last_sync = {"timestamp": now(), "status": "ok"}
-                    self.save(update_fields=["metadata", "last_sync"])
+                    self.extent = GEOSGeometry(json.dumps(metadata.get("wgs84Extent")))
+                    self.save(update_fields=["metadata", "last_sync", "extent"])
         except Exception as e:
             self.last_sync = {"status": "fail", "timestamp": now(), "error": str(e)}
             self.metadata = {}
-            self.save(update_fields=["last_sync", "metadata"])
+            self.extent = None
+            self.save(update_fields=["last_sync", "metadata", "extent"])
 
     def get_edit_url(self):
         return reverse(
@@ -393,11 +420,24 @@ class RasterResource(Resource):
         )
 
 
-class TabularResource(Resource):
-    name = models.CharField(
-        null=True, blank=True, help_text="name of the layer if multiple are available"
+class DataTable(gis_models.Model):
+    pk = models.CompositePrimaryKey("resource", "name")
+    name = models.CharField()
+    fields = JSONBField(default=list)
+    metadata = JSONBField(default=dict)
+    count = models.IntegerField(default=0)
+    geometryFields = JSONBField(null=True, blank=True)
+    resource = models.ForeignKey(
+        "Resource", on_delete=models.CASCADE, related_name="data_tables"
     )
+    extent = gis_models.GeometryField(null=True, blank=True)
 
+    @property
+    def is_spatial(self):
+        return self.extent is not None
+
+
+class TabularResource(Resource):
     @property
     def type(self):
         return "tabular"
@@ -410,14 +450,10 @@ class TabularResource(Resource):
             return
 
         try:
-            extra = {}
-            if self.name:
-                extra["layer"] = self.name
             with gdal.Run(
                 "vector",
                 "info",
                 input=self.uri,
-                **extra,
             ) as alg:
                 metadata = alg.Output()
 
@@ -428,11 +464,50 @@ class TabularResource(Resource):
 
                 self.metadata = metadata
                 self.last_sync = {"timestamp": now(), "status": "ok"}
-                self.save(update_fields=["metadata", "last_sync"])
+                with transaction.atomic():
+                    layers = self.metadata.get("layers", [])
+
+                    tables = []
+                    coverage = None
+                    for layer in layers:
+                        geometries = layer.get("geometryFields", [])
+                        extent = None
+
+                        try:
+                            if len(geometries):
+                                extent = Polygon.from_bbox(geometries[0].get("extent"))
+
+                                coverage = (
+                                    extent if not coverage else coverage.union(extent)
+                                )
+                        except Exception:
+                            logging.exception(
+                                f"Error creating the extent for resource {self.pk}"
+                            )
+
+                        tables.append(
+                            DataTable(
+                                name=layer.get("name").replace("_gdal_http_", ""),
+                                fields=layer.get("fields", []),
+                                metadata=layer.get("metadata", {}),
+                                resource=self,
+                                count=layer.get("featureCount"),
+                                geometryFields=geometries,
+                                extent=extent,
+                            )
+                        )
+
+                    DataTable.objects.filter(resource=self).delete()
+                    DataTable.objects.bulk_create(tables)
+
+                    self.extent = coverage
+
+                    self.save(update_fields=["metadata", "last_sync", "extent"])
 
         except Exception as e:
             self.last_sync = {"status": "fail", "timestamp": now(), "error": str(e)}
             self.metadata = {}
+            self.extent = None
             self.save(update_fields=["last_sync", "metadata"])
 
     def get_edit_url(self):
@@ -443,8 +518,15 @@ class TabularResource(Resource):
 
 
 class PartitionedResource(Resource):
-    name = models.CharField(
-        null=True, blank=True, help_text="name of the layer if multiple are available"
+    """
+    A resource that is represented by the union of multiple files.
+    NOTE: GDAL does not support partioned datasets in vsis3
+    """
+
+    endpoint = models.CharField(null=True, blank=True)
+    https = models.BooleanField(null=True, blank=True)
+    path_style = models.CharField(
+        choices=[("path", "path"), ("virtual", "virtual")], null=True, blank=True
     )
 
     @property

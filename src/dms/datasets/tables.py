@@ -1,10 +1,12 @@
 import django_tables2 as tables
+from django.utils.safestring import mark_safe
 
 from .models import (
     ContributionType,
     Dataset,
     DatasetContribution,
     DatasetRelationship,
+    DataTable,
     Resource,
 )
 
@@ -88,3 +90,41 @@ class DatasetContributionTable(tables.Table):
 
     def render_roles(self, record):
         return ", ".join(map(lambda r: CONTRIBUTION_TYPE[r], record.roles))
+
+
+class DataTableListTable(tables.Table):
+    def render_fields(self, record):
+        return mark_safe(  # noqa: S308
+            "".join(
+                list(
+                    map(
+                        lambda x: f"<li>{x.get('name')} ({x.get('type')})</li>",
+                        record.fields,
+                    )
+                )
+            )
+        )
+
+    def render_geometryFields(self, record):
+        return mark_safe(  # noqa: S308
+            "".join(
+                [
+                    (
+                        f"<li>{x.get('name')} ({x.get('type')} "
+                        f"{x.get('coordinateSystem').get('projjson').get('name')})</li>"
+                    )
+                    for x in (record.geometryFields or [])
+                ]
+            )
+        )
+
+    class Meta:
+        model = DataTable
+        fields = (
+            "name",
+            "count",
+            "is_spatial",
+            "fields",
+            "geometryFields",
+        )
+        template_name = "django_tables2/bootstrap.html"

@@ -67,7 +67,9 @@ dependencies = [
   "django-htmx>=1.23.0",
   "pylatex",
   "langdetect",
-  "django-vite"
+  "django-vite",
+  "django-vectortiles",
+  "djangorestframework-gis"
 ]
 description = "Add your description here"
 license = {text = "GPLv3"}

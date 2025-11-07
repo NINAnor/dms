@@ -1,0 +1,36 @@
+<div id="map" style="width: 100%; height: '{{ map_height }}'"></div>
+
+<script src='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js'></script>
+<link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
+
+<script>
+    const map = new maplibregl.Map({
+        container: 'map',
+        style: 'https://tiles.openfreemap.org/styles/bright',
+        center: [10, 72],
+        zoom: 2,
+    });
+    map.on('load', () => {
+        map.addSource('data', {
+            type: 'geojson',
+            data: '{{ url }}'
+        });
+
+        map.addLayer({
+            id: 'layer',
+            type: 'fill',
+            source: 'data',
+            paint: {
+                'fill-color': '#0080ff',
+                'fill-opacity': 0.5
+            }
+        });
+    });
+    var nav = new maplibregl.NavigationControl({ visualizePitch: true });
+    map.addControl(nav, 'top-right');
+    var scale = new maplibregl.ScaleControl({
+        maxWidth: 80,
+        unit: 'metric'
+    });
+    map.addControl(scale);
+</script>

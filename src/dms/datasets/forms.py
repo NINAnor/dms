@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django_jsonform.widgets import JSONFormWidget
 from django_svelte_jsoneditor.widgets import SvelteJSONEditorWidget
+from leaflet.forms.widgets import LeafletWidget
 
 from dms.projects.models import Project
 
@@ -76,7 +77,7 @@ class DatasetUpdateForm(forms.ModelForm):
 
     class Meta:
         model = Dataset
-        fields = ["title", "embargo_end_date"]
+        fields = ["title", "version", "embargo_end_date"]
         widgets = {
             "embargo_end_date": forms.DateInput(
                 format="%Y-%m-%d", attrs={"type": "date"}
@@ -99,9 +100,12 @@ class BaseMetadataForm(forms.ModelForm):
 class DatasetMetadataForm(BaseMetadataForm):
     class Meta:
         model = Dataset
-        fields = [
-            "metadata",
-        ]
+        fields = ["metadata", "extent"]
+        widgets = {"extent": LeafletWidget()}
+        help_texts = {
+            "extent": "Spatial extent can be computed automatically once you have "
+            "registered accessible resources of the dataset"
+        }
 
 
 class ResourceForm(forms.ModelForm):
@@ -134,8 +138,9 @@ class ResourceForm(forms.ModelForm):
             "role",
             "access_type",
             "metadata",
+            "extent",
         ]
-        widgets = {"metadata": SvelteJSONEditorWidget}
+        widgets = {"metadata": SvelteJSONEditorWidget, "extent": LeafletWidget()}
 
 
 class MapResourceForm(ResourceForm):
@@ -149,7 +154,9 @@ class MapResourceForm(ResourceForm):
             "access_type",
             "map_type",
             "metadata",
+            "extent",
         ]
+        widgets = {"metadata": SvelteJSONEditorWidget, "extent": LeafletWidget()}
 
 
 class RasterResourceForm(ResourceForm):
@@ -176,7 +183,6 @@ class TabularResourceForm(ResourceForm):
         fields = [
             "title",
             "uri",
-            "name",
             "description",
             "role",
             "access_type",

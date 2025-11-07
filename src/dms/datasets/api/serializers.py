@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
 from ..models import (
     Dataset,
@@ -9,6 +10,16 @@ from ..models import (
     Resource,
     TabularResource,
 )
+
+
+class DatasetGeoSerializer(GeoFeatureModelSerializer):
+    class Meta:
+        model = Dataset
+        fields = (
+            "id",
+            "title",
+        )
+        geo_field = "extent"
 
 
 class DatasetSerializer(serializers.HyperlinkedModelSerializer):
@@ -73,6 +84,16 @@ class ResourceSerializer(serializers.HyperlinkedModelSerializer):
             "access_type",
             "description",
         )
+
+
+class ResourceGeoSerializer(GeoFeatureModelSerializer):
+    class Meta:
+        model = Resource
+        fields = (
+            "id",
+            "title",
+        )
+        geo_field = "extent"
 
 
 class DatasetRelationshipSerializer(serializers.HyperlinkedModelSerializer):
@@ -183,7 +204,6 @@ class TabularResourceSerializer(serializers.HyperlinkedModelSerializer):
             "url",
             "id",
             "title",
-            "name",
             "uri",
             "description",
             "created_at",
@@ -211,7 +231,6 @@ class PartitionedResourceSerializer(serializers.HyperlinkedModelSerializer):
             "url",
             "id",
             "title",
-            "name",
             "uri",
             "description",
             "created_at",

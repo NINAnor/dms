@@ -33,11 +33,14 @@ class DatasetViewSet(AutoPermissionViewSetMixin, ModelViewSet):
     permission_type_map = {
         **AutoPermissionViewSetMixin.permission_type_map,
         "metadata_schema": "view",
+        "geojson": "view",
     }
 
     def get_serializer_class(self):
         if self.action == "list":
             return serializers.DatasetListSerializer
+        if self.action == "geojson":
+            return serializers.DatasetGeoSerializer
         return super().get_serializer_class()
 
     @action(
@@ -49,12 +52,34 @@ class DatasetViewSet(AutoPermissionViewSetMixin, ModelViewSet):
     def metadata_schema(self, request):
         return Response(data=dataset_metadata.schema)
 
+    @action(
+        detail=True, methods=["get"], url_path="feature", url_name="geojson-feature"
+    )
+    def geojson(self, request, pk):
+        return self.retrieve(request=request, pk=pk)
+
 
 class ResourceViewSet(AutoPermissionViewSetMixin, ModelViewSet):
     queryset = Resource.objects.all()
     serializer_class = serializers.ResourceSerializer
     pagination_class = DefaultCursorPagination
     filterset_class = filters.ResourceFilter
+
+    permission_type_map = {
+        **AutoPermissionViewSetMixin.permission_type_map,
+        "geojson": "view",
+    }
+
+    def get_serializer_class(self):
+        if self.action == "geojson":
+            return serializers.ResourceGeoSerializer
+        return super().get_serializer_class()
+
+    @action(
+        detail=True, methods=["get"], url_path="feature", url_name="geojson-feature"
+    )
+    def geojson(self, request, pk):
+        return self.retrieve(request=request, pk=pk)
 
 
 class RelCursorPagination(CursorPagination):

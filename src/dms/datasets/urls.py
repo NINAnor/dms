@@ -61,6 +61,11 @@ urlpatterns = [
         views.DatasetCloneView.as_view(),
         name="dataset_clone",
     ),
+    path(
+        "datasets/<str:pk>/compute-extent/",
+        views.DatasetComputeExtentView.as_view(),
+        name="dataset_compute_extent",
+    ),
     # Resources
     path(
         "datasets/<str:dataset_pk>/resources/register/",

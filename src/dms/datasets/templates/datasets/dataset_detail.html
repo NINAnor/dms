@@ -3,9 +3,18 @@
 {% load static %}
 {% load language_tags %}
 {% load i18n %}
-{% block article %}
 {% load render_table from django_tables2 %}
+{% load leaflet_tags %}
 
+
+{% block body_javascript %}
+{{ block.super }}
+{% leaflet_js %}
+{% leaflet_css %}
+
+{% endblock body_javascript %}
+
+{% block article %}
 {% has_perm 'datasets.change_dataset' user dataset as can_change %}
 
 
@@ -16,9 +25,11 @@
             Created at: {{dataset.created_at}} &bull;
             Last Modified: {{dataset.last_modified_at}}
         </p>
+        <p class="text-sm text-gray-700">Version: {{ dataset.version | default_if_none:'latest'}}</p>
     </div>
     <div class="flex gap-4">
-        {% if dataset.project %}<a class="btn btn-primary" href="{% url 'projects:project_detail' pk=dataset.project_id %}">Project</a>{% endif %}
+        {% if dataset.project %}<a class="btn btn-primary"
+            href="{% url 'projects:project_detail' pk=dataset.project_id %}">Project</a>{% endif %}
         <a class="btn btn-primary" href="{% url 'datasets:dataset_relationship_list' pk=dataset.id %}">Relationships</a>
         {% has_perm 'datasets.add_dataset' user dataset as can_clone %}
         {% if can_clone %}
@@ -32,7 +43,8 @@
         {% if can_change %}
         <a class="btn btn-primary" href="{% url 'datasets:dataset_update' pk=dataset.id %}">Edit</a>
         <a class="btn btn-primary" href="{% url 'datasets:dataset_update_metadata' pk=dataset.id %}">Edit Metadata</a>
-        <a class="btn btn-primary" href="{% url 'datasets:dataset_contribution_manage' dataset_pk=dataset.pk %}">Contributions</a>
+        <a class="btn btn-primary"
+            href="{% url 'datasets:dataset_contribution_manage' dataset_pk=dataset.pk %}">Contributions</a>
         {% endif %}
         {% has_perm 'datasets.delete_dataset' user dataset as can_delete %}
         {% if can_delete %}
@@ -41,7 +53,15 @@
     </div>
 </div>
 
-<c-accordion type='multiple' open="{'item-1': true, 'item-2': true, 'contrib': true}" class="mt-4">
+<c-accordion type='multiple' open="{'item-1': true, 'item-2': true, 'contrib': true, 'map': true}" class="mt-4">
+    {% if object.extent %}
+    <c-accordion.item value='map'>
+        <c-accordion.trigger value='map' class="text-2xl font-bold">Spatial Extent</c-accordion.trigger>
+        <c-accordion.content value='map'>
+            {% include 'datasets/partials/maplibre.html' with url=FEATURE_URL map_height="400px" %}
+        </c-accordion.content>
+    </c-accordion.item>
+    {% endif %}
     <c-accordion.item value='item-1'>
         <c-accordion.trigger value='item-1' class="text-2xl font-bold">Metadata</c-accordion.trigger>
         <c-accordion.content value='item-1'>
@@ -69,28 +89,33 @@
             <c-navigation-menu class="mb-4">
                 <c-navigation-menu.list class="items-center justify-start gap-2">
                     <c-navigation-menu.item>
-                        <c-navigation-menu.link class="bg-secondary" href='{% url "datasets:resource_create" dataset_pk=dataset.pk %}'>
+                        <c-navigation-menu.link class="bg-secondary"
+                            href='{% url "datasets:resource_create" dataset_pk=dataset.pk %}'>
                             <i class="fas fa-plus"></i> Generic Resource
                         </c-navigation-menu.link>
                     </c-navigation-menu.item>
                     <c-navigation-menu.item>
-                        <c-navigation-menu.link class="bg-blue-500 text-white" href='{% url "datasets:mapresource_create" dataset_pk=dataset.pk %}'>
+                        <c-navigation-menu.link class="bg-blue-500 text-white"
+                            href='{% url "datasets:mapresource_create" dataset_pk=dataset.pk %}'>
                             <i class="fas fa-plus"></i> Map Resource <i class="fas fa-map"></i>
                         </c-navigation-menu.link>
                     </c-navigation-menu.item>
                     <c-navigation-menu.item>
-                        <c-navigation-menu.link class="bg-green-500 text-white" href='{% url "datasets:rasterresource_create" dataset_pk=dataset.pk %}'>
+                        <c-navigation-menu.link class="bg-green-500 text-white"
+                            href='{% url "datasets:rasterresource_create" dataset_pk=dataset.pk %}'>
                             <i class="fas fa-plus"></i> Raster Resource <i class="fas fa-image"></i>
                         </c-navigation-menu.link>
                     </c-navigation-menu.item>
                     <c-navigation-menu.item>
-                        <c-navigation-menu.link class="bg-purple-500 text-white" href='{% url "datasets:tabularresource_create" dataset_pk=dataset.pk %}'>
+                        <c-navigation-menu.link class="bg-purple-500 text-white"
+                            href='{% url "datasets:tabularresource_create" dataset_pk=dataset.pk %}'>
                             <i class="fas fa-plus"></i> Tabular Resource <i class="fas fa-table"></i>
                         </c-navigation-menu.link>
                     </c-navigation-menu.item>
                     {% comment %}
                     <c-navigation-menu.item>
-                        <c-navigation-menu.link class="bg-orange-500 text-white" href='{% url "datasets:partitionedresource_create" dataset_pk=dataset.pk %}'>
+                        <c-navigation-menu.link class="bg-orange-500 text-white"
+                            href='{% url "datasets:partitionedresource_create" dataset_pk=dataset.pk %}'>
                             <i class="fas fa-plus"></i><i class="fas fa-th-large"></i> Partitioned Resource
                         </c-navigation-menu.link>
                     </c-navigation-menu.item>

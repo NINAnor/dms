@@ -4,9 +4,8 @@ from .shared import SHARED_DEFS
 
 schema = {
     "type": "object",
-    "help_text": "Based on DataCite: https://datacite-metadata-schema.readthedocs.io/en/4.6/",
+    "description": "Based on DataCite: https://datacite-metadata-schema.readthedocs.io/en/4.6/",
     "required": [
-        "creators",
         "language",
     ],
     "properties": {
@@ -18,23 +17,22 @@ schema = {
                     "alternateIdentifier": {
                         "type": "string",
                         "title": "Value",
-                        "help_text": "Another identifier uniquely identifies the Dataset",
+                        "description": "Another identifier uniquely identifies the Dataset",
                     },
                     "alternateIdentifierType": {
                         "type": "string",
                         "title": "Type",
-                        "help_text": "The name of the agency that generated the identifier",
+                        "description": "The name of the agency that generated the identifier",
                     },
                 },
             },
             "title": "Identifiers",
-            "help_text": "Unique identifiers for the Dataset",
+            "description": "Unique identifiers for the Dataset",
         },
         "creators": {
             "type": "list",
-            "help_text": "External creators of the Dataset",
+            "description": "External creators of the Dataset",
             "items": SHARED_DEFS["person"],
-            "minItems": 1,
             "skos:exactMatch": "http://purl.org/dc/terms/creator",
         },
         "titles": {
@@ -56,7 +54,11 @@ schema = {
                             "Other",
                         ],
                     },
-                    "lang": {"type": "string", "enum": ["en", "no"]},
+                    "lang": {
+                        "type": "string",
+                        "title": "Language",
+                        "enum": ["en", "no"],
+                    },
                 },
                 "required": ["title", "titleType"],
             },
@@ -64,7 +66,7 @@ schema = {
         "publicationYear": {
             "type": "number",
             "title": "Publication Year",
-            "help_text": "The year when the data was or will be made publicly available",
+            "description": "The year when the data was or will be made publicly available",
         },
         "subjects": {
             "type": "list",
@@ -72,28 +74,30 @@ schema = {
                 "type": "object",
                 "properties": {
                     "subject": {
+                        "title": "Subject",
                         "type": "string",
-                        "help_text": "Subject, keyword, classification code, or key phrase describing the resource.",
+                        "description": "Subject, keyword, classification code, or key phrase describing the resource.",
                     },
                     "subjectScheme": {
                         "type": "string",
                         "title": "The name of the subject scheme or classification",
-                        "help_text": "The name of the subject scheme or classification code or authority if one is used Examples: Library of Congress Subject Headings (LCSH), ANZSRC Fields of Research",
+                        "description": "The name of the subject scheme or classification code or authority if one is used Examples: Library of Congress Subject Headings (LCSH), ANZSRC Fields of Research",
                     },
                     "schemeURI": {
                         "type": "string",
                         "format": "uri",
-                        "help_text": "The URI of the subject identifier scheme, Example: https://id.loc.gov/authorities/subjects.html",
+                        "title": "The URI of the subject identifier scheme",
+                        "description": "The URI of the subject identifier scheme, Example: https://id.loc.gov/authorities/subjects.html",
                     },
                     "valueURI": {
                         "type": "string",
                         "format": "uri",
-                        "help_text": "The URI of the subject term. Example: https://id.loc.gov/authorities/subjects/sh85118622.html",
+                        "description": "The URI of the subject term. Example: https://id.loc.gov/authorities/subjects/sh85118622.html",
                     },
                     "classificationCode": {
                         "type": "string",
                         "title": "Classification Code",
-                        "help_text": "Example: 310607 (where 310607 is the classification code associated with the subject term “Nanobiotechnology” in the ANZSRC Fields of Research subject scheme)"
+                        "description": "Example: 310607 (where 310607 is the classification code associated with the subject term “Nanobiotechnology” in the ANZSRC Fields of Research subject scheme)"
                         "The classificationCode sub-property may be used for subject schemes, like ANZSRC, which do not have valueURIs for each subject term.",
                     },
                 },
@@ -101,12 +105,12 @@ schema = {
         },
         "contributors": {
             "type": "list",
-            "help_text": "External contributors to the Dataset",
+            "description": "External contributors to the Dataset",
             "items": SHARED_DEFS["contributor"],
         },
         "language": {
             "type": "string",
-            "help_text": "A language that the Dataset's files is written in",
+            "description": "A language that the Dataset's files is written in",
             "enum": [
                 {"title": "English", "value": "en"},
                 {"title": "Norsk", "value": "no"},
@@ -114,19 +118,22 @@ schema = {
         },
         "related": {
             "type": "list",
-            "help_text": "Relationship with external resources",
+            "description": "Relationship with external resources",
             "items": {
                 "type": "object",
                 "properties": {
                     "relationType": {
+                        "title": "Relationship Type",
                         "type": "string",
-                        "enum": map(lambda x, y: x, RelationshipType.choices),
+                        "enum": list(map(lambda x: x[0], RelationshipType.choices)),
                     },
                     "relatedIdentifier": {
                         "type": "string",
+                        "title": "Identifier",
                     },
                     "resourceTypeGeneral": {
                         "type": "string",
+                        "title": "Resource Type",
                         "enum": [
                             "Audiovisual",
                             "Award",
@@ -164,6 +171,7 @@ schema = {
                     },
                     "relatedIdentifierType": {
                         "type": "string",
+                        "title": "Identifier Type",
                         "enum": [
                             "ark",
                             "arXiv",
@@ -193,31 +201,32 @@ schema = {
         "rightsList": {
             "type": "list",
             "title": "Licenses and Rights",
-            "help_text": "Information about licenses and rights held in and over the Dataset",
+            "description": "Information about licenses and rights held in and over the Dataset",
             "items": {
                 "type": "object",
                 "properties": {
+                    "lang": {"type": "string", "enum": ["en", "no"]},
                     "rights": {
                         "type": "string",
                         "title": "License description",
                         "widget": "textarea",
-                        "help_text": "Provide a rights management statement for the resource or reference a service providing such information."
+                        "description": "Provide a rights management statement for the resource or reference a service providing such information."
                         "Include embargo information if applicable. Use the complete title of a license and include version information if applicable.",
                     },
                     "rightsURI": {
                         "type": "string",
                         "title": "The URI of the license",
-                        "help_text": "Example: https://creativecommons.org/licenses/by/3.0/de/",
+                        "description": "Example: https://creativecommons.org/licenses/by/3.0/de/",
                     },
                     "rightsIdentifier": {
                         "type": "string",
                         "title": "A short, standardized version of the license name",
-                        "help_text": "A short, standardized version of the license name, e.g. as provided by SPDX (https://spdx.org/licenses/)",
+                        "description": "A short, standardized version of the license name, e.g. as provided by SPDX (https://spdx.org/licenses/)",
                     },
                     "schemeUri": {
                         "type": "string",
                         "title": "The URI of the license scheme",
-                        "help_text": "Example: https://spdx.org/licenses/",
+                        "description": "Example: https://spdx.org/licenses/",
                         "enum": [
                             "https://spdx.org/licenses/",
                         ],
@@ -225,6 +234,7 @@ schema = {
                 },
                 "required": [
                     "rights",
+                    "lang",
                 ],
             },
         },
@@ -247,25 +257,48 @@ schema = {
                         ],
                     },
                     "description": {"type": "string", "widget": "textarea"},
+                    "lang": {"type": "string", "enum": ["en", "no"]},
                 },
+                "required": ["description", "descriptionType", "lang"],
             },
         },
-        "geoLocations": {
+        "dates": {
             "type": "list",
             "items": {
                 "type": "object",
                 "properties": {
-                    "geoLocationPoint": SHARED_DEFS["geoLocationPoint"],
-                    "geoLocationBox": SHARED_DEFS["geoLocationBox"],
-                    "geoLocationPlace": {
+                    "date": {
                         "type": "string",
-                        "title": "Place",
-                        "help_text": "Name of the geographic location",
+                        "description": "YYYY, YYYY-MM-DD, YYYY-MM-DDThh:mm:ssTZD or any other format or level of granularity described in W3CDTF. Use RKMS-ISO8601 standard for depicting date ranges.",
+                    },
+                    "dateType": {
+                        "type": "string",
+                        "description": "The type of date",
+                        "default": "Created",
+                        "title": "Type",
+                        "enum": [
+                            "Accepted",
+                            "Available",
+                            "Copyrighted",
+                            "Collected",
+                            "Coverage",
+                            "Created",
+                            "Issued",
+                            "Submitted",
+                            "Updated",
+                            "Valid",
+                            "Withdrawn",
+                            "Other",
+                        ],
+                    },
+                    "dateInformation": {
+                        "type": "string",
+                        "widget": "textarea",
+                        "description": "Specific information about the date, if appropriate.",
                     },
                 },
+                "required": ["date", "dateType"],
             },
-            "skos:exactMatch": "http://purl.org/dc/terms/spatial",
-            "help_text": "Geographic information about the Dataset",
         },
     },
 }

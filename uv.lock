@@ -206,6 +206,18 @@ wheels = [
 ]
 
 [[package]]
+name = "click"
+version = "8.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/46/61/de6cd827efad202d7057d93e0fed9294b96952e188f7384832791c7b2254/click-8.3.0.tar.gz", hash = "sha256:e7b8232224eba16f4ebe410c25ced9f7875cb5f3263ffc93cc3e8da705e229c4", size = 276943 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/db/d3/9dcc0f5797f070ec8edf30fbadfb200e71d9db6b84d211e3b2085a7589a0/click-8.3.0-py3-none-any.whl", hash = "sha256:9b9f285302c6e3064f4330c05f05b81945b2a39544279343e6e7c5f27a9baddc", size = 107295 },
+]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -774,6 +786,19 @@ wheels = [
 ]
 
 [[package]]
+name = "django-vectortiles"
+version = "1.0.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+    { name = "mercantile" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/63/1e/fffa26b857739e8f182737d7774fd34ddd5930881c4609a0d3fc54479cbf/django_vectortiles-1.0.2.tar.gz", hash = "sha256:5ea1eb69eb40a0f0fac8979d7b483312145a0af3ac30f7769ee6542e2456214d", size = 9189 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/15/92/c32b0460a321f3cf018b5bc11a2cb07bf4ef627ed4cf98871360e5d8c4d8/django_vectortiles-1.0.2-py3-none-any.whl", hash = "sha256:579e721b26f6168a029c112c42e2b9290c2209c80f669caf7ea4be446e202715", size = 11890 },
+]
+
+[[package]]
 name = "django-view-breadcrumbs"
 version = "2.5.1"
 source = { registry = "https://pypi.org/simple" }
@@ -816,6 +841,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/2c/ce/31482eb688bdb4e271027076199e1aa8d02507e530b6d272ab8b4481557c/djangorestframework-3.15.2.tar.gz", hash = "sha256:36fe88cd2d6c6bec23dca9804bab2ba5517a8bb9d8f47ebc68981b56840107ad", size = 1067420 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/7c/b6/fa99d8f05eff3a9310286ae84c4059b08c301ae4ab33ae32e46e8ef76491/djangorestframework-3.15.2-py3-none-any.whl", hash = "sha256:2b8871b062ba1aefc2de01f773875441a961fefbf79f5eed1e32b2f096944b20", size = 1071235 },
+]
+
+[[package]]
+name = "djangorestframework-gis"
+version = "1.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+    { name = "django-filter" },
+    { name = "djangorestframework" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/96/fb/36b4f5d9d0fccdb17ae620c580d4b340a7b3643830e49b8cc5d8fc1eb1ee/djangorestframework_gis-1.2.0.tar.gz", hash = "sha256:702ba9ad44173b7cc70e48c6c84da48c28f6f82612cc901a77fdb54c5c57c971", size = 50983 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/64/86/b7e85e372ecc97dc1344785f82dc0c51c2b2c8b1d2b8660d3d8752fd1b3c/djangorestframework_gis-1.2.0-py2.py3-none-any.whl", hash = "sha256:3924651b2f6dcb5a64b30df9692577af548a04725b0c2c36cbc385f7c50fc80a", size = 22254 },
 ]
 
 [[package]]
@@ -871,9 +910,11 @@ dependencies = [
     { name = "django-tables2" },
     { name = "django-taggit" },
     { name = "django-tailwind" },
+    { name = "django-vectortiles" },
     { name = "django-view-breadcrumbs" },
     { name = "django-vite" },
     { name = "django-widget-tweaks" },
+    { name = "djangorestframework-gis" },
     { name = "djangorestframework-simplejwt" },
     { name = "drf-nested-routers" },
     { name = "drf-spectacular" },
@@ -963,9 +1004,11 @@ requires-dist = [
     { name = "django-tables2" },
     { name = "django-taggit", specifier = ">=6.1.0" },
     { name = "django-tailwind" },
+    { name = "django-vectortiles" },
     { name = "django-view-breadcrumbs", specifier = ">=2.5.1" },
     { name = "django-vite" },
     { name = "django-widget-tweaks" },
+    { name = "djangorestframework-gis" },
     { name = "djangorestframework-simplejwt" },
     { name = "drf-nested-routers" },
     { name = "drf-spectacular", specifier = ">=0.27.2" },
@@ -1301,6 +1344,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/99/5b/a36a337438a14116b16480db471ad061c36c3694df7c2084a0da7ba538b7/matplotlib_inline-0.1.7.tar.gz", hash = "sha256:8423b23ec666be3d16e16b60bdd8ac4e86e840ebd1dd11a30b9f117f2fa0ab90", size = 8159 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/8f/8e/9ad090d3553c280a8060fbf6e24dc1c0c29704ee7d1c372f0c174aa59285/matplotlib_inline-0.1.7-py3-none-any.whl", hash = "sha256:df192d39a4ff8f21b1895d72e6a13f5fcc5099f00fa84384e0ea28c2cc0653ca", size = 9899 },
+]
+
+[[package]]
+name = "mercantile"
+version = "1.2.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d2/c6/87409bcb26fb68c393fa8cf58ba09363aa7298cfb438a0109b5cb14bc98b/mercantile-1.2.1.tar.gz", hash = "sha256:fa3c6db15daffd58454ac198b31887519a19caccee3f9d63d17ae7ff61b3b56b", size = 26352 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b2/d6/de0cc74f8d36976aeca0dd2e9cbf711882ff8e177495115fd82459afdc4d/mercantile-1.2.1-py3-none-any.whl", hash = "sha256:30f457a73ee88261aab787b7069d85961a5703bb09dc57a170190bc042cd023f", size = 14779 },
 ]
 
 [[package]]

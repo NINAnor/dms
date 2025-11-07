@@ -1,17 +1,33 @@
 {% extends "app.html" %}
-{% load crispy_forms_tags static %}
+{% load crispy_forms_tags static leaflet_tags %}
 
 {% block article %}
+<style>
+    .leaflet-container {
+        height: 600px !important;
+        width: 100%;
+        max-width: 100%;
+    }
+</style>
+<div class="flex items-center justify-between">
     <h3 class="text-4xl mb-5">{{ object }}</h3>
     <div class="flex gap-5 mb-5">
+        <form class="inline" method="post" action="{% url 'datasets:dataset_compute_extent' pk=dataset.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary" title="Compute spatial extent">
+                <i class="fas fa-union"></i> Compute spatial extent
+            </button>
+        </form>
     </div>
-    {% crispy form %}
+</div>
+{% crispy form %}
 {% endblock %}
 
 {% block body_javascript %}
 {{ block.super }}
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"
-    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
-    crossorigin="anonymous"></script>
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+{% leaflet_js plugins="forms" %}
+{% leaflet_css plugins="forms" %}
 {{ form.media }}
 {% endblock body_javascript %}

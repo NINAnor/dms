@@ -1,18 +1,27 @@
 {% extends "app.html" %}
-{% load crispy_forms_tags static %}
+{% load crispy_forms_tags static leaflet_tags %}
 {% load django_htmx %}
 
 {% block article %}
-    <h3 class="text-4xl mb-5">{{ object }}</h3>
-    <div class="flex gap-5 mb-5">
-        {% if object %}
-        {% endif %}
-    </div>
-    {% crispy form %}
+<style>
+    .leaflet-container {
+        height: 600px !important;
+        width: 100%;
+        max-width: 100%;
+    }
+</style>
+<h3 class="text-4xl mb-5">{{ object }}</h3>
+<div class="flex gap-5 mb-5">
+    {% if object %}
+    {% endif %}
+</div>
+{% crispy form %}
 {% endblock %}
 
 {% block body_javascript %}
 {{ block.super }}
 {{ form.media }}
 {% htmx_script %}
+{% leaflet_js plugins="forms" %}
+{% leaflet_css plugins="forms" %}
 {% endblock body_javascript %}

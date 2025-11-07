@@ -19,29 +19,40 @@
         <a class="btn btn-primary" href="{{ object.edit_url }}">Edit</a>
         {% has_perm 'datasets.change_resource' user object as can_change %}
         {% if can_change %}
-        <c-action_form action="{% url 'datasets:resource_refresh_metadata' dataset_pk=object.dataset_id pk=object.pk %}" class="btn">
+        <c-action_form action="{% url 'datasets:resource_refresh_metadata' dataset_pk=object.dataset_id pk=object.pk %}"
+            class="btn">
             Refresh Metadata
         </c-action_form>
         {% endif %}
         {% has_perm 'datasets.delete_resource' user object as can_delete %}
         {% if can_delete %}
-        <a class="btn btn-error" href="{% url 'datasets:resource_delete' dataset_pk=object.dataset_id pk=object.pk %}">Delete</a>
+        <a class="btn btn-error"
+            href="{% url 'datasets:resource_delete' dataset_pk=object.dataset_id pk=object.pk %}">Delete</a>
         {% endif %}
     </div>
 </div>
 
 <p class="mt-5">Resource path: <a href="{{ object.uri }}">{{ object.uri }}</a></p>
 
-<c-accordion type='multiple' open="{'item-1': true, 'item-2': true , 'schema': true, 'snippets': true}" class="mt-4">
-    <c-accordion.item value='item-1'>
-        <c-accordion.trigger value='item-1' class="text-2xl font-bold">Metadata</c-accordion.trigger>
-        <c-accordion.content value='item-1'>
+<c-accordion type='multiple'
+    open="{'meta': true, 'item-2': true , 'schema': true, 'snippets': true, 'map': true, 'data': true}" class="mt-4">
+    {% if object.extent %}
+    <c-accordion.item value='map'>
+        <c-accordion.trigger value='map' class="text-2xl font-bold">Spatial Extent</c-accordion.trigger>
+        <c-accordion.content value='map'>
+            {% include 'datasets/partials/maplibre.html' with url=FEATURE_URL map_height="400px" %}
+        </c-accordion.content>
+    </c-accordion.item>
+    {% endif %}
+    <c-accordion.item value='meta'>
+        <c-accordion.trigger value='meta' class="text-2xl font-bold">Metadata</c-accordion.trigger>
+        <c-accordion.content value='meta'>
             {{ metadata_preview|safe }}
         </c-accordion.content>
     </c-accordion.item>
-    <c-accordion.item value='item-1'>
-        <c-accordion.trigger value='item-1' class="text-2xl font-bold">Last sync</c-accordion.trigger>
-        <c-accordion.content value='item-1'>
+    <c-accordion.item value='meta'>
+        <c-accordion.trigger value='meta' class="text-2xl font-bold">Last sync</c-accordion.trigger>
+        <c-accordion.content value='meta'>
             <c-json-object-viewer :dict="object.last_sync"></c-json-object-viewer>
         </c-accordion.content>
     </c-accordion.item>
@@ -56,13 +67,13 @@
                     {% endfor %}
                 </c-tabs.list>
                 {% for snippet in snippets %}
-                    <c-tabs.content value='{{ snippet.template }}'>
+                <c-tabs.content value='{{ snippet.template }}'>
                     <pre>
                         <code class="language-{{snippet.lang}}">
 {% include snippet.template with uri=object.uri spatial=snippet.spatial %}
                         </code>
                     </pre>
-                    </c-tabs.content>
+                </c-tabs.content>
                 {% endfor %}
             </c-tabs>
         </c-accordion.content>
@@ -75,11 +86,11 @@
 {% endblock article %}
 
 {% block body_javascript %}
-    {{ block.super }}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/r.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/sql.min.js"></script>
-    <script>hljs.highlightAll();</script>
+{{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/r.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/sql.min.js"></script>
+<script>hljs.highlightAll();</script>
 {% endblock body_javascript %}

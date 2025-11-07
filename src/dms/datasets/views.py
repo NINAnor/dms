@@ -55,6 +55,7 @@ from .tables import (
     DatasetContributionTable,
     DatasetRelationshipTable,
     DatasetTable,
+    DataTableListTable,
     ResourceListTable,
     ResourceTable,
 )
@@ -109,6 +110,10 @@ class DatasetDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailVi
         )
         ctx["metadata_preview"] = widget.render(
             name="metadata_preview", value=json.dumps(self.object.metadata, indent=2)
+        )
+
+        ctx["FEATURE_URL"] = self.request.build_absolute_uri(
+            reverse("api_v1:datasets-geojson-feature", kwargs={"pk": self.object.pk})
         )
 
         return ctx
@@ -187,6 +192,28 @@ class DatasetCloneView(PermissionRequiredMixin, ActionView):
         return reverse("datasets:dataset_detail", kwargs={"pk": self.cloned_dataset.pk})
 
 
+class DatasetComputeExtentView(PermissionRequiredMixin, ActionView):
+    model = Dataset
+    permission_required = "datasets.edit_dataset"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("project")
+            .prefetch_related("contributor_roles", "resources", "tags")
+        )
+
+    def execute(self):
+        self.object.compute_extent()
+        messages.success(
+            self.request, f'Dataset "{self.object.title}" spatial extent was computed'
+        )
+
+    def get_success_url(self):
+        return reverse("datasets:dataset_detail", kwargs={"pk": self.object.pk})
+
+
 class ResourceDetailView(PermissionRequiredMixin, DetailView):
     model = Resource
     permission_required = "datasets.view_resource"
@@ -195,7 +222,11 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
         if queryset is None:
             queryset = self.get_queryset()
         # Use inheritance manager to get the correct subclass instance
-        return queryset.select_subclasses().get(pk=self.kwargs["pk"])
+        return (
+            queryset.select_subclasses()
+            .prefetch_related("data_tables")
+            .get(pk=self.kwargs["pk"])
+        )
 
     def _get_model_name(self):
         return self.object.__class__.__name__.lower()
@@ -210,7 +241,10 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
         except Exception:
             is_spatial = False
 
-        if self.object.metadata.get("driverShortName") == "Parquet":
+        if (
+            self.object.metadata
+            and self.object.metadata.get("driverShortName") == "Parquet"
+        ):
             snippets.append(
                 {
                     "template": BASE_TEMPLATE_PATH + "r-duckdb-parquet",
@@ -254,7 +288,12 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
                 }
             )
 
-        return {"snippets": snippets}
+        return {
+            "snippets": snippets,
+            "data_table": DataTableListTable(
+                self.object.data_tables.all(), prefix="data_"
+            ),
+        }
 
     def get_context_mapresource(self):
         return {"NINA_MAP_PREVIEW": settings.DATASETS_NINA_MAP_PREVIEW}
@@ -264,7 +303,7 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
 
         BASE_TEMPLATE_PATH = "datasets/snippets/"
 
-        if self.object.metadata.get("driverShortName"):
+        if self.object.metadata and self.object.metadata.get("driverShortName"):
             snippets.append(
                 {
                     "template": BASE_TEMPLATE_PATH + "r-terra",
@@ -292,6 +331,10 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
         )
         ctx["metadata_preview"] = widget.render(
             name="metadata_preview", value=json.dumps(self.object.metadata, indent=2)
+        )
+
+        ctx["FEATURE_URL"] = self.request.build_absolute_uri(
+            reverse("api_v1:resources-geojson-feature", kwargs={"pk": self.object.pk})
         )
 
         return (

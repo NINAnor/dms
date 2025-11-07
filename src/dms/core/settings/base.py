@@ -83,6 +83,7 @@ DJANGO_APPS = [
     "django.contrib.staticfiles",
     # "django.contrib.humanize", # Handy template tags
     "django.forms",
+    "django.contrib.gis",
     "django.contrib.admin",
 ]
 
@@ -103,6 +104,7 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "rest_framework",
     "rest_framework.authtoken",
+    "rest_framework_gis",
     "drf_spectacular",
     "drf_standardized_errors",
     "django_filters",
@@ -565,3 +567,9 @@ DJANGO_VITE = {
 DATASETS_TITILER_URL = env("DATASETS_TITILER_URL", default="/titiler")
 DATASETS_NINA_MAP_PREVIEW = env("DATASETS_NINA_MAP_PREVIEW", default=None)
 FASTDOC_CONVERT_API_URL = env("FASTDOC_CONVERT_API_URL", default=None)
+
+
+LEAFLET_CONFIG = {
+    "DEFAULT_CENTER": (70, 10),
+    "DEFAULT_ZOOM": 3,
+}
