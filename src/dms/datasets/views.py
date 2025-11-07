@@ -290,6 +290,7 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
 
         return {
             "snippets": snippets,
+            "snippets_default": snippets[0].get("template"),
             "data_table": DataTableListTable(
                 self.object.data_tables.all(), prefix="data_"
             ),
@@ -319,7 +320,10 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
                 }
             )
 
-        return {"snippets": snippets}
+        return {
+            "snippets": snippets,
+            "snippets_default": snippets[0].get("template"),
+        }
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)

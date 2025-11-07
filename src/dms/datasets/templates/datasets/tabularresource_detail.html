@@ -5,9 +5,9 @@
 
 {% block resource_specific_content %}
 {% if data_table %}
-<c-accordion.item value='tables'>
-    <c-accordion.trigger value='tables' class="text-2xl font-bold">Data Tables and Layers</c-accordion.trigger>
-    <c-accordion.content value='tables'>
+<c-accordion.item value='data'>
+    <c-accordion.trigger value='data' class="text-2xl font-bold">Data Tables and Layers</c-accordion.trigger>
+    <c-accordion.content value='data'>
         {% render_table data_table %}
     </c-accordion.content>
 </c-accordion.item>

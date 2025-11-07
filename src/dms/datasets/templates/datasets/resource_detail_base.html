@@ -35,7 +35,7 @@
 <p class="mt-5">Resource path: <a href="{{ object.uri }}">{{ object.uri }}</a></p>
 
 <c-accordion type='multiple'
-    open="{'meta': true, 'item-2': true , 'schema': true, 'snippets': true, 'map': true, 'data': true}" class="mt-4">
+    open="{'meta': true, 'preview': true , 'schema': true, 'snippets': true, 'map': true, 'data': true}" class="mt-4">
     {% if object.extent %}
     <c-accordion.item value='map'>
         <c-accordion.trigger value='map' class="text-2xl font-bold">Spatial Extent</c-accordion.trigger>
@@ -60,7 +60,7 @@
     <c-accordion.item value='snippets'>
         <c-accordion.trigger value='snippets' class="text-2xl font-bold">Snippets</c-accordion.trigger>
         <c-accordion.content value='snippets'>
-            <c-tabs>
+            <c-tabs default_value="{{ snippets_default }}">
                 <c-tabs.list>
                     {% for snippet in snippets %}
                     <c-tabs.trigger value='{{ snippet.template }}'>{{ snippet.title }}</c-tabs.trigger>
