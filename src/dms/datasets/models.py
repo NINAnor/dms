@@ -1,5 +1,5 @@
 import json
-import logging
+import traceback
 import uuid
 from urllib.parse import urlencode
 
@@ -463,7 +463,7 @@ class TabularResource(Resource):
                     metadata["http_headers"] = http_headers
 
                 self.metadata = metadata
-                self.last_sync = {"timestamp": now(), "status": "ok"}
+                self.last_sync = {"timestamp": now(), "status": "ok", "warnings": []}
                 with transaction.atomic():
                     layers = self.metadata.get("layers", [])
 
@@ -475,15 +475,24 @@ class TabularResource(Resource):
 
                         try:
                             if len(geometries):
-                                extent = Polygon.from_bbox(geometries[0].get("extent"))
+                                geom = geometries[0]
+
+                                extent = Polygon.from_bbox(geom.get("extent"))
+                                extent.srid = int(
+                                    geom.get("coordinateSystem")
+                                    .get("projjson")
+                                    .get("id")
+                                    .get("code")
+                                )
+
+                                if extent.srid != 4326:
+                                    extent.transform(4326)
 
                                 coverage = (
                                     extent if not coverage else coverage.union(extent)
                                 )
                         except Exception:
-                            logging.exception(
-                                f"Error creating the extent for resource {self.pk}"
-                            )
+                            self.last_sync["warnings"].append(traceback.format_exc())
 
                         tables.append(
                             DataTable(
