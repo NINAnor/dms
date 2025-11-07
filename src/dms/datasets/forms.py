@@ -140,7 +140,11 @@ class ResourceForm(forms.ModelForm):
             "metadata",
             "extent",
         ]
-        widgets = {"metadata": SvelteJSONEditorWidget, "extent": LeafletWidget()}
+        widgets = {
+            "metadata": SvelteJSONEditorWidget,
+            "extent": LeafletWidget(),
+            "description": forms.Textarea(attrs={"rows": 10}),
+        }
 
 
 class MapResourceForm(ResourceForm):
@@ -156,7 +160,7 @@ class MapResourceForm(ResourceForm):
             "metadata",
             "extent",
         ]
-        widgets = {"metadata": SvelteJSONEditorWidget, "extent": LeafletWidget()}
+        widgets = ResourceForm.Meta.widgets
 
 
 class RasterResourceForm(ResourceForm):
@@ -172,9 +176,8 @@ class RasterResourceForm(ResourceForm):
             "metadata",
         ]
         widgets = {
-            "metadata": SvelteJSONEditorWidget,
             "titiler": SvelteJSONEditorWidget,
-        }
+        } | ResourceForm.Meta.widgets
 
 
 class TabularResourceForm(ResourceForm):

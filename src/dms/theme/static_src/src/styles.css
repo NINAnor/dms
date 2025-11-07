@@ -133,3 +133,7 @@ table.table thead th.asc.orderable a::after {
 .svelte-jsoneditor-wrapper>div {
   @apply max-h-[40rem] overflow-auto;
 }
+
+.textarea {
+  @apply border border-gray-300 !important;
+}
