@@ -69,7 +69,8 @@ dependencies = [
   "langdetect",
   "django-vite",
   "django-vectortiles",
-  "djangorestframework-gis"
+  "djangorestframework-gis",
+  "pygeometa"
 ]
 description = "Add your description here"
 license = {text = "GPLv3"}
