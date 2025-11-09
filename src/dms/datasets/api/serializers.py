@@ -4,6 +4,7 @@ from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from ..models import (
     Dataset,
     DatasetRelationship,
+    DataTable,
     MapResource,
     PartitionedResource,
     RasterResource,
@@ -240,4 +241,19 @@ class PartitionedResourceSerializer(serializers.HyperlinkedModelSerializer):
             "metadata",
             "role",
             "access_type",
+        )
+
+
+class DataTableSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = DataTable
+        fields = (
+            "name",
+            "resource",
+            "fields",
+            "is_spatial",
+            "extent",
+            "count",
+            "geometryFields",
+            "metadata",
         )

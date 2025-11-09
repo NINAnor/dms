@@ -104,3 +104,12 @@ class DatasetRelationshipFilter(filters.FilterSet):
             "target",
             "type",
         )
+
+
+class DataTableFilter(filters.FilterSet):
+    class Meta:
+        model = models.DataTable
+        fields = (
+            "resource",
+            "name",
+        )

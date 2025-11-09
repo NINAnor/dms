@@ -9,6 +9,7 @@ from .. import filters
 from ..models import (
     Dataset,
     DatasetRelationship,
+    DataTable,
     MapResource,
     PartitionedResource,
     RasterResource,
@@ -149,3 +150,15 @@ class PartitionedResourceViewSet(AutoPermissionViewSetMixin, ModelViewSet):
     serializer_class = serializers.PartitionedResourceSerializer
     pagination_class = DefaultCursorPagination
     filterset_class = filters.ResourceFilter
+
+
+class DataTableViewSet(
+    AutoPermissionViewSetMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    GenericViewSet,
+):
+    queryset = DataTable.objects.all()
+    serializer_class = serializers.DataTableSerializer
+    pagination_class = DefaultCursorPagination
+    filterset_class = filters.DataTableFilter
