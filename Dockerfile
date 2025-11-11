@@ -32,7 +32,7 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
 WORKDIR /app
-COPY src/dms/frontend/package.json src/dms/frontend/pnpm-lock.yaml ./
+COPY src/dms/frontend/package.json src/dms/frontend/pnpm-lock.yaml src/dms/frontend/pnpm-workspace.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 
