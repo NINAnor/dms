@@ -92,7 +92,46 @@ class ResourceFilter(filters.FilterSet):
             "title": ["icontains"],
             "dataset__project": ["exact"],
             "dataset": ["exact"],
+            "uri": ["startswith"],
         }
+
+
+class ResourceRestFilter(ResourceFilter):
+    is_cog = filters.BooleanFilter(method="filter_cog_resources")
+    is_accessible = filters.BooleanFilter(method="filter_accessible_resources")
+    search = filters.CharFilter(
+        label="Search", field_name="search", method="search_fulltext"
+    )
+
+    def search_fulltext(self, queryset, field_name, value):
+        if not value:
+            return queryset
+        return (
+            queryset.annotate(
+                rank=SearchRank(
+                    SearchVector("title", "description"),
+                    SearchQuery(value, search_type="websearch"),
+                )
+            )
+            .filter(rank__gt=0.01)
+            .order_by("-rank")
+        )
+
+    def filter_cog_resources(self, queryset, name, value):
+        if value:
+            return queryset.filter(
+                metadata__driverShortName="GTiff",
+                metadata__metadata__IMAGE_STRUCTURE__LAYOUT="COG",
+            )
+        return queryset
+
+    def filter_accessible_resources(self, queryset, name, value):
+        if value:
+            return queryset.filter(last_sync__status="ok")
+        return queryset
+
+    class Meta(ResourceFilter.Meta):
+        pass
 
 
 class DatasetRelationshipFilter(filters.FilterSet):

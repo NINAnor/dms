@@ -64,7 +64,17 @@ class ResourceViewSet(AutoPermissionViewSetMixin, ModelViewSet):
     queryset = Resource.objects.all()
     serializer_class = serializers.ResourceSerializer
     pagination_class = DefaultCursorPagination
-    filterset_class = filters.ResourceFilter
+    filterset_class = filters.ResourceRestFilter
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_subclasses(
+                RasterResource,
+                TabularResource,
+            )
+        )
 
     permission_type_map = {
         **AutoPermissionViewSetMixin.permission_type_map,
@@ -74,6 +84,8 @@ class ResourceViewSet(AutoPermissionViewSetMixin, ModelViewSet):
     def get_serializer_class(self):
         if self.action == "geojson":
             return serializers.ResourceGeoSerializer
+        elif self.action == "list":
+            return serializers.ResourceListSerializer
         return super().get_serializer_class()
 
     @action(

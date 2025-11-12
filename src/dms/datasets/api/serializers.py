@@ -62,12 +62,14 @@ class DatasetListSerializer(DatasetSerializer):
         )
 
 
-class ResourceSerializer(serializers.HyperlinkedModelSerializer):
+class ResourceListSerializer(serializers.HyperlinkedModelSerializer):
     dataset = serializers.HyperlinkedRelatedField(
         view_name="api_v1:datasets-detail", read_only=True
     )
     url = serializers.HyperlinkedIdentityField(view_name="api_v1:resources-detail")
     dataset_id = serializers.CharField()
+
+    titiler = serializers.JSONField(read_only=True)
 
     class Meta:
         model = Resource
@@ -80,11 +82,16 @@ class ResourceSerializer(serializers.HyperlinkedModelSerializer):
             "last_modified_at",
             "dataset_id",
             "dataset",
-            "metadata",
             "role",
             "access_type",
             "description",
+            "titiler",
         )
+
+
+class ResourceSerializer(ResourceListSerializer):
+    class Meta(ResourceListSerializer.Meta):
+        fields = ResourceListSerializer.Meta.fields + ("metadata", "last_sync")
 
 
 class ResourceGeoSerializer(GeoFeatureModelSerializer):
@@ -145,21 +152,7 @@ class MapResourceSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = MapResource
-        fields = (
-            "url",
-            "id",
-            "title",
-            "uri",
-            "description",
-            "created_at",
-            "last_modified_at",
-            "dataset_id",
-            "dataset",
-            "metadata",
-            "role",
-            "access_type",
-            "map_type",
-        )
+        fields = ResourceSerializer.Meta.fields + ("map_type",)
 
 
 class RasterResourceSerializer(serializers.HyperlinkedModelSerializer):
@@ -173,21 +166,7 @@ class RasterResourceSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = RasterResource
-        fields = (
-            "url",
-            "id",
-            "title",
-            "uri",
-            "description",
-            "created_at",
-            "last_modified_at",
-            "dataset_id",
-            "dataset",
-            "metadata",
-            "role",
-            "access_type",
-            "titiler",
-        )
+        fields = ResourceSerializer.Meta.fields + ("titiler",)
 
 
 class TabularResourceSerializer(serializers.HyperlinkedModelSerializer):
@@ -201,20 +180,7 @@ class TabularResourceSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = TabularResource
-        fields = (
-            "url",
-            "id",
-            "title",
-            "uri",
-            "description",
-            "created_at",
-            "last_modified_at",
-            "dataset_id",
-            "dataset",
-            "metadata",
-            "role",
-            "access_type",
-        )
+        fields = ResourceSerializer.Meta.fields
 
 
 class PartitionedResourceSerializer(serializers.HyperlinkedModelSerializer):
@@ -228,20 +194,7 @@ class PartitionedResourceSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = PartitionedResource
-        fields = (
-            "url",
-            "id",
-            "title",
-            "uri",
-            "description",
-            "created_at",
-            "last_modified_at",
-            "dataset_id",
-            "dataset",
-            "metadata",
-            "role",
-            "access_type",
-        )
+        fields = ResourceSerializer.Meta.fields
 
 
 class DataTableSerializer(serializers.HyperlinkedModelSerializer):
