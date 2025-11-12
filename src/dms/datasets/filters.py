@@ -1,6 +1,6 @@
 import django_filters as filters
 from dal import autocomplete
-from django.contrib.postgres.search import SearchQuery, SearchVector
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db.models import Q
 
 from dms.projects.models import Project
@@ -27,9 +27,16 @@ class DatasetFilter(filters.FilterSet):
     def search_fulltext(self, queryset, field_name, value):
         if not value:
             return queryset
-        return queryset.annotate(
-            search=SearchVector("title", "name", "metadata")
-        ).filter(search=SearchQuery(value))
+        return (
+            queryset.annotate(
+                rank=SearchRank(
+                    SearchVector("title", "name", "metadata"),
+                    SearchQuery(value, search_type="websearch"),
+                )
+            )
+            .filter(rank__gt=0.01)
+            .order_by("-rank")
+        )
 
     class Meta:
         model = models.Dataset
