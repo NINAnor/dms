@@ -197,16 +197,38 @@ class PartitionedResourceSerializer(serializers.HyperlinkedModelSerializer):
         fields = ResourceSerializer.Meta.fields
 
 
-class DataTableSerializer(serializers.HyperlinkedModelSerializer):
+class DataTableListSerializer(serializers.HyperlinkedModelSerializer):
+    resource = serializers.HyperlinkedRelatedField(
+        view_name="api_v1:resources-detail", read_only=True
+    )
+    resource_id = serializers.CharField()
+
+    driver = serializers.CharField(
+        read_only=True, source="resource__metadata__driverShortName"
+    )
+
+    # url = serializers.SerializerMethodField(
+    #     view_name="api_v1:datatables-detail", lookup_field=("resource", "name")
+    # )
+
     class Meta:
         model = DataTable
         fields = (
             "name",
             "resource",
-            "fields",
+            "resource_id",
             "is_spatial",
-            "extent",
+            "driver",
             "count",
+            # "url",
+        )
+
+
+class DataTableSerializer(DataTableListSerializer):
+    class Meta(DataTableListSerializer.Meta):
+        fields = DataTableListSerializer.Meta.fields + (
+            "fields",
+            "extent",
             "geometryFields",
             "metadata",
         )

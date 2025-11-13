@@ -35,6 +35,7 @@ router.register(
     datasets_views.DatasetRelationshipViewSet,
     basename="dataset-relationships",
 )
+router.register("datatables", datasets_views.DataTableViewSet, basename="datatables")
 
 app_name = "api_v1"
 

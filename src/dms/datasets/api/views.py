@@ -164,13 +164,22 @@ class PartitionedResourceViewSet(AutoPermissionViewSetMixin, ModelViewSet):
     filterset_class = filters.ResourceFilter
 
 
+class TableCursorPagination(CursorPagination):
+    page_size = 20
+    ordering = ("resource", "name")
+
+
 class DataTableViewSet(
     AutoPermissionViewSetMixin,
     mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
     GenericViewSet,
 ):
-    queryset = DataTable.objects.all()
+    queryset = DataTable.objects.all().select_related("resource")
     serializer_class = serializers.DataTableSerializer
-    pagination_class = DefaultCursorPagination
+    pagination_class = TableCursorPagination
     filterset_class = filters.DataTableFilter
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return serializers.DataTableListSerializer
+        return super().get_serializer_class()

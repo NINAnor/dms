@@ -153,6 +153,38 @@ class DatasetRelationshipFilter(filters.FilterSet):
 
 
 class DataTableFilter(filters.FilterSet):
+    is_pmtiles = filters.BooleanFilter(method="filter_pmtiles_layers")
+    is_accessible = filters.BooleanFilter(method="filter_accessible_resources")
+    search = filters.CharFilter(
+        label="Search", field_name="search", method="search_fulltext"
+    )
+
+    def search_fulltext(self, queryset, field_name, value):
+        if not value:
+            return queryset
+        return (
+            queryset.annotate(
+                rank=SearchRank(
+                    SearchVector("resource__title", "resource__description", "name"),
+                    SearchQuery(value, search_type="websearch"),
+                )
+            )
+            .filter(rank__gt=0.01)
+            .order_by("-rank")
+        )
+
+    def filter_pmtiles_layers(self, queryset, name, value):
+        if value:
+            return queryset.filter(
+                resource__metadata__driverShortName="PMTiles",
+            )
+        return queryset
+
+    def filter_accessible_resources(self, queryset, name, value):
+        if value:
+            return queryset.filter(resource__last_sync__status="ok")
+        return queryset
+
     class Meta:
         model = models.DataTable
         fields = (
