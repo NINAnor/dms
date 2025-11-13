@@ -85,7 +85,6 @@ class ResourceListSerializer(serializers.HyperlinkedModelSerializer):
             "role",
             "access_type",
             "description",
-            "titiler",
         )
 
 
