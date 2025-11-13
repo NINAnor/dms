@@ -436,6 +436,14 @@ class DataTable(gis_models.Model):
     def is_spatial(self):
         return self.extent is not None
 
+    @property
+    def id(self):
+        return f"{self.resource_id}__{self.name}"
+
+    @property
+    def title(self):
+        return f"{self.resource.title} - {self.name}"
+
 
 class TabularResource(Resource):
     @property

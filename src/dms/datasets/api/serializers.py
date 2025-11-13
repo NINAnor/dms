@@ -203,23 +203,23 @@ class DataTableListSerializer(serializers.HyperlinkedModelSerializer):
     resource_id = serializers.CharField()
 
     driver = serializers.CharField(
-        read_only=True, source="resource__metadata__driverShortName"
+        read_only=True, source="resource.metadata.driverShortName"
     )
 
-    # url = serializers.SerializerMethodField(
-    #     view_name="api_v1:datatables-detail", lookup_field=("resource", "name")
-    # )
+    uri = serializers.CharField(read_only=True, source="resource.uri")
 
     class Meta:
         model = DataTable
         fields = (
+            "id",
             "name",
+            "title",
             "resource",
             "resource_id",
             "is_spatial",
             "driver",
             "count",
-            # "url",
+            "uri",
         )
 
 
