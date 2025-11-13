@@ -69,8 +69,6 @@ class ResourceListSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name="api_v1:resources-detail")
     dataset_id = serializers.CharField()
 
-    titiler = serializers.JSONField(read_only=True)
-
     class Meta:
         model = Resource
         fields = (
