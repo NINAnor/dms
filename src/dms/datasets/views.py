@@ -717,3 +717,18 @@ class DatasetContributionDeleteView(PermissionRequiredMixin, DeleteView):
     def form_valid(self, form):
         self.object.delete()
         return HttpResponse("")
+
+
+class UploadResourceView(PermissionRequiredMixin, FrontendMixin, DetailView):
+    queryset = Dataset.objects.all()
+    permission_required = "datasets.change_dataset"
+    frontend_module = "upload"
+
+    def get_initial_data(self):
+        initial = super().get_initial_data()
+
+        initial["endpoint"] = reverse(
+            "api_v1:datasets-upload-resource", kwargs={"pk": self.get_object().pk}
+        )
+
+        return initial

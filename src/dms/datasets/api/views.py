@@ -1,9 +1,12 @@
+from django.conf import settings
 from rest_framework.decorators import action
 from rest_framework.pagination import CursorPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet, mixins
 from rules.contrib.rest_framework import AutoPermissionViewSetMixin
+
+from dms.core.helpers.s3client import S3Client
 
 from .. import filters
 from ..models import (
@@ -35,6 +38,7 @@ class DatasetViewSet(AutoPermissionViewSetMixin, ModelViewSet):
         **AutoPermissionViewSetMixin.permission_type_map,
         "metadata_schema": "view",
         "geojson": "view",
+        "upload_resource": "change",
     }
 
     def get_serializer_class(self):
@@ -58,6 +62,17 @@ class DatasetViewSet(AutoPermissionViewSetMixin, ModelViewSet):
     )
     def geojson(self, request, pk):
         return self.retrieve(request=request, pk=pk)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="upload-resource",
+    )
+    def upload_resource(self, request, pk):
+        key = f"{settings.MEDIA_URL}datasets/{pk}/{request.data.get('filename')}"
+        return Response(
+            data={**S3Client().generate_presigned_post(key=key), "method": "POST"}
+        )
 
 
 class ResourceViewSet(AutoPermissionViewSetMixin, ModelViewSet):

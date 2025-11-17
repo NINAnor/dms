@@ -73,6 +73,11 @@ urlpatterns = [
         name="resource_create",
     ),
     path(
+        "datasets/<str:pk>/resources/upload/",
+        views.UploadResourceView.as_view(),
+        name="resource_upload",
+    ),
+    path(
         "datasets/<str:dataset_pk>/resources/<str:pk>/",
         views.ResourceDetailView.as_view(),
         name="resource_detail",
