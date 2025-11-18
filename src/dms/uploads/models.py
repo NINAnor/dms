@@ -6,7 +6,6 @@ from django.db import models
 from django.utils.timezone import now
 from django_lifecycle import LifecycleModel
 
-from dms.core.helpers.s3client import s3client
 from dms.datasets.models import (
     Dataset,
     Resource,
@@ -29,23 +28,28 @@ class HookRequest(LifecycleModel):
         source_key = self.event.get("Upload").get("Storage").get("Key")
         dest_key = f"project/{dataset.project_id}/datasets/{dataset.id}/{metadata.get('filename')}"  # noqa: E501
 
-        s3client.copy_object(
-            Bucket=settings.AWS_STORAGE_BUCKET_NAME,
-            CopySource={
-                "Bucket": settings.AWS_STORAGE_BUCKET_NAME,
-                "Key": source_key,
-            },
-            Key=f"{settings.MEDIA_BASE_LOCATION}/{dest_key}",
-        )
+        if settings.AWS_ACCESS_KEY_ID:
+            from dms.core.helpers.s3client import s3client
 
-        Resource.objects.create(
-            id=self.event.get("Upload").get("ID"),
-            metadata={},
-            dataset=dataset,
-            title=metadata.get("filename"),
-            uri=settings.MEDIA_URL + dest_key,
-        )
+            s3client.copy_object(
+                Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+                CopySource={
+                    "Bucket": settings.AWS_STORAGE_BUCKET_NAME,
+                    "Key": source_key,
+                },
+                Key=f"{settings.MEDIA_BASE_LOCATION}/{dest_key}",
+            )
 
-        self.completed_at = now()
-        self.save(update_fields=["completed_at"])
-        s3client.delete_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=source_key)
+            Resource.objects.create(
+                id=self.event.get("Upload").get("ID"),
+                metadata={},
+                dataset=dataset,
+                title=metadata.get("filename"),
+                uri=settings.MEDIA_URL + dest_key,
+            )
+
+            self.completed_at = now()
+            self.save(update_fields=["completed_at"])
+            s3client.delete_object(
+                Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=source_key
+            )
