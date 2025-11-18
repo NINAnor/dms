@@ -230,3 +230,19 @@ services:
 
   redis:
     image: redis
+
+  tusd:
+    image: tusproject/tusd:v2.8
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: eu-central-1
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+    command: " -hooks-enabled-events pre-create,post-finish -hooks-http-retry 5 -behind-proxy -disable-download -disable-termination -hooks-http http://django:8000/api/v1/uploads/tusd/webhook/ -s3-bucket=${AWS_STORAGE_BUCKET_NAME} -s3-endpoint=${AWS_S3_ENDPOINT_URL} -s3-object-prefix=uploads/ -hooks-http-forward-headers Authorization"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tusd.rule=PathPrefix(`/files/`)"
+      - "traefik.http.routers.tusd.entrypoints=web"
+      - "traefik.http.routers.tusd.priority=20"
+      - "traefik.http.services.tusd.loadbalancer.server.port=8080"

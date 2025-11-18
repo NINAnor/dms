@@ -130,6 +130,7 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "dms.core",
+    "dms.uploads",
     "dms.users",
     "dms.theme",
     "dms.frontend",
@@ -419,6 +420,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
     ),
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),

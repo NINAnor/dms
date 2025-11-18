@@ -122,7 +122,7 @@
                     {% endcomment %}
                     <c-navigation-menu.item>
                         <c-navigation-menu.link class="bg-secondary"
-                            href='{% url "datasets:resource_upload" dataset_pk=dataset.pk %}'>
+                            href='{% url "datasets:resource_upload" pk=dataset.pk %}'>
                             <i class="fas fa-upload"></i> Upload Resource
                         </c-navigation-menu.link>
                     </c-navigation-menu.item>

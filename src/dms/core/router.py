@@ -8,6 +8,7 @@ from rest_framework_nested import routers
 
 from dms.datasets.api import views as datasets_views
 from dms.projects.api import views as projects_views
+from dms.uploads.api import views as uploads_views
 
 router = routers.DefaultRouter()
 router.register("projects", projects_views.ProjectModelViewSet, basename="projects")
@@ -40,6 +41,11 @@ router.register("datatables", datasets_views.DataTableViewSet, basename="datatab
 app_name = "api_v1"
 
 urlpatterns = [
+    path(
+        "uploads/tusd/webhook/",
+        uploads_views.UploadWebhookAPIView.as_view(),
+        name="uploads-tusd-webhook",
+    ),
     path("auth/", include("dj_rest_auth.urls")),
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path(

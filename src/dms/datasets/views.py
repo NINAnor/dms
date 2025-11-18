@@ -16,6 +16,7 @@ from django.views.generic import (
 from django_filters.views import FilterView
 from django_svelte_jsoneditor.widgets import SvelteJSONEditorWidget
 from django_tables2.views import SingleTableMixin
+from rest_framework_simplejwt.tokens import RefreshToken
 from rules.contrib.views import PermissionRequiredMixin
 from view_breadcrumbs import (
     CreateBreadcrumbMixin,
@@ -727,8 +728,8 @@ class UploadResourceView(PermissionRequiredMixin, FrontendMixin, DetailView):
     def get_initial_data(self):
         initial = super().get_initial_data()
 
-        initial["endpoint"] = reverse(
-            "api_v1:datasets-upload-resource", kwargs={"pk": self.get_object().pk}
-        )
+        initial["endpoint"] = "/files/"
+        initial["dataset"] = self.get_object().pk
+        initial["token"] = str(RefreshToken.for_user(self.request.user).access_token)
 
         return initial
