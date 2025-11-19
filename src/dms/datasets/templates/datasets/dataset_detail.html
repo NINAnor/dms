@@ -89,7 +89,7 @@
             <c-navigation-menu class="mb-4">
                 <c-navigation-menu.list class="items-center justify-start gap-2">
                     <c-navigation-menu.item>
-                        <c-navigation-menu.link class="bg-secondary"
+                        <c-navigation-menu.link class="bg-secondary text-secondary-content"
                             href='{% url "datasets:resource_create" dataset_pk=dataset.pk %}'>
                             <i class="fas fa-plus"></i> Generic Resource
                         </c-navigation-menu.link>
@@ -121,7 +121,7 @@
                     </c-navigation-menu.item>
                     {% endcomment %}
                     <c-navigation-menu.item>
-                        <c-navigation-menu.link class="bg-secondary"
+                        <c-navigation-menu.link class="bg-secondary text-secondary-content"
                             href='{% url "datasets:resource_upload" pk=dataset.pk %}'>
                             <i class="fas fa-upload"></i> Upload Resource
                         </c-navigation-menu.link>
