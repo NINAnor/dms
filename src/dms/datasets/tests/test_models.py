@@ -1,7 +1,17 @@
+import uuid
+
 import pytest
 from django.contrib.auth import get_user_model
 
-from dms.datasets.models import ContributionType, Dataset, DatasetContribution
+from dms.datasets.models import (
+    ContributionType,
+    Dataset,
+    DatasetContribution,
+    MapResource,
+    RasterResource,
+    Resource,
+    TabularResource,
+)
 
 User = get_user_model()
 
@@ -33,6 +43,14 @@ def dataset(user):
     # Refresh from database to ensure all fields are properly set
     dataset.refresh_from_db()
     return dataset
+
+
+@pytest.fixture
+def resource(dataset):
+    """Create a test resource"""
+    resource = Resource.objects.create(id=uuid.uuid4(), uri="test", dataset=dataset)
+    resource.refresh_from_db()
+    return resource
 
 
 @pytest.mark.django_db(transaction=True)
@@ -110,3 +128,44 @@ def test_dataset_clone(dataset):
     # Verify all IDs are unique
     all_ids = [dataset.id, cloned1.id, cloned2.id, cloned3.id]
     assert len(set(all_ids)) == 4  # All IDs should be unique
+
+
+@pytest.mark.django_db(transaction=True)
+def test_resource_convert(resource):
+    # cannot convert to same type - nothing happens
+    resource.to_class(Resource)
+
+    with pytest.raises(TypeError):
+        # cannot convert to non Resource types
+        resource.to_class(Dataset)
+
+    # convert to map resources
+    resource.to_class(MapResource)
+    assert MapResource.objects.count() == 1
+
+    # convert back to resource
+    MapResource.objects.get().to_class(Resource)
+    assert MapResource.objects.count() == 0
+    assert Resource.objects.get()
+
+    # convert to table resources
+    Resource.objects.get().to_class(TabularResource)
+    assert TabularResource.objects.count() == 1
+    # convert back to resource
+    TabularResource.objects.get().to_class(Resource)
+    assert TabularResource.objects.count() == 0
+    assert Resource.objects.get()
+
+    # convert to raster resources
+    Resource.objects.get().to_class(RasterResource)
+    assert RasterResource.objects.count() == 1
+    # convert back to resource
+    RasterResource.objects.get().to_class(Resource)
+    assert RasterResource.objects.count() == 0
+    assert Resource.objects.get()
+
+    # cross convertions
+    Resource.objects.get().to_class(MapResource)
+    MapResource.objects.get().to_class(TabularResource)
+    TabularResource.objects.get().to_class(RasterResource)
+    RasterResource.objects.get().to_class(MapResource)

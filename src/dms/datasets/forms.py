@@ -240,3 +240,40 @@ class DatasetContributorForm(forms.ModelForm):
         widgets = {
             "roles": JSONFormWidget(schema=ContributionType.SCHEMA),
         }
+
+
+class ResourceConvertForm(forms.Form):
+    TYPE_CLASSES = {
+        "Resource": Resource,
+        "MapResource": MapResource,
+        "TabularResource": TabularResource,
+        "RasterResource": RasterResource,
+    }
+    type = forms.ChoiceField(
+        label="Convert to type",
+        choices=(
+            ("Resource", "Generic"),
+            ("MapResource", "Map"),
+            ("TabularResource", "Tabular"),
+            ("RasterResource", "Raster"),
+        ),
+    )
+
+    def __init__(self, *args, instance, user, dataset, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_method = "post"
+        self.helper.form_action = ""
+        self.helper.add_input(Submit("submit", "Submit"))
+        self.resource = instance
+
+        self.fields["type"].choices = list(
+            filter(
+                lambda v: v[0] != str(instance.__class__.__name__),
+                self.fields["type"].choices,
+            )
+        )
+
+    def save(self):
+        self.resource.to_class(self.TYPE_CLASSES[self.cleaned_data.get("type")])

@@ -88,6 +88,11 @@ urlpatterns = [
         name="resource_update",
     ),
     path(
+        "datasets/<str:dataset_pk>/resources/<str:pk>/change-type/",
+        views.ResourceConvertView.as_view(),
+        name="resource_convert",
+    ),
+    path(
         "datasets/<str:dataset_pk>/resources/<str:pk>/delete/",
         views.ResourceDeleteView.as_view(),
         name="resource_delete",

@@ -9,7 +9,7 @@ from autoslug import AutoSlugField
 from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import GEOSGeometry, Polygon
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db import models, transaction
+from django.db import connection, models, transaction
 from django.urls import reverse
 from django.utils import timezone as tz
 from django.utils.functional import cached_property
@@ -325,6 +325,39 @@ class Resource(LifecycleModelMixin, RulesModel):
     @property
     def edit_url(self):
         return self.__class__.objects.get_subclass(id=self.pk).get_edit_url()
+
+    @transaction.atomic()
+    def to_class(self, cls):
+        cursor = connection.cursor()
+        if cls != self.__class__:
+            if issubclass(cls, Resource):
+                # make sure that the desired class is an instance of resource
+                if cls == Resource:
+                    # If the desidered class is Resource
+                    cursor.execute(
+                        f"DELETE FROM {self.__class__._meta.db_table} WHERE resource_ptr_id = %s",  # noqa: E501, S608
+                        [self.pk],
+                    )
+                elif self.__class__ == Resource:
+                    # make sure that the current class is Resource and not a subclass
+                    child = cls()
+                    child.resource_ptr = self
+                    child.__dict__.update(self.__dict__)
+                    child.save()
+                else:
+                    cursor.execute(
+                        f"DELETE FROM {self.__class__._meta.db_table} WHERE resource_ptr_id = %s",  # noqa: E501, S608
+                        [self.pk],
+                    )
+                    child = cls()
+                    child.resource_ptr = self
+                    child.__dict__.update(self.__dict__)
+                    child.save()
+                child.infer_metadata()
+            else:
+                raise TypeError(f"{cls} is not a subclass of {self.__class__}")
+        else:
+            return
 
 
 class MapResource(Resource):

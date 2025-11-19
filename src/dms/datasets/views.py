@@ -4,7 +4,7 @@ import json
 
 from django.contrib import messages
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import (
     CreateView,
@@ -38,6 +38,7 @@ from .forms import (
     MapResourceForm,
     PartitionedResourceForm,
     RasterResourceForm,
+    ResourceConvertForm,
     ResourceForm,
     TabularResourceForm,
 )
@@ -733,3 +734,29 @@ class UploadResourceView(PermissionRequiredMixin, FrontendMixin, DetailView):
         initial["token"] = str(RefreshToken.for_user(self.request.user).access_token)
 
         return initial
+
+
+class ResourceConvertView(PermissionRequiredMixin, ResourceViewMixin, UpdateView):
+    model = Resource
+    permission_required = "datasets.change_resource"
+    form_class = ResourceConvertForm
+
+    def get_queryset(self):
+        return super().get_queryset().select_subclasses()
+
+    def form_valid(self, form):
+        form.save()
+        messages.success(
+            self.request,
+            f'Dataset "{self.object.title}" was successfully converted to {form.cleaned_data.get("type")}',  # noqa: E501
+        )
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse(
+            "datasets:resource_detail",
+            kwargs={
+                "pk": self.object.pk,
+                "dataset_pk": self.object.dataset_id,
+            },
+        )
