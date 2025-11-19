@@ -338,12 +338,14 @@ class Resource(LifecycleModelMixin, RulesModel):
                         f"DELETE FROM {self.__class__._meta.db_table} WHERE resource_ptr_id = %s",  # noqa: E501, S608
                         [self.pk],
                     )
+                    Resource.objects.get(pk=self.pk).infer_metadata()
                 elif self.__class__ == Resource:
                     # make sure that the current class is Resource and not a subclass
                     child = cls()
                     child.resource_ptr = self
                     child.__dict__.update(self.__dict__)
                     child.save()
+                    child.infer_metadata()
                 else:
                     cursor.execute(
                         f"DELETE FROM {self.__class__._meta.db_table} WHERE resource_ptr_id = %s",  # noqa: E501, S608
@@ -353,7 +355,7 @@ class Resource(LifecycleModelMixin, RulesModel):
                     child.resource_ptr = self
                     child.__dict__.update(self.__dict__)
                     child.save()
-                child.infer_metadata()
+                    child.infer_metadata()
             else:
                 raise TypeError(f"{cls} is not a subclass of {self.__class__}")
         else:
