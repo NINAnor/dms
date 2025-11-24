@@ -100,7 +100,7 @@ docker compose --profile dev up -d --build
 
 **Helper commands:**
 
-In the `helpers.sh` file there are some helper commands which creates some useful aliases. To activate these use `. helpers.sh` 
+In the `helpers.sh` file there are some helper commands which creates some useful aliases. To activate these use `. helpers.sh`
 
 ## Production mode
 
