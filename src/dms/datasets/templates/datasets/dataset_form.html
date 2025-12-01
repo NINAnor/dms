@@ -12,12 +12,14 @@
 <div class="flex items-center justify-between">
     <h3 class="text-4xl mb-5">{{ object }}</h3>
     <div class="flex gap-5 mb-5">
+        {% if dataset %}
         <form class="inline" method="post" action="{% url 'datasets:dataset_compute_extent' pk=dataset.id %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-secondary" title="Compute spatial extent">
                 <i class="fas fa-union"></i> Compute spatial extent
             </button>
         </form>
+        {% endif %}
     </div>
 </div>
 {% crispy form %}
