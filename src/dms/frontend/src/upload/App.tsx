@@ -15,6 +15,8 @@ export default function App() {
   const [uppy] = useState(() =>
     new Uppy<Meta>().use(Tus, {
       endpoint: config.endpoint,
+      chunkSize: 10 * 1024 * 1024, // 10 MB
+      removeFingerprintOnSuccess: true,
       async onBeforeRequest(req) {
         req.setHeader('Authorization', `Bearer ${config.token}`);
       },
