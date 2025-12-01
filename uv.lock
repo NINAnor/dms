@@ -576,6 +576,18 @@ wheels = [
 ]
 
 [[package]]
+name = "django-hijack"
+version = "3.7.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/64/8b/4757ff84e0d5d6d709973c46ceaa350a2e15903625cb68a630cffb2693b9/django_hijack-3.7.4.tar.gz", hash = "sha256:08419f130b9ab95b605b30b1bad30a01412cf58b1ff56c67e51527b25383ea64", size = 14285 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1c/22/1429fec0a1d1a707c8f9397ce167e742401f6c2fa905d988c832b75f97d4/django_hijack-3.7.4-py3-none-any.whl", hash = "sha256:73ede036db49b13e615994e28e98446345d27400bdc54100be218a20cb3130aa", size = 31450 },
+]
+
+[[package]]
 name = "django-htmx"
 version = "1.23.0"
 source = { registry = "https://pypi.org/simple" }
@@ -895,6 +907,7 @@ dependencies = [
     { name = "django-environ" },
     { name = "django-filter" },
     { name = "django-health-check" },
+    { name = "django-hijack" },
     { name = "django-htmx" },
     { name = "django-import-export" },
     { name = "django-jsonform" },
@@ -990,6 +1003,7 @@ requires-dist = [
     { name = "django-extensions", marker = "extra == 'dev'" },
     { name = "django-filter", specifier = ">=24.2" },
     { name = "django-health-check" },
+    { name = "django-hijack" },
     { name = "django-htmx", specifier = ">=1.23.0" },
     { name = "django-import-export", specifier = ">=4.3.7" },
     { name = "django-jsonform", specifier = ">=2.23.2" },

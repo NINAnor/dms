@@ -9,6 +9,7 @@ urlpatterns = [
     # User management
     path("accounts/", include("allauth.urls")),
     path("ht/", include("health_check.urls")),
+    path("hijack/", include("hijack.urls")),
     path("autocomplete/", include("dms.core.autocomplete", namespace="autocomplete")),
     path("api/v1/", include("dms.core.router", namespace="api_v1")),
     path("surveys/", include("dms.surveys.urls", namespace="surveys")),

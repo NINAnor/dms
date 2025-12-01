@@ -126,6 +126,8 @@ THIRD_PARTY_APPS = [
     "django_htmx",
     "slippers",
     "django_vite",
+    "hijack",
+    "hijack.contrib.admin",
 ]
 
 LOCAL_APPS = [
@@ -197,6 +199,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
+    "hijack.middleware.HijackUserMiddleware",
 ]
 
 # STATIC

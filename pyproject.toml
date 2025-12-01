@@ -64,6 +64,7 @@ dependencies = [
   "pyjwt[crypto]>=2.9.0",
   "django-jsonform>=2.23.2",
   "django-svelte-jsoneditor>=0.4.4",
+  "django-hijack",
   "django-cotton>=2.0.3",
   "django-htmx>=1.23.0",
   "pylatex",
