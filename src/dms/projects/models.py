@@ -153,7 +153,7 @@ class Project(RulesModel):
     budget = models.DecimalField(decimal_places=2, max_digits=16, null=True, blank=True)
 
     topics = models.ManyToManyField("ProjectTopic", blank=True)
-    tags = TaggableManager(through=GenericStringTaggedItem)
+    tags = TaggableManager(through=GenericStringTaggedItem, blank=True)
 
     def __str__(self) -> str:
         if self.name:
