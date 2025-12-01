@@ -25,6 +25,15 @@
                 'fill-opacity': 0.5,
             }
         });
+
+        map.once('dataloading', function(e) {
+            map.fitBounds([
+                [e.source.data.bbox[0], e.source.data.bbox[1]],
+                [e.source.data.bbox[2], e.source.data.bbox[3]]
+        ], {
+            padding: 20
+        });
+        })
     });
     var nav = new maplibregl.NavigationControl({ visualizePitch: true });
     map.addControl(nav, 'top-right');

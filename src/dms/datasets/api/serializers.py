@@ -21,6 +21,7 @@ class DatasetGeoSerializer(GeoFeatureModelSerializer):
             "title",
         )
         geo_field = "extent"
+        auto_bbox = True
 
 
 class DatasetSerializer(serializers.HyperlinkedModelSerializer):
@@ -99,6 +100,7 @@ class ResourceGeoSerializer(GeoFeatureModelSerializer):
             "title",
         )
         geo_field = "extent"
+        auto_bbox = True
 
 
 class DatasetRelationshipSerializer(serializers.HyperlinkedModelSerializer):
