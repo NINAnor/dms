@@ -174,7 +174,7 @@ class DatasetDeleteView(PermissionRequiredMixin, DeleteView):
 
 class DatasetCloneView(PermissionRequiredMixin, ActionView):
     model = Dataset
-    permission_required = "datasets.edit_dataset"
+    permission_required = "datasets.change_dataset"
 
     def get_queryset(self):
         return (
@@ -196,7 +196,7 @@ class DatasetCloneView(PermissionRequiredMixin, ActionView):
 
 class DatasetComputeExtentView(PermissionRequiredMixin, ActionView):
     model = Dataset
-    permission_required = "datasets.edit_dataset"
+    permission_required = "datasets.change_dataset"
 
     def get_queryset(self):
         return (
