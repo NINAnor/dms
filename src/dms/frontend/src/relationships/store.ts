@@ -5,6 +5,7 @@ import { Dataset, Relationship, type AppState } from './types';
 import { client, config } from './config';
 import { graphLayout, relToEdge } from './utils';
 import toast from 'react-hot-toast';
+import { AxiosResponse } from 'axios';
 
 const initialNodes = graphLayout(config.nodes, config.edges);
 
@@ -19,6 +20,7 @@ const useStore = create<AppState>((set, get) => ({
     });
   },
   onEdgesChange: changes => {
+    console.log('Edges changes', changes);
     const promises = changes.map(async c => {
       if (c.type == 'remove') {
         try {
@@ -47,9 +49,11 @@ const useStore = create<AppState>((set, get) => ({
       });
     });
   },
-  onConnect: connection => {
-    client
-      .post(config.urls.datasetRelationshipList, {
+  onConnect: async connection => {
+    const { edges } = get();
+
+    const res = await client
+      .post<any, AxiosResponse<Relationship>>(config.urls.datasetRelationshipList, {
         source: connection.source,
         target: connection.target,
         type: connection.sourceHandle,
@@ -63,6 +67,13 @@ const useStore = create<AppState>((set, get) => ({
           toast.error(String(e.message));
         }
       });
+
+    if (!res) return;
+    const updated = addEdge({
+      ...connection,
+      id: res.data.uuid,
+    }, edges);
+    set({ edges: updated, edgeIndex: new Set(updated.map(e => e.id)) });
   },
   setNodes: nodes => {
     set({ nodes });
