@@ -425,12 +425,13 @@ class RasterResource(Resource):
         try:
             # Disable permenent auxillary files to prevent GDAL
             # creating a stats file with a remote resource
+            uri = f"/vsicurl/{self.uri}" if self.uri.startswith("http") else self.uri
             with gdal.config_options({"GDAL_PAM_ENABLED": "NO"}):
                 with gdal.Run(
                     "raster",
                     "info",
-                    input=self.uri,
-                    stats=True,
+                    input=uri,
+                    approx_stats=True,
                 ) as alg:
                     metadata = alg.Output()
                     # Add HTTP headers to metadata if present
