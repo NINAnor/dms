@@ -392,27 +392,38 @@ class RasterResource(Resource):
     @property
     def preview_url(self):
         params = {
-            "colormap_name": "viridis",
             **self.titiler,
             "url": self.uri,
         }
-        params = (
-            [(k, v) for k, v in params.items()]
-            + [
-                (
-                    "rescale",
-                    f"{band['minimum']},{band['maximum']}",
-                )
-                for band in self.metadata["bands"]
-            ]
-            + [
+        if len(self.metadata["bands"]) > 1:
+            params = [(k, v) for k, v in params.items()] + [
                 (
                     "bidx",
                     f"{band['band']}",
                 )
                 for band in self.metadata["bands"]
+                if band.get("colorInterpretation") in ["Red", "Green", "Blue"]
             ]
-        )
+        else:
+            params["colormap_name"] = "viridis"
+
+            params = (
+                [(k, v) for k, v in params.items()]
+                + [
+                    (
+                        "rescale",
+                        f"{band.get('minimum', 0)},{band.get('maximum', 1)}",
+                    )
+                    for band in self.metadata["bands"]
+                ]
+                + [
+                    (
+                        "bidx",
+                        f"{band['band']}",
+                    )
+                    for band in self.metadata["bands"]
+                ]
+            )
         return settings.DATASETS_TITILER_URL + "/cog/preview/?" + urlencode(params)
 
     def infer_metadata(self, deferred=True):
