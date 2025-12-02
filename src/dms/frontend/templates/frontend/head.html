@@ -1,0 +1,5 @@
+{% load django_vite %}
+
+{{ frontend_args|json_script:"initial-data" }}
+{% vite_react_refresh %}
+{% vite_asset frontend_module_path %}

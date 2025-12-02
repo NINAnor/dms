@@ -1,15 +1,9 @@
 {% extends "app.html" %}
-{% load django_vite %}
 
 {% block head_javascript %}
-{{ frontend_args|json_script:"initial-data" }}
-{% vite_react_refresh %}
-{% vite_asset frontend_module_path %}
+{% include 'frontend/head.html' %}
 {% endblock head_javascript %}
 
 {% block article %}
-    {% block frontend-root %}
-    <div id="root"></div>
-    <div id="portal"></div>
-    {% endblock frontend-root %}
+    {% block frontend-root %}{% include 'frontend/root.html' %}{% endblock frontend-root %}
 {% endblock %}
