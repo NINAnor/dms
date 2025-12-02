@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 import logging
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -436,6 +437,10 @@ REST_AUTH = {
     "USE_JWT": True,
     "JWT_AUTH_COOKIE": "token",
     "JWT_AUTH_REFRESH_COOKIE": "refresh",
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
 }
 
 # DRF Spectacular
