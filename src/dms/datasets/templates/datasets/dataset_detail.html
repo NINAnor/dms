@@ -28,27 +28,27 @@
         <p class="text-sm text-gray-700">Version: {{ dataset.version | default_if_none:'latest'}}</p>
     </div>
     <div class="flex gap-4">
-        {% if dataset.project %}<a class="btn btn-primary"
+        {% if dataset.project %}<a class="btn btn-primary text-primary-content"
             href="{% url 'projects:project_detail' pk=dataset.project_id %}">Project</a>{% endif %}
-        <a class="btn btn-primary" href="{% url 'datasets:dataset_relationship_list' pk=dataset.id %}">Relationships</a>
+        <a class="btn btn-primary text-primary-content" href="{% url 'datasets:dataset_relationship_list' pk=dataset.id %}">Relationships</a>
         {% has_perm 'datasets.add_dataset' user dataset as can_clone %}
         {% if can_clone %}
         <form class="inline" method="post" action="{% url 'datasets:dataset_clone' pk=dataset.id %}">
             {% csrf_token %}
-            <button type="submit" class="btn btn-secondary" title="Create a copy of this dataset">
+            <button type="submit" class="btn btn-secondary text-secondary-content" title="Create a copy of this dataset">
                 <i class="fas fa-clone"></i> Clone
             </button>
         </form>
         {% endif %}
         {% if can_change %}
-        <a class="btn btn-primary" href="{% url 'datasets:dataset_update' pk=dataset.id %}">Edit</a>
-        <a class="btn btn-primary" href="{% url 'datasets:dataset_update_metadata' pk=dataset.id %}">Edit Metadata</a>
-        <a class="btn btn-primary"
+        <a class="btn btn-primary text-primary-content" href="{% url 'datasets:dataset_update' pk=dataset.id %}">Edit</a>
+        <a class="btn btn-primary text-primary-content" href="{% url 'datasets:dataset_update_metadata' pk=dataset.id %}">Edit Metadata</a>
+        <a class="btn btn-primary text-primary-content"
             href="{% url 'datasets:dataset_contribution_manage' dataset_pk=dataset.pk %}">Contributions</a>
         {% endif %}
         {% has_perm 'datasets.delete_dataset' user dataset as can_delete %}
         {% if can_delete %}
-        <a class="btn btn-danger" href="{% url 'datasets:dataset_delete' pk=dataset.id %}">Delete</a>
+        <a class="btn btn-danger text-error-content" href="{% url 'datasets:dataset_delete' pk=dataset.id %}">Delete</a>
         {% endif %}
     </div>
 </div>
