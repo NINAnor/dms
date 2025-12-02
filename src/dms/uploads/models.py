@@ -40,12 +40,14 @@ class HookRequest(LifecycleModel):
                 Key=f"{settings.MEDIA_BASE_LOCATION}/{dest_key}",
             )
 
-            Resource.objects.create(
-                id=self.event.get("Upload").get("ID"),
-                metadata={},
+            Resource.objects.get_or_create(
                 dataset=dataset,
-                title=metadata.get("filename"),
                 uri=settings.MEDIA_URL + dest_key,
+                defaults={
+                    "title": metadata.get("filename"),
+                    "metadata": {},
+                    "id": self.event.get("Upload").get("ID"),
+                },
             )
 
             self.completed_at = now()
