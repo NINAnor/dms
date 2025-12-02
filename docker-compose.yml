@@ -246,3 +246,14 @@ services:
       - "traefik.http.routers.tusd.entrypoints=web"
       - "traefik.http.routers.tusd.priority=20"
       - "traefik.http.services.tusd.loadbalancer.server.port=8080"
+
+  duckui:
+    image: ghcr.io/ninanor/duckdb-ui:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.duckui.rule=PathPrefix(`/duckui/`)"
+      - "traefik.http.routers.duckui.entrypoints=web"
+      - "traefik.http.routers.duckui.priority=50"
+      - "traefik.http.services.duckui.loadbalancer.server.port=5522"
+      - "traefik.http.routers.duckui.middlewares=duckui-stripprefix"
+      - "traefik.http.middlewares.duckui-stripprefix.stripprefix.prefixes=/duckui"

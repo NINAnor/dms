@@ -81,7 +81,7 @@
                     {% endfor %}
                 </c-tabs.list>
                 {% for snippet in snippets %}
-                <c-tabs.content value='{{ snippet.template }}'>
+                <c-tabs.content value='{{ snippet.template }}' id="{{ snippet.template }}-code">
                     <pre>
                         <code class="language-{{snippet.lang}}">
 {% include snippet.template with uri=object.uri spatial=snippet.spatial %}
