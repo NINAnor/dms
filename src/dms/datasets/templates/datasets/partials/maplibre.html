@@ -1,7 +1,7 @@
 <div id="map" style="width: 100%; height: {{ map_height }}"></div>
 
-<script src='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js'></script>
-<link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
+<script src='https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.js'></script>
+<link href='https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.css' rel='stylesheet' />
 
 <script>
     const map = new maplibregl.Map({
@@ -27,6 +27,8 @@
         });
 
         map.once('dataloading', function(e) {
+            // This has issues with maplibre-gl@5.14.0
+            console.log(e);
             map.fitBounds([
                 [e.source.data.bbox[0], e.source.data.bbox[1]],
                 [e.source.data.bbox[2], e.source.data.bbox[3]]
