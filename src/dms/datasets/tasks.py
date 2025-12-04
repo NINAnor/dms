@@ -18,7 +18,7 @@ def infer_metadata_task(resource_id: str):
 @app.task
 def update_metadata(timestamp: int):
     close_old_connections()
-    resources = Resource.objects.select_subclasses().all()
+    resources = Resource.objects.select_subclasses().filter(is_metadata_manual=False)
     for resource in resources:
         resource.infer_metadata(deferred=False)
         close_old_connections()

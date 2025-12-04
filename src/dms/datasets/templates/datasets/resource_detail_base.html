@@ -23,10 +23,12 @@
         <a class="btn btn-secondary"
             href="{% url 'datasets:resource_convert' dataset_pk=object.dataset_id pk=object.pk %}">Change resource
             type</a>
+        {% if not object.is_metadata_manual %}
         <c-action_form action="{% url 'datasets:resource_refresh_metadata' dataset_pk=object.dataset_id pk=object.pk %}"
             class="btn text-white">
             Refresh Metadata
         </c-action_form>
+        {% endif %}
         {% endif %}
         {% has_perm 'datasets.delete_resource' user object as can_delete %}
         {% if can_delete %}
@@ -51,15 +53,23 @@
     <c-accordion.item value='meta'>
         <c-accordion.trigger value='meta' class="text-2xl font-bold">Metadata</c-accordion.trigger>
         <c-accordion.content value='meta'>
+            {% if object.is_metadata_manual %}
+            <div class="alert alert-warning mb-4">
+                This metadata has been manually created or edited and are not be updated automatically.
+                This could mean that they are incomplete, outdated or could even use a different schema.
+            </div>
+            {% endif %}
             {{ metadata_preview|safe }}
         </c-accordion.content>
     </c-accordion.item>
+    {% if not object.is_metadata_manual %}
     <c-accordion.item value='meta'>
         <c-accordion.trigger value='meta' class="text-2xl font-bold">Last sync</c-accordion.trigger>
         <c-accordion.content value='meta'>
             <c-json-object-viewer :dict="object.last_sync"></c-json-object-viewer>
         </c-accordion.content>
     </c-accordion.item>
+    {% endif %}
     {% if snippets %}
     <c-accordion.item value='snippets'>
         <c-accordion.trigger value='snippets' class="text-2xl font-bold">Snippets</c-accordion.trigger>

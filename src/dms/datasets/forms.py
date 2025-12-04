@@ -137,6 +137,7 @@ class ResourceForm(forms.ModelForm):
             "description",
             "role",
             "access_type",
+            "is_metadata_manual",
             "metadata",
             "extent",
         ]
@@ -144,6 +145,15 @@ class ResourceForm(forms.ModelForm):
             "metadata": SvelteJSONEditorWidget,
             "extent": LeafletWidget(),
             "description": forms.Textarea(attrs={"rows": 10}),
+        }
+        help_texts = {
+            "extent": "Spatial extent can be computed automatically once you have "
+            "registered accessible resources of the dataset",
+            "is_metadata_manual": "If checked, the metadata will not be "
+            "updated automatically",
+            "metadata": "Automatically extracted for GDAL accessible and supported "
+            "resources in case of manual metadata you can generate them using "
+            "gdalinfo or ogr_info setting the output to json",
         }
 
 
@@ -157,6 +167,7 @@ class MapResourceForm(ResourceForm):
             "role",
             "access_type",
             "map_type",
+            "is_metadata_manual",
             "metadata",
             "extent",
         ]
@@ -173,6 +184,7 @@ class RasterResourceForm(ResourceForm):
             "role",
             "access_type",
             "titiler",
+            "is_metadata_manual",
             "metadata",
         ]
         widgets = {
@@ -189,6 +201,7 @@ class TabularResourceForm(ResourceForm):
             "description",
             "role",
             "access_type",
+            "is_metadata_manual",
             "metadata",
         ]
 

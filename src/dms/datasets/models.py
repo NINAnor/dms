@@ -246,6 +246,9 @@ class Resource(LifecycleModelMixin, RulesModel):
     )
 
     last_sync = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
+    is_metadata_manual = models.BooleanField(
+        default=False,
+    )
 
     objects = InheritanceManager()
     tags = TaggableManager(through=GenericStringTaggedItem, blank=True)
@@ -294,6 +297,9 @@ class Resource(LifecycleModelMixin, RulesModel):
             return {}
 
     def infer_metadata(self, deferred=True):
+        if self.is_metadata_manual:
+            return
+
         if deferred:
             app.configure_task(name="dms.datasets.tasks.infer_metadata_task").defer(
                 resource_id=self.pk
@@ -427,6 +433,9 @@ class RasterResource(Resource):
         return settings.DATASETS_TITILER_URL + "/cog/preview/?" + urlencode(params)
 
     def infer_metadata(self, deferred=True):
+        if self.is_metadata_manual:
+            return
+
         if deferred:
             app.configure_task(name="dms.datasets.tasks.infer_metadata_task").defer(
                 resource_id=self.pk
@@ -498,6 +507,9 @@ class TabularResource(Resource):
         return "tabular"
 
     def infer_metadata(self, deferred=True):
+        if self.is_metadata_manual:
+            return
+
         if deferred:
             app.configure_task(name="dms.datasets.tasks.infer_metadata_task").defer(
                 resource_id=self.pk
