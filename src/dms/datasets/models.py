@@ -132,7 +132,7 @@ class Dataset(RulesModel):
             "add": rules.is_authenticated,
             "view": rules.always_allow,
             "change": dataset_in_user_projects,
-            "delete": rules.is_staff,
+            "delete": dataset_in_user_projects,
         }
 
 
@@ -257,7 +257,7 @@ class Resource(LifecycleModelMixin, RulesModel):
             "add": rules.is_authenticated,
             "view": rules.always_allow,
             "change": resource_in_user_projects,
-            "delete": rules.is_staff,
+            "delete": resource_in_user_projects,
         }
 
     def __str__(self):

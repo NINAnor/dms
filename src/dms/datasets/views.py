@@ -5,7 +5,7 @@ import json
 from django.contrib import messages
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -167,9 +167,8 @@ class DatasetUpdateMetadataView(
 class DatasetDeleteView(PermissionRequiredMixin, DeleteView):
     model = Dataset
     permission_required = "datasets.delete_dataset"
-
-    def get_success_url(self):
-        return reverse("datasets:dataset_list")
+    success_url = reverse_lazy("datasets:dataset_list")
+    template_name = "base_delete.html"
 
 
 class DatasetCloneView(PermissionRequiredMixin, ActionView):
@@ -587,6 +586,7 @@ class PartitionedResourceUpdateView(
 class ResourceDeleteView(PermissionRequiredMixin, DeleteView):
     model = Resource
     permission_required = "datasets.delete_resource"
+    template_name = "base_delete.html"
 
     def get_object(self, queryset=None):
         if queryset is None:
