@@ -248,7 +248,7 @@ services:
       - "traefik.http.services.tusd.loadbalancer.server.port=8080"
 
   duckui:
-    image: ghcr.io/ninanor/duckdb-ui:latest
+    image: ghcr.io/ninanor/dms/duckui:sha-45e1b29
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.duckui.rule=PathPrefix(`/duckui/`)"
