@@ -28,7 +28,6 @@ from view_breadcrumbs import (
 from dms.frontend.views import FrontendMixin
 from dms.shared.views import ActionView
 
-from .conf import settings
 from .filters import DatasetFilter, ResourceFilter
 from .forms import (
     DatasetContributorForm,
@@ -296,9 +295,6 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
                 self.object.data_tables.all(), prefix="data_"
             ),
         }
-
-    def get_context_mapresource(self):
-        return {"NINA_MAP_PREVIEW": settings.DATASETS_NINA_MAP_PREVIEW}
 
     def get_context_rasterresource(self):
         snippets = []
