@@ -92,6 +92,16 @@ class DatasetContributionTable(tables.Table):
         return ", ".join(map(lambda r: CONTRIBUTION_TYPE[r], record.roles))
 
 
+def safe_nested_get(obj, path):
+    el = obj
+    for p in path.split("."):
+        el = el.get(p)
+        if not el:
+            break
+
+    return el
+
+
 class DataTableListTable(tables.Table):
     def render_fields(self, record):
         return mark_safe(  # noqa: S308
@@ -111,7 +121,7 @@ class DataTableListTable(tables.Table):
                 [
                     (
                         f"<li>{x.get('name')} ({x.get('type')} "
-                        f"{x.get('coordinateSystem').get('projjson').get('name')})</li>"
+                        f"{safe_nested_get(x, 'coordinateSystem.projjson.name')}</li>"
                     )
                     for x in (record.geometryFields or [])
                 ]
