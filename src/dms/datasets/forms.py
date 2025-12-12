@@ -50,8 +50,9 @@ class DatasetForm(forms.ModelForm):
 
     class Meta:
         model = Dataset
-        fields = ["title", "project", "embargo_end_date"]
+        fields = ["title", "project", "embargo_end_date", "tags"]
         widgets = {
+            "tags": autocomplete.TaggitSelect2(url="autocomplete:tag"),
             "project": autocomplete.ModelSelect2(url="autocomplete:my_project"),
             "embargo_end_date": forms.DateInput(
                 format="%Y-%m-%d", attrs={"type": "date"}
@@ -77,11 +78,12 @@ class DatasetUpdateForm(forms.ModelForm):
 
     class Meta:
         model = Dataset
-        fields = ["title", "version", "embargo_end_date"]
+        fields = ["title", "version", "embargo_end_date", "tags"]
         widgets = {
             "embargo_end_date": forms.DateInput(
                 format="%Y-%m-%d", attrs={"type": "date"}
             ),
+            "tags": autocomplete.TaggitSelect2(url="autocomplete:tag"),
         }
 
 
@@ -137,6 +139,7 @@ class ResourceForm(forms.ModelForm):
             "description",
             "role",
             "access_type",
+            "tags",
             "is_metadata_manual",
             "metadata",
             "extent",
@@ -145,6 +148,7 @@ class ResourceForm(forms.ModelForm):
             "metadata": SvelteJSONEditorWidget,
             "extent": LeafletWidget(),
             "description": forms.Textarea(attrs={"rows": 10}),
+            "tags": autocomplete.TaggitSelect2(url="autocomplete:tag"),
         }
         help_texts = {
             "extent": "Spatial extent can be computed automatically once you have "
@@ -167,6 +171,7 @@ class MapResourceForm(ResourceForm):
             "role",
             "access_type",
             "map_type",
+            "tags",
             "is_metadata_manual",
             "metadata",
             "extent",
@@ -201,6 +206,7 @@ class TabularResourceForm(ResourceForm):
             "description",
             "role",
             "access_type",
+            "tags",
             "is_metadata_manual",
             "metadata",
         ]
