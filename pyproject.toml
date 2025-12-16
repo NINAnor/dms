@@ -29,7 +29,7 @@ dependencies = [
   # django-utils-app
   "django-solo",
   # auth
-  "django-allauth==65.5.0",
+  "django-allauth==65.13.0",
   "django-allauth-ui==1.7.1",
   # ui
   "django-crispy-forms",
