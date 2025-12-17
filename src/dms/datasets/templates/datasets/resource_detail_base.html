@@ -40,6 +40,11 @@
 
 <p class="mt-5">Resource path: <a href="{{ object.uri }}">{{ object.uri }}</a></p>
 
+{% if object.description %}
+<h3>Description</h3>
+<p class="mt-5">{{object.description}}</p>
+{% endif %}
+
 <c-accordion type='multiple'
     open="{'meta': true, 'preview': true , 'schema': true, 'snippets': true, 'map': true, 'data': true}" class="mt-4">
     {% if object.extent %}
@@ -50,6 +55,7 @@
         </c-accordion.content>
     </c-accordion.item>
     {% endif %}
+    {% if object.metadata %}
     <c-accordion.item value='meta'>
         <c-accordion.trigger value='meta' class="text-2xl font-bold">Metadata</c-accordion.trigger>
         <c-accordion.content value='meta'>
@@ -62,6 +68,7 @@
             {{ metadata_preview|safe }}
         </c-accordion.content>
     </c-accordion.item>
+    {% endif %}
     {% if not object.is_metadata_manual %}
     <c-accordion.item value='meta'>
         <c-accordion.trigger value='meta' class="text-2xl font-bold">Last sync</c-accordion.trigger>
@@ -101,10 +108,12 @@
 
 {% block body_javascript %}
 {{ block.super }}
+{% if snippets %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/r.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/sql.min.js"></script>
 <script>hljs.highlightAll();</script>
+{% endif %}
 {% endblock body_javascript %}
