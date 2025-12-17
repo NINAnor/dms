@@ -254,6 +254,7 @@ if AWS_ACCESS_KEY_ID := env("DJANGO_AWS_ACCESS_KEY_ID", default=None):
 
     AWS_S3_SIGNATURE_VERSION = env("AWS_S3_SIGNATURE_VERSION", default="s3v4")
 
+    # TODO: this is NINA specific
     MEDIA_URL = (
         f"{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/{MEDIA_BASE_LOCATION}/"
     )
