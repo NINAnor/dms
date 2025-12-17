@@ -5,6 +5,7 @@
 {% load i18n %}
 {% load render_table from django_tables2 %}
 {% load leaflet_tags %}
+{% load utils %}
 
 
 {% block body_javascript %}
@@ -53,7 +54,18 @@
     </div>
 </div>
 
-<c-accordion type='multiple' open="{'item-1': true, 'item-2': true, 'contrib': true, 'map': true}" class="mt-4">
+<c-accordion type='multiple' open="{'item-1': true, 'item-2': true, 'contrib': true, 'map': true, 'desc': true}" class="mt-4">
+    {% if object.metadata.descriptions %}
+    <c-accordion.item value='desc'>
+        <c-accordion.trigger value='desc' class="text-2xl font-bold">Descriptions</c-accordion.trigger>
+        <c-accordion.content value='desc'>
+            {% for d in object.metadata.descriptions %}
+            <h4 class="text-xl font-bold">{{d.descriptionType}}</h4>
+            <div>{{d.description|markdown}}</div>
+            {% endfor %}
+        </c-accordion.content>
+    </c-accordion.item>
+    {% endif %}
     {% if object.extent %}
     <c-accordion.item value='map'>
         <c-accordion.trigger value='map' class="text-2xl font-bold">Spatial Extent</c-accordion.trigger>

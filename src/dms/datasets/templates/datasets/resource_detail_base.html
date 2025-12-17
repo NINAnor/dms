@@ -3,6 +3,7 @@
 {% load static %}
 {% load language_tags %}
 {% load i18n %}
+{% load utils %}
 
 {% block article %}
 
@@ -39,15 +40,18 @@
 </div>
 
 <p class="mt-5">Resource path: <a href="{{ object.uri }}">{{ object.uri }}</a></p>
-
-{% if object.description %}
-<h3>Description</h3>
-<p class="mt-5">{{object.description}}</p>
-{% endif %}
+<p class="mt-2">Role: <em>{{ object.role|default_if_none:'Not defined' }}</em></p>
+<p class="mt-2">Access type: <em>{{ object.access_type }}</em></p>
 
 <c-accordion type='multiple'
-    open="{'meta': true, 'preview': true , 'schema': true, 'snippets': true, 'map': true, 'data': true}" class="mt-4">
+    open="{'meta': true, 'preview': true , 'schema': true, 'snippets': true, 'map': true, 'data': true, 'desc': true}" class="mt-4">
     {% if object.extent %}
+    <c-accordion.item value='desc'>
+        <c-accordion.trigger value='desc' class="text-2xl font-bold">Description</c-accordion.trigger>
+        <c-accordion.content value='desc'>
+            <div>{{object.description|markdown}}</div>
+        </c-accordion.content>
+    </c-accordion.item>
     <c-accordion.item value='map'>
         <c-accordion.trigger value='map' class="text-2xl font-bold">Spatial Extent</c-accordion.trigger>
         <c-accordion.content value='map'>
@@ -57,7 +61,7 @@
     {% endif %}
     {% if object.metadata %}
     <c-accordion.item value='meta'>
-        <c-accordion.trigger value='meta' class="text-2xl font-bold">Metadata</c-accordion.trigger>
+        <c-accordion.trigger value='meta' class="text-2xl font-bold">GDAL Metadata</c-accordion.trigger>
         <c-accordion.content value='meta'>
             {% if object.is_metadata_manual %}
             <div class="alert alert-warning mb-4">
