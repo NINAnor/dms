@@ -597,6 +597,7 @@ class PartitionedResource(Resource):
     """
     A resource that is represented by the union of multiple files.
     NOTE: GDAL does not support partioned datasets in vsis3
+    TODO: this class is a work-in-progress
     """
 
     endpoint = models.CharField(null=True, blank=True)
