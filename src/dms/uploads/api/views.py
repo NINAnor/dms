@@ -52,6 +52,9 @@ class UploadWebhookAPIView(APIView):
         )
 
     def pre_create(self):
+        """
+        handle authentication for 'pre-create' hook types
+        """
         self.hook.completed_at = now()
         self.hook.save()
 
