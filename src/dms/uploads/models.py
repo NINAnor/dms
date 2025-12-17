@@ -13,6 +13,12 @@ from dms.datasets.models import (
 
 
 class HookRequest(LifecycleModel):
+    """
+    A class that stores requests send by the Tusd webhooks.
+    On upload success it implements a method to move the uploaded file
+    according to the upload metadata.
+    """
+
     id = models.CharField(primary_key=True, default=uuid.uuid4)
     event = models.JSONField(encoder=DjangoJSONEncoder)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -23,6 +29,13 @@ class HookRequest(LifecycleModel):
     )
 
     def process(self):
+        """
+        This is intended to be used in a queue.
+
+        Move the file in the s3 bucket to a different position and
+        register a new resource.
+        If a resource with the same file name already exists just the file is updated
+        """
         metadata = self.event.get("Upload").get("MetaData")
         dataset = Dataset.objects.get(id=metadata.get("dataset"))
         source_key = self.event.get("Upload").get("Storage").get("Key")
