@@ -89,7 +89,11 @@ class ResourceListSerializer(serializers.HyperlinkedModelSerializer):
 
 class ResourceSerializer(ResourceListSerializer):
     class Meta(ResourceListSerializer.Meta):
-        fields = ResourceListSerializer.Meta.fields + ("metadata", "last_sync")
+        fields = ResourceListSerializer.Meta.fields + (
+            "metadata",
+            "user_metadata",
+            "last_sync",
+        )
 
 
 class ResourceGeoSerializer(GeoFeatureModelSerializer):

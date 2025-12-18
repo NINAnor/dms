@@ -142,10 +142,12 @@ class ResourceForm(forms.ModelForm):
             "tags",
             "is_metadata_manual",
             "metadata",
+            "user_metadata",
             "extent",
         ]
         widgets = {
             "metadata": SvelteJSONEditorWidget,
+            "user_metadata": SvelteJSONEditorWidget,
             "extent": LeafletWidget(),
             "description": forms.Textarea(attrs={"rows": 10}),
             "tags": autocomplete.TaggitSelect2(url="autocomplete:tag"),
@@ -158,6 +160,9 @@ class ResourceForm(forms.ModelForm):
             "metadata": "Automatically extracted for GDAL accessible and supported "
             "resources in case of manual metadata you can generate them using "
             "gdalinfo or ogr_info setting the output to json",
+            "user_metadata": "Provide your own additional metadata for the resource;"
+            " you should use fields and values that follow a standard (as a convention "
+            "add a property '$schema' containing a reference to the standard you are using or to a JSON Schema).",  # noqa: E501
         }
 
 
@@ -174,6 +179,7 @@ class MapResourceForm(ResourceForm):
             "tags",
             "is_metadata_manual",
             "metadata",
+            "user_metadata",
             "extent",
         ]
         widgets = ResourceForm.Meta.widgets
@@ -191,6 +197,7 @@ class RasterResourceForm(ResourceForm):
             "titiler",
             "is_metadata_manual",
             "metadata",
+            "user_metadata",
         ]
         widgets = {
             "titiler": SvelteJSONEditorWidget,
@@ -209,6 +216,7 @@ class TabularResourceForm(ResourceForm):
             "tags",
             "is_metadata_manual",
             "metadata",
+            "user_metadata",
         ]
 
 
