@@ -239,10 +239,19 @@ class Resource(LifecycleModelMixin, RulesModel):
     last_modified_at = models.DateTimeField(
         auto_now=True, verbose_name=_("Last modified at")
     )
-    metadata = models.JSONField(blank=True, null=True, encoder=DjangoJSONEncoder)
+    metadata = models.JSONField(
+        blank=True, null=True, encoder=DjangoJSONEncoder, verbose_name="GDAL Metadata"
+    )
     role = models.CharField(blank=True, null=True, choices=Role.choices)
     access_type = models.CharField(
         blank=True, null=True, default=AccessType.INTERNAL, choices=AccessType.choices
+    )
+
+    user_metadata = models.JSONField(
+        blank=True,
+        null=True,
+        encoder=DjangoJSONEncoder,
+        verbose_name="User provided metadata",
     )
 
     last_sync = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
