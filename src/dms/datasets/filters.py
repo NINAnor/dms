@@ -2,6 +2,7 @@ import django_filters as filters
 from dal import autocomplete
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db.models import Q
+from leaflet.forms.widgets import LeafletWidget
 
 from dms.projects.models import Project
 
@@ -18,6 +19,27 @@ class DatasetFilter(filters.FilterSet):
     search = filters.CharFilter(
         label="Search", field_name="search", method="search_fulltext"
     )
+
+    extent = filters.CharFilter(
+        method="filter_extent",
+        widget=LeafletWidget(
+            attrs={
+                "map_height": "400px",
+                "map_width": "100%",
+            }
+        ),
+    )
+
+    def filter_extent(self, queryset, name, value):
+        try:
+            geom = self.form.cleaned_data.get("extent")
+        except Exception:
+            return queryset
+
+        if not geom:
+            return queryset
+
+        return queryset.filter(extent__intersects=geom)
 
     def filter_by_project(self, queryset, name, value):
         if value:
@@ -66,6 +88,27 @@ class ResourceFilter(filters.FilterSet):
             # ("partitioinedresource", "Partitioned Resource"),
         ],
     )
+
+    extent = filters.CharFilter(
+        method="filter_extent",
+        widget=LeafletWidget(
+            attrs={
+                "map_height": "400px",
+                "map_width": "100%",
+            }
+        ),
+    )
+
+    def filter_extent(self, queryset, name, value):
+        try:
+            geom = self.form.cleaned_data.get("extent")
+        except Exception:
+            return queryset
+
+        if not geom:
+            return queryset
+
+        return queryset.filter(extent__intersects=geom)
 
     def filter_by_resource_type(self, queryset, name, value):
         if value:
