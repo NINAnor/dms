@@ -27,6 +27,11 @@
             Last Modified: {{dataset.last_modified_at}}
         </p>
         <p class="text-sm text-gray-700">Version: {{ dataset.version | default_if_none:'latest'}}</p>
+        <div class="flex gap-1">
+            {% for tag in object.tags.all %}
+            <div class="badge badge-info">{{ tag }}</div>
+            {% endfor %}
+        </div>
     </div>
     <div class="flex gap-4">
         {% if dataset.project %}<a class="btn btn-primary text-primary-content"

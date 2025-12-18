@@ -9,6 +9,11 @@
 <div class="prose-xl">
     <h1 class="font-bold">{{ project.name }}</h1>
     <p>{{ project.description|default_if_none:'No description provided' }}</p>
+    <div class="flex gap-1">
+        {% for tag in object.tags.all %}
+        <div class="badge badge-info">{{ tag }}</div>
+        {% endfor %}
+    </div>
 
     <h2>Additional info</h2>
     <table class="table table-zebra table-pin-cols table-lg">
