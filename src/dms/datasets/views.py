@@ -1,9 +1,10 @@
 # from django.db.models import Prefetch
 # from django.urls import reverse_lazy
 import json
+from dataclasses import dataclass
 
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import F, Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
@@ -91,6 +92,14 @@ class ResourceListView(
         )
 
 
+@dataclass
+class Contribution:
+    user: str
+    roles: list[str]
+    email: str
+    external: bool = True
+
+
 class DatasetDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailView):
     model = Dataset
     permission_required = "datasets.view_dataset"
@@ -98,7 +107,19 @@ class DatasetDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailVi
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["contributor_table"] = DatasetContributionTable(
-            self.object.contributor_roles.all()
+            list(
+                self.object.contributor_roles.select_related("user")
+                .annotate(email=F("user__email"))
+                .all()
+            )
+            + [
+                Contribution(
+                    roles=[c.get("contributorType")],
+                    user=str(c.get("name")),
+                    email=c.get("email"),
+                )
+                for c in self.object.metadata.get("contributors", [])
+            ]  # noqa: E501
         )
         ctx["resource_table"] = ResourceTable(
             self.object.resources.select_subclasses().all()

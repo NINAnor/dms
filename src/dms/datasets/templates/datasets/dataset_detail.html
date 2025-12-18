@@ -74,12 +74,14 @@
         </c-accordion.content>
     </c-accordion.item>
     {% endif %}
+    {% if object.metadata %}
     <c-accordion.item value='item-1'>
         <c-accordion.trigger value='item-1' class="text-2xl font-bold">Metadata</c-accordion.trigger>
         <c-accordion.content value='item-1'>
             {{ metadata_preview|safe }}
         </c-accordion.content>
     </c-accordion.item>
+    {% endif %}
     <c-accordion.item value='contrib'>
         <c-accordion.trigger value='contrib' class="text-2xl font-bold">Contributors</c-accordion.trigger>
         <c-accordion.content value='contrib'>

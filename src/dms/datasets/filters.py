@@ -66,6 +66,9 @@ class DatasetFilter(filters.FilterSet):
 
 
 class ResourceFilter(filters.FilterSet):
+    search = filters.CharFilter(
+        label="Search", field_name="search", method="search_fulltext"
+    )
     dataset__project = filters.ModelChoiceFilter(
         queryset=Project.objects.all(),
         widget=autocomplete.ModelSelect2(url="autocomplete:project"),
@@ -98,6 +101,20 @@ class ResourceFilter(filters.FilterSet):
             }
         ),
     )
+
+    def search_fulltext(self, queryset, field_name, value):
+        if not value:
+            return queryset
+        return (
+            queryset.annotate(
+                rank=SearchRank(
+                    SearchVector("title", "description"),
+                    SearchQuery(value, search_type="websearch"),
+                )
+            )
+            .filter(rank__gt=0.01)
+            .order_by("-rank")
+        )
 
     def filter_extent(self, queryset, name, value):
         try:

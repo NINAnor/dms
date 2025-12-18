@@ -78,13 +78,14 @@ CONTRIBUTION_TYPE = dict(ContributionType.choices)
 
 
 class DatasetContributionTable(tables.Table):
-    # user = tables.LinkColumn()
+    external = tables.BooleanColumn()
 
     class Meta:
         model = DatasetContribution
         template_name = "django_tables2/bootstrap.html"
         fields = (
             "user",
+            "email",
             "roles",
         )
 
