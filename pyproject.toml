@@ -70,9 +70,8 @@ dependencies = [
   "pylatex",
   "langdetect",
   "django-vite",
-  "django-vectortiles",
   "djangorestframework-gis",
-  "pygeometa"
+  "mistune"
 ]
 description = "Add your description here"
 license = {text = "GPLv3"}
