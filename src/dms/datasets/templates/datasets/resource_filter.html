@@ -1,3 +1,11 @@
 {% extends 'base_filter.html' %}
+{% load leaflet_tags %}
 
 {% block page-title %}All Resources{% endblock %}
+
+{% block body_javascript %}
+{{ block.super }}
+{% leaflet_js plugins="forms" %}
+{% leaflet_css plugins="forms" %}
+{{ form.media }}
+{% endblock body_javascript %}

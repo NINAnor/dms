@@ -1,5 +1,5 @@
 {% extends 'base_filter.html' %}
-
+{% load leaflet_tags %}
 {% block page-title %}Datasets{% endblock %}
 
 {% block page-actions %}
@@ -8,3 +8,10 @@
     <a class="btn btn-primary text-primary-content" href="{% url 'datasets:dataset_create' %}">Register</a>
 </div>
 {% endblock page-actions %}
+
+{% block body_javascript %}
+{{ block.super }}
+{% leaflet_js plugins="forms" %}
+{% leaflet_css plugins="forms" %}
+{{ form.media }}
+{% endblock body_javascript %}
