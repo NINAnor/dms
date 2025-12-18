@@ -14,6 +14,11 @@
             Created at: {{object.created_at}} &bull;
             Last Modified: {{object.last_modified_at}}
         </p>
+        <div class="flex gap-1">
+            {% for tag in object.tags.all %}
+            <div class="badge badge-info">{{ tag }}</div>
+            {% endfor %}
+        </div>
     </div>
     <div class="flex gap-4">
         <a class="btn btn-primary" href="{% url 'datasets:dataset_detail' pk=object.dataset_id %}">Dataset</a>
