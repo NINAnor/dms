@@ -55,6 +55,8 @@ from .models import (
 )
 from .tables import (
     DatasetContributionTable,
+    DatasetInternalRelated,
+    DatasetRelated,
     DatasetRelationshipTable,
     DatasetTable,
     DataTableListTable,
@@ -123,6 +125,17 @@ class DatasetDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailVi
         )
         ctx["resource_table"] = ResourceTable(
             self.object.resources.select_subclasses().all()
+        )
+
+        if self.object.metadata.get("related"):
+            ctx["related_table"] = DatasetRelated(
+                [c for c in self.object.metadata.get("related", [])]
+            )
+
+        ctx["internal_related_table"] = DatasetInternalRelated(
+            DatasetRelationship.objects.filter(
+                Q(source=self.object) | Q(target=self.object)
+            ).select_related("source", "target")
         )
 
         widget = SvelteJSONEditorWidget(

@@ -103,6 +103,25 @@ def safe_nested_get(obj, path):
     return el
 
 
+class DatasetRelated(tables.Table):
+    relationType = tables.Column()
+    relatedIdentifier = tables.Column()
+    resourceTypeGeneral = tables.Column()
+    relatedIdentifierType = tables.Column()
+
+    class Meta:
+        template_name = "django_tables2/bootstrap.html"
+
+
+class DatasetInternalRelated(tables.Table):
+    source = tables.LinkColumn()
+    type = tables.Column()
+    target = tables.LinkColumn()
+
+    class Meta:
+        template_name = "django_tables2/bootstrap.html"
+
+
 class DataTableListTable(tables.Table):
     def render_fields(self, record):
         return mark_safe(  # noqa: S308

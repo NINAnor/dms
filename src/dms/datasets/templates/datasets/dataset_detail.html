@@ -62,7 +62,7 @@
 <c-accordion type='multiple' open="{'item-1': true, 'item-2': true, 'contrib': true, 'map': true, 'desc': true}" class="mt-4">
     {% if object.metadata.descriptions %}
     <c-accordion.item value='desc'>
-        <c-accordion.trigger value='desc' class="text-2xl font-bold">Descriptions</c-accordion.trigger>
+        <c-accordion.trigger value='desc' class="text-2xl font-bold"><h3>Descriptions</h3></c-accordion.trigger>
         <c-accordion.content value='desc'>
             {% for d in object.metadata.descriptions %}
             <h4 class="text-xl font-bold">{{d.descriptionType}}</h4>
@@ -73,7 +73,7 @@
     {% endif %}
     {% if object.extent %}
     <c-accordion.item value='map'>
-        <c-accordion.trigger value='map' class="text-2xl font-bold">Spatial Extent</c-accordion.trigger>
+        <c-accordion.trigger value='map' class="text-2xl font-bold"><h3>Spatial Extent</h3></c-accordion.trigger>
         <c-accordion.content value='map'>
             {% include 'datasets/partials/maplibre.html' with url=FEATURE_URL map_height="400px" %}
         </c-accordion.content>
@@ -81,12 +81,23 @@
     {% endif %}
     {% if object.metadata %}
     <c-accordion.item value='item-1'>
-        <c-accordion.trigger value='item-1' class="text-2xl font-bold">Metadata</c-accordion.trigger>
+        <c-accordion.trigger value='item-1' class="text-2xl font-bold">Raw Metadata</c-accordion.trigger>
         <c-accordion.content value='item-1'>
             {{ metadata_preview|safe }}
         </c-accordion.content>
     </c-accordion.item>
     {% endif %}
+    <c-accordion.item value='related'>
+        <c-accordion.trigger value='related' class="text-2xl font-bold"><h3>Relationships</h3></c-accordion.trigger>
+        <c-accordion.content value='related'>
+            <h4 class="text-xl font-bold">DMS Related Datasets</h4>
+            <p>All the datasets registered in the DMS that have some relationship to this</p>
+            {% render_table internal_related_table %}
+            <h4 class="text-xl font-bold mt-4">Related Resources</h4>
+            <p>Any published resource</p>
+            {% render_table related_table %}
+        </c-accordion.content>
+    </c-accordion.item>
     <c-accordion.item value='contrib'>
         <c-accordion.trigger value='contrib' class="text-2xl font-bold">Contributors</c-accordion.trigger>
         <c-accordion.content value='contrib'>
