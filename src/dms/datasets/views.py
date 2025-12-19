@@ -346,14 +346,23 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        widget = SvelteJSONEditorWidget(
+        ctx["metadata_preview"] = SvelteJSONEditorWidget(
             props={"mode": "view", "readOnly": True, "navigationBar": False},
             attrs={"id": "metadata_preview"},
             wrapper_class="svelte-jsoneditor-wrapper",
-        )
-        ctx["metadata_preview"] = widget.render(
+        ).render(
             name="metadata_preview", value=json.dumps(self.object.metadata, indent=2)
         )
+
+        if self.object.user_metadata:
+            ctx["user_metadata_preview"] = SvelteJSONEditorWidget(
+                props={"mode": "view", "readOnly": True, "navigationBar": False},
+                attrs={"id": "user_metadata_preview"},
+                wrapper_class="svelte-jsoneditor-wrapper",
+            ).render(
+                name="user_metadata_preview",
+                value=json.dumps(self.object.user_metadata, indent=2),
+            )
 
         ctx["FEATURE_URL"] = self.request.build_absolute_uri(
             reverse("api_v1:resources-geojson-feature", kwargs={"pk": self.object.pk})
