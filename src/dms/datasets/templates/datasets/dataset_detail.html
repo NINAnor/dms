@@ -59,9 +59,25 @@
     </div>
 </div>
 
-<c-accordion type='multiple' open="{'item-1': false, 'item-2': true, 'contrib': true, 'map': true, 'desc': true, 'related': true}" class="mt-4">
+<div class="flex gap-2">
+    <div class="order-2 p-1 w-sm">
+        <ul class="menu sticky top-[70px]">
+            <li>
+                <h3 class="menu-title">Table of Contents</h3>
+                <ul>
+                    <li><a href="#metadata">Metadata</a></li>
+                    <li><a href="#spatial-extent">Spatial Extent</a></li>
+                    <li><a href="#relationships">Relationships</a></li>
+                    <li><a href="#contributors">Contributors</a></li>
+                    <li><a href="#raw-metadata">Raw Metadata</a></li>
+                    <li><a href="#resources">Resources</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+<c-accordion type='multiple' open="{'item-1': false, 'item-2': true, 'contrib': true, 'map': true, 'desc': true, 'related': true}" class="mt-4 grow">
     <c-accordion.item value='desc'>
-        <c-accordion.trigger value='desc' class="text-2xl font-bold"><h3>Metadata</h3></c-accordion.trigger>
+        <c-accordion.trigger value='desc' class="text-2xl font-bold"><h3 id="metadata">Metadata</h3></c-accordion.trigger>
         <c-accordion.content value='desc' class="flex flex-col gap-2">
             {% for t in object.metadata.titles %}
             <div class="flex gap-8">
@@ -125,14 +141,14 @@
     </c-accordion.item>
     {% if object.extent %}
     <c-accordion.item value='map'>
-        <c-accordion.trigger value='map' class="text-2xl font-bold"><h3>Spatial Extent</h3></c-accordion.trigger>
+        <c-accordion.trigger value='map' class="text-2xl font-bold"><h3 id="spatial-extent">Spatial Extent</h3></c-accordion.trigger>
         <c-accordion.content value='map'>
             {% include 'datasets/partials/maplibre.html' with url=FEATURE_URL map_height="400px" %}
         </c-accordion.content>
     </c-accordion.item>
     {% endif %}
     <c-accordion.item value='related'>
-        <c-accordion.trigger value='related' class="text-2xl font-bold"><h3>Relationships</h3></c-accordion.trigger>
+        <c-accordion.trigger value='related' class="text-2xl font-bold"><h3 id="relationships">Relationships</h3></c-accordion.trigger>
         <c-accordion.content value='related'>
             <h4 class="text-xl font-bold">DMS Related Datasets</h4>
             <p>All the datasets registered in the DMS that have some relationship to this</p>
@@ -143,14 +159,14 @@
         </c-accordion.content>
     </c-accordion.item>
     <c-accordion.item value='contrib'>
-        <c-accordion.trigger value='contrib' class="text-2xl font-bold"><h3>Contributors</h3></c-accordion.trigger>
+        <c-accordion.trigger value='contrib' class="text-2xl font-bold"><h3 id="contributors">Contributors</h3></c-accordion.trigger>
         <c-accordion.content value='contrib'>
             {% render_table contributor_table %}
         </c-accordion.content>
     </c-accordion.item>
     {% if object.metadata %}
     <c-accordion.item value='item-1'>
-        <c-accordion.trigger value='item-1' class="text-2xl font-bold"><h3>Raw Metadata</h3></c-accordion.trigger>
+        <c-accordion.trigger value='item-1' class="text-2xl font-bold"><h3 id="raw-metadata">Raw Metadata</h3></c-accordion.trigger>
         <c-accordion.content value='item-1'>
             {{ metadata_preview|safe }}
         </c-accordion.content>
@@ -165,7 +181,7 @@
     {% endif %}
     {% if not dataset.under_embargo or can_change %}
     <c-accordion.item value='item-2'>
-        <c-accordion.trigger value='item-2' class="text-2xl font-bold"><h3>Resources</h3></c-accordion.trigger>
+        <c-accordion.trigger value='item-2' class="text-2xl font-bold"><h3 id="resources">Resources</h3></c-accordion.trigger>
         <c-accordion.content value='item-2'>
             {% if can_change %}
             <c-navigation-menu class="mb-4">
@@ -217,5 +233,6 @@
     {% endif %}
 
 </c-accordion>
+</div>
 
 {% endblock article %}
