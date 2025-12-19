@@ -5,6 +5,7 @@ from django.db.models import Q
 from leaflet.forms.widgets import LeafletWidget
 
 from dms.projects.models import Project
+from dms.users.models import User
 
 from . import models
 
@@ -30,6 +31,14 @@ class DatasetFilter(filters.FilterSet):
         ),
     )
 
+    contributor = filters.ModelChoiceFilter(
+        queryset=User.objects.all(),
+        widget=autocomplete.ModelSelect2(url="autocomplete:user"),
+        method="filter_by_contributor",
+        label="Contributor",
+        to_field_name="username",
+    )
+
     def filter_extent(self, queryset, name, value):
         try:
             geom = self.form.cleaned_data.get("extent")
@@ -44,6 +53,11 @@ class DatasetFilter(filters.FilterSet):
     def filter_by_project(self, queryset, name, value):
         if value:
             return queryset.filter(project=value)
+        return queryset
+
+    def filter_by_contributor(self, queryset, name, value):
+        if value:
+            return queryset.filter(contributors__username=value)
         return queryset
 
     def search_fulltext(self, queryset, field_name, value):
