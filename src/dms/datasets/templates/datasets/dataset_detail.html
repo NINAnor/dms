@@ -59,31 +59,75 @@
     </div>
 </div>
 
-<c-accordion type='multiple' open="{'item-1': true, 'item-2': true, 'contrib': true, 'map': true, 'desc': true}" class="mt-4">
-    {% if object.metadata.descriptions %}
+<c-accordion type='multiple' open="{'item-1': false, 'item-2': true, 'contrib': true, 'map': true, 'desc': true, 'related': true}" class="mt-4">
     <c-accordion.item value='desc'>
-        <c-accordion.trigger value='desc' class="text-2xl font-bold"><h3>Descriptions</h3></c-accordion.trigger>
-        <c-accordion.content value='desc'>
-            {% for d in object.metadata.descriptions %}
-            <h4 class="text-xl font-bold">{{d.descriptionType}}</h4>
-            <div>{{d.description|markdown}}</div>
+        <c-accordion.trigger value='desc' class="text-2xl font-bold"><h3>Metadata</h3></c-accordion.trigger>
+        <c-accordion.content value='desc' class="flex flex-col gap-2">
+            {% for t in object.metadata.titles %}
+            <div class="flex gap-8">
+                <h4 class="font-bold">{{t.titleType}}</h4>
+                <p>{{t.title}}</p>
+            </div>
             {% endfor %}
+            {% for d in object.metadata.descriptions %}
+            <div class="flex gap-8">
+                <h4 class="font-bold">{{d.descriptionType}}</h4>
+                <div>{{d.description|markdown}}</div>
+            </div>
+            {% endfor %}
+            {% if object.metadata.alternateIdentifiers %}
+            <div class="flex gap-8">
+                <h4 class="font-bold">Unique identifiers</h4>
+                <ul>
+                    {% for i in object.metadata.alternateIdentifiers %}
+                    <li>{{i.alternateIdentifierType}}: {{i.alternateIdentifier}}</li>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% if object.metadata.rightsList%}
+            <div class="flex gap-8">
+                <h4 class="font-bold">Rights and licenses</h4>
+                {% for r in object.metadata.rightsList %}
+                <p>{{r.rights}} {{r.rightsIdentifier}} {% if r.rightsURI %}({{r.rightsURI}}){% endif %}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if object.metadata.language %}
+            <div class="flex gap-8">
+                <h4 class="font-bold">Language</h4>
+                <p>{{object.metadata.language}}</p>
+            </div>
+            {% endif %}
+            {% if object.metadata.publicationYear %}
+            <div class="flex gap-8">
+                <h4 class="font-bold">Publication Year</h4>
+                <p>{{object.metadata.publicationYear}}</p>
+            </div>
+            {% endif %}
+            {% for d in object.metadata.dates %}
+            <div class="flex gap-8">
+                <h4 class="font-bold">{{d.dateType}}</h4>
+                <p>{{d.date}}{% if d.dateInformation %} - {{ d.dateInformation }}{% endif %}</p>
+            </div>
+            {% endfor %}
+            {% if object.metadata.subjects %}
+            <div class="flex gap-8">
+                <h4 class="font-bold">Subjects</h4>
+                <ul>
+                    {% for i in object.metadata.subjects %}
+                    <li>{{i.subject}}</li>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </c-accordion.content>
     </c-accordion.item>
-    {% endif %}
     {% if object.extent %}
     <c-accordion.item value='map'>
         <c-accordion.trigger value='map' class="text-2xl font-bold"><h3>Spatial Extent</h3></c-accordion.trigger>
         <c-accordion.content value='map'>
             {% include 'datasets/partials/maplibre.html' with url=FEATURE_URL map_height="400px" %}
-        </c-accordion.content>
-    </c-accordion.item>
-    {% endif %}
-    {% if object.metadata %}
-    <c-accordion.item value='item-1'>
-        <c-accordion.trigger value='item-1' class="text-2xl font-bold">Raw Metadata</c-accordion.trigger>
-        <c-accordion.content value='item-1'>
-            {{ metadata_preview|safe }}
         </c-accordion.content>
     </c-accordion.item>
     {% endif %}
@@ -99,11 +143,19 @@
         </c-accordion.content>
     </c-accordion.item>
     <c-accordion.item value='contrib'>
-        <c-accordion.trigger value='contrib' class="text-2xl font-bold">Contributors</c-accordion.trigger>
+        <c-accordion.trigger value='contrib' class="text-2xl font-bold"><h3>Contributors</h3></c-accordion.trigger>
         <c-accordion.content value='contrib'>
             {% render_table contributor_table %}
         </c-accordion.content>
     </c-accordion.item>
+    {% if object.metadata %}
+    <c-accordion.item value='item-1'>
+        <c-accordion.trigger value='item-1' class="text-2xl font-bold"><h3>Raw Metadata</h3></c-accordion.trigger>
+        <c-accordion.content value='item-1'>
+            {{ metadata_preview|safe }}
+        </c-accordion.content>
+    </c-accordion.item>
+    {% endif %}
     {% if dataset.under_embargo %}
     <div class="alert alert-warning mt-4">
         <div>
@@ -113,7 +165,7 @@
     {% endif %}
     {% if not dataset.under_embargo or can_change %}
     <c-accordion.item value='item-2'>
-        <c-accordion.trigger value='item-2' class="text-2xl font-bold">Resources</c-accordion.trigger>
+        <c-accordion.trigger value='item-2' class="text-2xl font-bold"><h3>Resources</h3></c-accordion.trigger>
         <c-accordion.content value='item-2'>
             {% if can_change %}
             <c-navigation-menu class="mb-4">
