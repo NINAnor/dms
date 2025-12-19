@@ -72,7 +72,7 @@ class DatasetListView(
     permission_required = "datasets.view_dataset"
 
     def get_queryset(self):
-        return super().get_queryset()
+        return super().get_queryset().select_related("project")
 
 
 class ResourceListView(
