@@ -92,6 +92,7 @@ class ResourceSerializer(ResourceListSerializer):
         fields = ResourceListSerializer.Meta.fields + (
             "metadata",
             "user_metadata",
+            "is_metadata_manual",
             "last_sync",
         )
 
