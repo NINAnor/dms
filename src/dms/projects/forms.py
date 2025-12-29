@@ -3,7 +3,7 @@ from crispy_forms.layout import Submit
 from dal import autocomplete
 from django import forms
 
-from .models import DMP, Project, ProjectMembership
+from .models import DMP, Project, ProjectMembership, ProjectsConfiguration
 
 
 class ProjectForm(forms.ModelForm):
@@ -52,6 +52,7 @@ class DMPForm(forms.ModelForm):
     def save(self, *args, **kwargs):
         instance = super().save(commit=False)
         instance.owner = self.user
+        instance.schema = ProjectsConfiguration.get_solo().dmp_survey_config.config
         instance.save()
         self.save_m2m()
         return instance
