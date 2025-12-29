@@ -2,6 +2,30 @@
 build-backend = "hatchling.build"
 requires = ["hatchling"]
 
+[dependency-groups]
+dev = [
+  "Werkzeug[watchdog]",
+  "ipdb",
+  "pre-commit",
+  "django-debug-toolbar",
+  "django-extensions",
+  "ruff",
+  "django-migration-linter",
+  {include-group = "test"},
+  {include-group = "docs"}
+]
+docs = ["mkdocs", "mkdocs-material", "pymdown-extensions", "neoteroi-mkdocs", "mkdocstrings[python]"]
+ldap = ["python-ldap", "django-auth-ldap"]
+prod = ["gunicorn", {include-group = "ldap"}]
+test = [
+  "pytest",
+  "pytest-sugar",
+  "pytest-django",
+  "coverage",
+  "factory-boy",
+  "django-coverage-plugin"
+]
+
 [project]
 authors = [{name = "Niccolò Cantù", email = "niccolo.cantu@nina.no"}]
 dependencies = [
@@ -79,27 +103,6 @@ name = "dms"
 readme = "README.md"
 requires-python = ">=3.12"
 version = "0.1.0"
-
-[project.optional-dependencies]
-dev = [
-  "Werkzeug[watchdog]",
-  "ipdb",
-  "pre-commit",
-  "django-debug-toolbar",
-  "django-extensions",
-  "ruff",
-  "django-migration-linter"
-]
-ldap = ["python-ldap", "django-auth-ldap"]
-prod = ["gunicorn"]
-test = [
-  "pytest",
-  "pytest-sugar",
-  "pytest-django",
-  "coverage",
-  "factory-boy",
-  "django-coverage-plugin"
-]
 
 [project.scripts]
 dms = "dms.manage:main"

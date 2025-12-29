@@ -1,0 +1,4102 @@
+openapi: 3.0.3
+info:
+  title: DMS API
+  version: 1.0.0
+  description: APIs for interacting with the DMS
+paths:
+  /api/v1/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: |-
+        Check the credentials and return the REST Token
+        if the credentials are valid and authenticated.
+        Calls Django Auth login method to register User ID
+        in Django session framework
+
+        Accept the following POST parameters: username, password
+        Return the REST Framework Token Object's key.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWT'
+          description: ''
+  /api/v1/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: |-
+        Calls Django logout method and delete the Token object
+        assigned to the current User object.
+
+        Accepts/Returns nothing.
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/password/change/:
+    post:
+      operationId: auth_password_change_create
+      description: |-
+        Calls Django Auth SetPasswordForm save method.
+
+        Accepts the following POST parameters: new_password1, new_password2
+        Returns the success/fail message.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/password/reset/:
+    post:
+      operationId: auth_password_reset_create
+      description: |-
+        Calls Django Auth PasswordResetForm save method.
+
+        Accepts the following POST parameters: email
+        Returns the success/fail message.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/password/reset/confirm/:
+    post:
+      operationId: auth_password_reset_confirm_create
+      description: |-
+        Password reset e-mail link is confirmed, therefore
+        this resets the user's password.
+
+        Accepts the following POST parameters: token, uid,
+            new_password1, new_password2
+        Returns the success/fail message.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/token/refresh/:
+    post:
+      operationId: auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/auth/token/verify/:
+    post:
+      operationId: auth_token_verify_create
+      description: |-
+        Takes a token and indicates if it is valid.  This view provides no
+        information about a token's fitness for a particular use.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenVerify'
+          description: ''
+  /api/v1/auth/user/:
+    get:
+      operationId: auth_user_retrieve
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetails'
+          description: ''
+    put:
+      operationId: auth_user_update
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDetails'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserDetails'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserDetails'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetails'
+          description: ''
+    patch:
+      operationId: auth_user_partial_update
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserDetails'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserDetails'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserDetails'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetails'
+          description: ''
+  /api/v1/datasets/:
+    get:
+      operationId: datasets_list
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: query
+        name: contributor
+        schema:
+          type: string
+        description: Contributor
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: extent
+        schema:
+          type: string
+      - in: query
+        name: project
+        schema:
+          type: string
+        description: Project
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search
+      - in: query
+        name: version
+        schema:
+          type: string
+      tags:
+      - datasets
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDatasetListList'
+          description: ''
+    post:
+      operationId: datasets_create
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      tags:
+      - datasets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dataset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Dataset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Dataset'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+          description: ''
+  /api/v1/datasets-relationships/:
+    get:
+      operationId: datasets_relationships_list
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: involves
+        schema:
+          type: string
+      - in: query
+        name: source
+        schema:
+          type: string
+      - in: query
+        name: target
+        schema:
+          type: string
+      - in: query
+        name: type
+        schema:
+          type: string
+          enum:
+          - Cites
+          - Compiles
+          - Continues
+          - Describes
+          - Documents
+          - HasMetadata
+          - HasPart
+          - HasVersion
+          - IsCitedBy
+          - IsCompiledBy
+          - IsContinuedBy
+          - IsDerivedFrom
+          - IsDescribedBy
+          - IsDocumentedBy
+          - IsIdenticalTo
+          - IsMetadataFor
+          - IsNewVersionOf
+          - IsObsoletedBy
+          - IsOriginalFormOf
+          - IsPartOf
+          - IsPreviousVersionOf
+          - IsPublishedIn
+          - IsReferencedBy
+          - IsRequiredBy
+          - IsReviewedBy
+          - IsSourceOf
+          - IsSupplementTo
+          - IsSupplementedBy
+          - IsVariantFormOf
+          - IsVersionOf
+          - Obsoletes
+          - References
+          - Requires
+          - Reviews
+        description: |-
+          * `IsCitedBy` - Is cited by
+          * `Cites` - Cites
+          * `IsSupplementTo` - Is supplement to
+          * `IsSupplementedBy` - Is supplemented by
+          * `IsContinuedBy` - Is continued by
+          * `Continues` - Continues
+          * `IsDescribedBy` - Is described by
+          * `Describes` - Describes
+          * `HasMetadata` - Has metadata
+          * `IsMetadataFor` - Is metadata for
+          * `HasVersion` - Has version
+          * `IsVersionOf` - Is version of
+          * `IsNewVersionOf` - Is new version of
+          * `IsPreviousVersionOf` - Is previous version of
+          * `IsPartOf` - Is part of
+          * `HasPart` - Has part
+          * `IsPublishedIn` - Is published in
+          * `IsReferencedBy` - Is referenced by
+          * `References` - References
+          * `IsDocumentedBy` - Is documented by
+          * `Documents` - Documents
+          * `IsCompiledBy` - Is compiled by
+          * `Compiles` - Compiles
+          * `IsVariantFormOf` - Is variant form of
+          * `IsOriginalFormOf` - Is original form of
+          * `IsIdenticalTo` - Is identical to
+          * `IsReviewedBy` - Is reviewed by
+          * `Reviews` - Reviews
+          * `IsDerivedFrom` - Is derived from
+          * `IsSourceOf` - Is source of
+          * `Requires` - Requires
+          * `IsRequiredBy` - Is required by
+          * `IsObsoletedBy` - Is obsoleted by
+          * `Obsoletes` - Obsoletes
+      tags:
+      - datasets-relationships
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDatasetRelationshipList'
+          description: ''
+    post:
+      operationId: datasets_relationships_create
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      tags:
+      - datasets-relationships
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatasetRelationshipCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DatasetRelationshipCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DatasetRelationshipCreate'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetRelationshipCreate'
+          description: ''
+  /api/v1/datasets-relationships/{uuid}/:
+    delete:
+      operationId: datasets_relationships_destroy
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - datasets-relationships
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/datasets/{id}/:
+    get:
+      operationId: datasets_retrieve
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this dataset.
+        required: true
+      tags:
+      - datasets
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+          description: ''
+    put:
+      operationId: datasets_update
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this dataset.
+        required: true
+      tags:
+      - datasets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dataset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Dataset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Dataset'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+          description: ''
+    patch:
+      operationId: datasets_partial_update
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this dataset.
+        required: true
+      tags:
+      - datasets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDataset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDataset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDataset'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+          description: ''
+    delete:
+      operationId: datasets_destroy
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this dataset.
+        required: true
+      tags:
+      - datasets
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/datasets/{id}/feature/:
+    get:
+      operationId: datasets_feature_retrieve
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this dataset.
+        required: true
+      tags:
+      - datasets
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetGeo'
+          description: ''
+  /api/v1/datasets/metadata-schema/:
+    get:
+      operationId: datasets_metadata_schema_retrieve
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      tags:
+      - datasets
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+          description: ''
+  /api/v1/datatables/:
+    get:
+      operationId: datatables_list
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: is_accessible
+        schema:
+          type: boolean
+      - in: query
+        name: is_pmtiles
+        schema:
+          type: boolean
+      - in: query
+        name: name
+        schema:
+          type: string
+      - in: query
+        name: resource
+        schema:
+          type: string
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search
+      tags:
+      - datatables
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDataTableListList'
+          description: ''
+  /api/v1/dmps/:
+    get:
+      operationId: dmps_list
+      parameters:
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      tags:
+      - dmps
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDMPList'
+          description: ''
+  /api/v1/dmps/{id}/:
+    get:
+      operationId: dmps_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this dmp.
+        required: true
+      tags:
+      - dmps
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DMP'
+          description: ''
+    put:
+      operationId: dmps_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this dmp.
+        required: true
+      tags:
+      - dmps
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DMP'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DMP'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DMP'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DMP'
+          description: ''
+    patch:
+      operationId: dmps_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this dmp.
+        required: true
+      tags:
+      - dmps
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDMP'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDMP'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDMP'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DMP'
+          description: ''
+  /api/v1/mapresources/:
+    get:
+      operationId: mapresources_list
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: dataset
+        schema:
+          type: string
+        description: Dataset
+      - in: query
+        name: dataset__project
+        schema:
+          type: string
+        description: Project
+      - in: query
+        name: extent
+        schema:
+          type: string
+      - in: query
+        name: resource_type
+        schema:
+          type: string
+          enum:
+          - mapresource
+          - rasterresource
+          - resource
+          - tabularresource
+        description: |-
+          Resource Type
+
+          * `resource` - Resource
+          * `mapresource` - Map Resource
+          * `tabularresource` - Tabular Resource
+          * `rasterresource` - Raster Resource
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search
+      - in: query
+        name: title__icontains
+        schema:
+          type: string
+      - in: query
+        name: uri__startswith
+        schema:
+          type: string
+      tags:
+      - mapresources
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMapResourceList'
+          description: ''
+    post:
+      operationId: mapresources_create
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      tags:
+      - mapresources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MapResource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MapResource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MapResource'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapResource'
+          description: ''
+  /api/v1/mapresources/{id}/:
+    get:
+      operationId: mapresources_retrieve
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this map resource.
+        required: true
+      tags:
+      - mapresources
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapResource'
+          description: ''
+    put:
+      operationId: mapresources_update
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this map resource.
+        required: true
+      tags:
+      - mapresources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MapResource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MapResource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MapResource'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapResource'
+          description: ''
+    patch:
+      operationId: mapresources_partial_update
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this map resource.
+        required: true
+      tags:
+      - mapresources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMapResource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMapResource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMapResource'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapResource'
+          description: ''
+    delete:
+      operationId: mapresources_destroy
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this map resource.
+        required: true
+      tags:
+      - mapresources
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/partitionedresources/:
+    get:
+      operationId: partitionedresources_list
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: dataset
+        schema:
+          type: string
+        description: Dataset
+      - in: query
+        name: dataset__project
+        schema:
+          type: string
+        description: Project
+      - in: query
+        name: extent
+        schema:
+          type: string
+      - in: query
+        name: resource_type
+        schema:
+          type: string
+          enum:
+          - mapresource
+          - rasterresource
+          - resource
+          - tabularresource
+        description: |-
+          Resource Type
+
+          * `resource` - Resource
+          * `mapresource` - Map Resource
+          * `tabularresource` - Tabular Resource
+          * `rasterresource` - Raster Resource
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search
+      - in: query
+        name: title__icontains
+        schema:
+          type: string
+      - in: query
+        name: uri__startswith
+        schema:
+          type: string
+      tags:
+      - partitionedresources
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPartitionedResourceList'
+          description: ''
+    post:
+      operationId: partitionedresources_create
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      tags:
+      - partitionedresources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartitionedResource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PartitionedResource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PartitionedResource'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartitionedResource'
+          description: ''
+  /api/v1/partitionedresources/{id}/:
+    get:
+      operationId: partitionedresources_retrieve
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this partitioned resource.
+        required: true
+      tags:
+      - partitionedresources
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartitionedResource'
+          description: ''
+    put:
+      operationId: partitionedresources_update
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this partitioned resource.
+        required: true
+      tags:
+      - partitionedresources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartitionedResource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PartitionedResource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PartitionedResource'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartitionedResource'
+          description: ''
+    patch:
+      operationId: partitionedresources_partial_update
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this partitioned resource.
+        required: true
+      tags:
+      - partitionedresources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPartitionedResource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPartitionedResource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPartitionedResource'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartitionedResource'
+          description: ''
+    delete:
+      operationId: partitionedresources_destroy
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this partitioned resource.
+        required: true
+      tags:
+      - partitionedresources
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/projects/:
+    get:
+      operationId: projects_list
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: integer
+      - in: query
+        name: customer__istartswith
+        schema:
+          type: string
+      - in: query
+        name: end_date__lte
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: leader
+        schema:
+          type: string
+        description: Leader
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: name__icontains
+        schema:
+          type: string
+      - in: query
+        name: number__istartswith
+        schema:
+          type: string
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - in: query
+        name: participant
+        schema:
+          type: string
+        description: Participant
+      - in: query
+        name: section
+        schema:
+          type: string
+      - in: query
+        name: start_date__gte
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: status
+        schema:
+          type: string
+          nullable: true
+          enum:
+          - C
+          - N
+          - P
+          - T
+        description: |-
+          * `N` - Active
+          * `T` - Completed
+          * `P` - Parked
+          * `C` - Not completed
+      - in: query
+        name: tags
+        schema:
+          type: array
+          items:
+            type: string
+        explode: true
+        style: form
+      - in: query
+        name: topics
+        schema:
+          type: array
+          items:
+            type: string
+        explode: true
+        style: form
+      tags:
+      - projects
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProjectList'
+          description: ''
+  /api/v1/projects/{number}/:
+    get:
+      operationId: projects_retrieve
+      parameters:
+      - in: path
+        name: number
+        schema:
+          type: string
+        description: A unique value identifying this project.
+        required: true
+      tags:
+      - projects
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+    put:
+      operationId: projects_update
+      parameters:
+      - in: path
+        name: number
+        schema:
+          type: string
+        description: A unique value identifying this project.
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Project'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Project'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+    patch:
+      operationId: projects_partial_update
+      parameters:
+      - in: path
+        name: number
+        schema:
+          type: string
+        description: A unique value identifying this project.
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProject'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProject'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProject'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+  /api/v1/rasterresources/:
+    get:
+      operationId: rasterresources_list
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: dataset
+        schema:
+          type: string
+        description: Dataset
+      - in: query
+        name: dataset__project
+        schema:
+          type: string
+        description: Project
+      - in: query
+        name: extent
+        schema:
+          type: string
+      - in: query
+        name: resource_type
+        schema:
+          type: string
+          enum:
+          - mapresource
+          - rasterresource
+          - resource
+          - tabularresource
+        description: |-
+          Resource Type
+
+          * `resource` - Resource
+          * `mapresource` - Map Resource
+          * `tabularresource` - Tabular Resource
+          * `rasterresource` - Raster Resource
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search
+      - in: query
+        name: title__icontains
+        schema:
+          type: string
+      - in: query
+        name: uri__startswith
+        schema:
+          type: string
+      tags:
+      - rasterresources
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRasterResourceList'
+          description: ''
+    post:
+      operationId: rasterresources_create
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      tags:
+      - rasterresources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RasterResource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RasterResource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RasterResource'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RasterResource'
+          description: ''
+  /api/v1/rasterresources/{id}/:
+    get:
+      operationId: rasterresources_retrieve
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this raster resource.
+        required: true
+      tags:
+      - rasterresources
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RasterResource'
+          description: ''
+    put:
+      operationId: rasterresources_update
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this raster resource.
+        required: true
+      tags:
+      - rasterresources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RasterResource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RasterResource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RasterResource'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RasterResource'
+          description: ''
+    patch:
+      operationId: rasterresources_partial_update
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this raster resource.
+        required: true
+      tags:
+      - rasterresources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRasterResource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRasterResource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRasterResource'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RasterResource'
+          description: ''
+    delete:
+      operationId: rasterresources_destroy
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this raster resource.
+        required: true
+      tags:
+      - rasterresources
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/resources/:
+    get:
+      operationId: resources_list
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: dataset
+        schema:
+          type: string
+        description: Dataset
+      - in: query
+        name: dataset__project
+        schema:
+          type: string
+        description: Project
+      - in: query
+        name: extent
+        schema:
+          type: string
+      - in: query
+        name: is_accessible
+        schema:
+          type: boolean
+      - in: query
+        name: is_cog
+        schema:
+          type: boolean
+      - in: query
+        name: resource_type
+        schema:
+          type: string
+          enum:
+          - mapresource
+          - rasterresource
+          - resource
+          - tabularresource
+        description: |-
+          Resource Type
+
+          * `resource` - Resource
+          * `mapresource` - Map Resource
+          * `tabularresource` - Tabular Resource
+          * `rasterresource` - Raster Resource
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search
+      - in: query
+        name: title__icontains
+        schema:
+          type: string
+      - in: query
+        name: uri__startswith
+        schema:
+          type: string
+      tags:
+      - resources
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResourceListList'
+          description: ''
+    post:
+      operationId: resources_create
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      tags:
+      - resources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Resource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Resource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Resource'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+          description: ''
+  /api/v1/resources/{id}/:
+    get:
+      operationId: resources_retrieve
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this resource.
+        required: true
+      tags:
+      - resources
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+          description: ''
+    put:
+      operationId: resources_update
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this resource.
+        required: true
+      tags:
+      - resources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Resource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Resource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Resource'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+          description: ''
+    patch:
+      operationId: resources_partial_update
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this resource.
+        required: true
+      tags:
+      - resources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedResource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedResource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedResource'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+          description: ''
+    delete:
+      operationId: resources_destroy
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this resource.
+        required: true
+      tags:
+      - resources
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/resources/{id}/feature/:
+    get:
+      operationId: resources_feature_retrieve
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this resource.
+        required: true
+      tags:
+      - resources
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceGeo'
+          description: ''
+  /api/v1/tabularresources/:
+    get:
+      operationId: tabularresources_list
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: dataset
+        schema:
+          type: string
+        description: Dataset
+      - in: query
+        name: dataset__project
+        schema:
+          type: string
+        description: Project
+      - in: query
+        name: extent
+        schema:
+          type: string
+      - in: query
+        name: resource_type
+        schema:
+          type: string
+          enum:
+          - mapresource
+          - rasterresource
+          - resource
+          - tabularresource
+        description: |-
+          Resource Type
+
+          * `resource` - Resource
+          * `mapresource` - Map Resource
+          * `tabularresource` - Tabular Resource
+          * `rasterresource` - Raster Resource
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search
+      - in: query
+        name: title__icontains
+        schema:
+          type: string
+      - in: query
+        name: uri__startswith
+        schema:
+          type: string
+      tags:
+      - tabularresources
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTabularResourceList'
+          description: ''
+    post:
+      operationId: tabularresources_create
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      tags:
+      - tabularresources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TabularResource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TabularResource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TabularResource'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TabularResource'
+          description: ''
+  /api/v1/tabularresources/{id}/:
+    get:
+      operationId: tabularresources_retrieve
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this tabular resource.
+        required: true
+      tags:
+      - tabularresources
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TabularResource'
+          description: ''
+    put:
+      operationId: tabularresources_update
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this tabular resource.
+        required: true
+      tags:
+      - tabularresources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TabularResource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TabularResource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TabularResource'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TabularResource'
+          description: ''
+    patch:
+      operationId: tabularresources_partial_update
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this tabular resource.
+        required: true
+      tags:
+      - tabularresources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTabularResource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTabularResource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTabularResource'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TabularResource'
+          description: ''
+    delete:
+      operationId: tabularresources_destroy
+      description: |-
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this tabular resource.
+        required: true
+      tags:
+      - tabularresources
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/uploads/tusd/webhook/:
+    post:
+      operationId: uploads_tusd_webhook_create
+      tags:
+      - uploads
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    AccessTypeEnum:
+      enum:
+      - public
+      - internal
+      - permission_required
+      type: string
+      description: |-
+        * `public` - Public
+        * `internal` - Internal
+        * `permission_required` - Permission required
+    BlankEnum:
+      enum:
+      - ''
+    DMP:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+        data:
+          nullable: true
+      required:
+      - id
+      - name
+    DataTableList:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        name:
+          type: string
+        title:
+          type: string
+          readOnly: true
+        resource:
+          type: string
+          format: uri
+          readOnly: true
+        resource_id:
+          type: string
+        is_spatial:
+          type: string
+          readOnly: true
+        driver:
+          type: string
+          readOnly: true
+        count:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        uri:
+          type: string
+          readOnly: true
+      required:
+      - driver
+      - id
+      - is_spatial
+      - name
+      - resource
+      - resource_id
+      - title
+      - uri
+    Dataset:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+        title:
+          type: string
+        name:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        created_at:
+          type: string
+          format: date-time
+        last_modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        project:
+          type: string
+          format: uri
+          readOnly: true
+        project_id:
+          type: string
+        metadata: {}
+        version:
+          type: string
+          nullable: true
+      required:
+      - last_modified_at
+      - name
+      - project
+      - project_id
+      - title
+      - url
+    DatasetGeo:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureEnum'
+        id:
+          type: string
+        geometry:
+          oneOf:
+          - type: object
+            properties:
+              type:
+                type: string
+                enum:
+                - Point
+              coordinates:
+                type: array
+                items:
+                  type: number
+                  format: float
+                example:
+                - 12.9721
+                - 77.5933
+                minItems: 2
+                maxItems: 3
+          - type: object
+            properties:
+              type:
+                type: string
+                enum:
+                - LineString
+              coordinates:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: number
+                    format: float
+                  example:
+                  - 12.9721
+                  - 77.5933
+                  minItems: 2
+                  maxItems: 3
+                example:
+                - - 22.4707
+                  - 70.0577
+                - - 12.9721
+                  - 77.5933
+                minItems: 2
+          - type: object
+            properties:
+              type:
+                type: string
+                enum:
+                - Polygon
+              coordinates:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: array
+                    items:
+                      type: number
+                      format: float
+                    example:
+                    - 12.9721
+                    - 77.5933
+                    minItems: 2
+                    maxItems: 3
+                  example:
+                  - - 22.4707
+                    - 70.0577
+                  - - 12.9721
+                    - 77.5933
+                  minItems: 4
+                example:
+                - - - 0.0
+                    - 0.0
+                  - - 0.0
+                    - 50.0
+                  - - 50.0
+                    - 50.0
+                  - - 50.0
+                    - 0.0
+                  - - 0.0
+                    - 0.0
+        bbox:
+          type: array
+          items:
+            type: number
+          minItems: 4
+          maxItems: 4
+          example:
+          - 12.9721
+          - 77.5933
+          - 12.9721
+          - 77.5933
+        properties:
+          type: object
+          properties:
+            title:
+              type: string
+    DatasetList:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+        title:
+          type: string
+        name:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        created_at:
+          type: string
+          format: date-time
+        last_modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        project:
+          type: string
+          format: uri
+          readOnly: true
+        project_id:
+          type: string
+        version:
+          type: string
+          nullable: true
+      required:
+      - last_modified_at
+      - name
+      - project
+      - project_id
+      - title
+      - url
+    DatasetRelationship:
+      type: object
+      properties:
+        source:
+          type: string
+          format: uri
+          readOnly: true
+        source_id:
+          type: string
+          readOnly: true
+        target:
+          type: string
+          format: uri
+          readOnly: true
+        target_id:
+          type: string
+          readOnly: true
+        type:
+          $ref: '#/components/schemas/Type348Enum'
+        uuid:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+          readOnly: true
+      required:
+      - source
+      - source_id
+      - target
+      - target_id
+      - type
+      - url
+      - uuid
+    DatasetRelationshipCreate:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        source:
+          type: string
+        target:
+          type: string
+        type:
+          $ref: '#/components/schemas/Type348Enum'
+      required:
+      - source
+      - target
+      - type
+      - url
+      - uuid
+    GisFeatureEnum:
+      type: string
+      enum:
+      - Feature
+    JWT:
+      type: object
+      description: Serializer for JWT authentication.
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserDetails'
+      required:
+      - access
+      - refresh
+      - user
+    Login:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+      - password
+    MapResource:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+        title:
+          type: string
+          description: A name that describes the resource
+        uri:
+          type: string
+          title: URI of the resource
+        created_at:
+          type: string
+          format: date-time
+        last_modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        dataset_id:
+          type: string
+        dataset:
+          type: string
+          format: uri
+          readOnly: true
+        role:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        access_type:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AccessTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        description:
+          type: string
+        metadata:
+          nullable: true
+          title: GDAL Metadata
+        user_metadata:
+          nullable: true
+          title: User provided metadata
+        is_metadata_manual:
+          type: boolean
+        last_sync:
+          nullable: true
+        map_type:
+          $ref: '#/components/schemas/MapTypeEnum'
+      required:
+      - dataset
+      - dataset_id
+      - id
+      - last_modified_at
+      - uri
+      - url
+    MapTypeEnum:
+      enum:
+      - nina
+      - url
+      type: string
+      description: |-
+        * `nina` - Nina Map configuration
+        * `url` - Link to a published map
+    NullEnum:
+      enum:
+      - null
+    PaginatedDMPList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DMP'
+    PaginatedDataTableListList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataTableList'
+    PaginatedDatasetListList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DatasetList'
+    PaginatedDatasetRelationshipList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DatasetRelationship'
+    PaginatedMapResourceList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MapResource'
+    PaginatedPartitionedResourceList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartitionedResource'
+    PaginatedProjectList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+    PaginatedRasterResourceList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RasterResource'
+    PaginatedResourceListList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceList'
+    PaginatedTabularResourceList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TabularResource'
+    PartitionedResource:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+        title:
+          type: string
+          description: A name that describes the resource
+        uri:
+          type: string
+          title: URI of the resource
+        created_at:
+          type: string
+          format: date-time
+        last_modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        dataset_id:
+          type: string
+        dataset:
+          type: string
+          format: uri
+          readOnly: true
+        role:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        access_type:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AccessTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        description:
+          type: string
+        metadata:
+          nullable: true
+          title: GDAL Metadata
+        user_metadata:
+          nullable: true
+          title: User provided metadata
+        is_metadata_manual:
+          type: boolean
+        last_sync:
+          nullable: true
+      required:
+      - dataset
+      - dataset_id
+      - id
+      - last_modified_at
+      - uri
+      - url
+    PasswordChange:
+      type: object
+      properties:
+        new_password1:
+          type: string
+          maxLength: 128
+        new_password2:
+          type: string
+          maxLength: 128
+      required:
+      - new_password1
+      - new_password2
+    PasswordReset:
+      type: object
+      description: Serializer for requesting a password reset e-mail.
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    PasswordResetConfirm:
+      type: object
+      description: Serializer for confirming a password reset attempt.
+      properties:
+        new_password1:
+          type: string
+          maxLength: 128
+        new_password2:
+          type: string
+          maxLength: 128
+        uid:
+          type: string
+        token:
+          type: string
+      required:
+      - new_password1
+      - new_password2
+      - token
+      - uid
+    PatchedDMP:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+        data:
+          nullable: true
+    PatchedDataset:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+        title:
+          type: string
+        name:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        created_at:
+          type: string
+          format: date-time
+        last_modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        project:
+          type: string
+          format: uri
+          readOnly: true
+        project_id:
+          type: string
+        metadata: {}
+        version:
+          type: string
+          nullable: true
+    PatchedMapResource:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+        title:
+          type: string
+          description: A name that describes the resource
+        uri:
+          type: string
+          title: URI of the resource
+        created_at:
+          type: string
+          format: date-time
+        last_modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        dataset_id:
+          type: string
+        dataset:
+          type: string
+          format: uri
+          readOnly: true
+        role:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        access_type:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AccessTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        description:
+          type: string
+        metadata:
+          nullable: true
+          title: GDAL Metadata
+        user_metadata:
+          nullable: true
+          title: User provided metadata
+        is_metadata_manual:
+          type: boolean
+        last_sync:
+          nullable: true
+        map_type:
+          $ref: '#/components/schemas/MapTypeEnum'
+    PatchedPartitionedResource:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+        title:
+          type: string
+          description: A name that describes the resource
+        uri:
+          type: string
+          title: URI of the resource
+        created_at:
+          type: string
+          format: date-time
+        last_modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        dataset_id:
+          type: string
+        dataset:
+          type: string
+          format: uri
+          readOnly: true
+        role:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        access_type:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AccessTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        description:
+          type: string
+        metadata:
+          nullable: true
+          title: GDAL Metadata
+        user_metadata:
+          nullable: true
+          title: User provided metadata
+        is_metadata_manual:
+          type: boolean
+        last_sync:
+          nullable: true
+    PatchedProject:
+      type: object
+      properties:
+        number:
+          type: string
+        description:
+          type: string
+          nullable: true
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        category:
+          type: integer
+          nullable: true
+        section:
+          type: string
+          nullable: true
+        customer:
+          type: string
+          nullable: true
+    PatchedRasterResource:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+        title:
+          type: string
+          description: A name that describes the resource
+        uri:
+          type: string
+          title: URI of the resource
+        created_at:
+          type: string
+          format: date-time
+        last_modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        dataset_id:
+          type: string
+        dataset:
+          type: string
+          format: uri
+          readOnly: true
+        role:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        access_type:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AccessTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        description:
+          type: string
+        metadata:
+          nullable: true
+          title: GDAL Metadata
+        user_metadata:
+          nullable: true
+          title: User provided metadata
+        is_metadata_manual:
+          type: boolean
+        last_sync:
+          nullable: true
+        titiler:
+          title: Titiler configuration
+    PatchedResource:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+        title:
+          type: string
+          description: A name that describes the resource
+        uri:
+          type: string
+          title: URI of the resource
+        created_at:
+          type: string
+          format: date-time
+        last_modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        dataset_id:
+          type: string
+        dataset:
+          type: string
+          format: uri
+          readOnly: true
+        role:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        access_type:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AccessTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        description:
+          type: string
+        metadata:
+          nullable: true
+          title: GDAL Metadata
+        user_metadata:
+          nullable: true
+          title: User provided metadata
+        is_metadata_manual:
+          type: boolean
+        last_sync:
+          nullable: true
+    PatchedTabularResource:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+        title:
+          type: string
+          description: A name that describes the resource
+        uri:
+          type: string
+          title: URI of the resource
+        created_at:
+          type: string
+          format: date-time
+        last_modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        dataset_id:
+          type: string
+        dataset:
+          type: string
+          format: uri
+          readOnly: true
+        role:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        access_type:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AccessTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        description:
+          type: string
+        metadata:
+          nullable: true
+          title: GDAL Metadata
+        user_metadata:
+          nullable: true
+          title: User provided metadata
+        is_metadata_manual:
+          type: boolean
+        last_sync:
+          nullable: true
+    PatchedUserDetails:
+      type: object
+      description: User model w/o password
+      properties:
+        pk:
+          type: integer
+          readOnly: true
+          title: ID
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          readOnly: true
+          nullable: true
+          title: Email address
+        first_name:
+          type: string
+          maxLength: 200
+        last_name:
+          type: string
+          maxLength: 200
+    Project:
+      type: object
+      properties:
+        number:
+          type: string
+        description:
+          type: string
+          nullable: true
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        category:
+          type: integer
+          nullable: true
+        section:
+          type: string
+          nullable: true
+        customer:
+          type: string
+          nullable: true
+      required:
+      - number
+      - start_date
+    RasterResource:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+        title:
+          type: string
+          description: A name that describes the resource
+        uri:
+          type: string
+          title: URI of the resource
+        created_at:
+          type: string
+          format: date-time
+        last_modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        dataset_id:
+          type: string
+        dataset:
+          type: string
+          format: uri
+          readOnly: true
+        role:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        access_type:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AccessTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        description:
+          type: string
+        metadata:
+          nullable: true
+          title: GDAL Metadata
+        user_metadata:
+          nullable: true
+          title: User provided metadata
+        is_metadata_manual:
+          type: boolean
+        last_sync:
+          nullable: true
+        titiler:
+          title: Titiler configuration
+      required:
+      - dataset
+      - dataset_id
+      - id
+      - last_modified_at
+      - uri
+      - url
+    Resource:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+        title:
+          type: string
+          description: A name that describes the resource
+        uri:
+          type: string
+          title: URI of the resource
+        created_at:
+          type: string
+          format: date-time
+        last_modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        dataset_id:
+          type: string
+        dataset:
+          type: string
+          format: uri
+          readOnly: true
+        role:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        access_type:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AccessTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        description:
+          type: string
+        metadata:
+          nullable: true
+          title: GDAL Metadata
+        user_metadata:
+          nullable: true
+          title: User provided metadata
+        is_metadata_manual:
+          type: boolean
+        last_sync:
+          nullable: true
+      required:
+      - dataset
+      - dataset_id
+      - id
+      - last_modified_at
+      - uri
+      - url
+    ResourceGeo:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureEnum'
+        id:
+          type: string
+        geometry:
+          oneOf:
+          - type: object
+            properties:
+              type:
+                type: string
+                enum:
+                - Point
+              coordinates:
+                type: array
+                items:
+                  type: number
+                  format: float
+                example:
+                - 12.9721
+                - 77.5933
+                minItems: 2
+                maxItems: 3
+          - type: object
+            properties:
+              type:
+                type: string
+                enum:
+                - LineString
+              coordinates:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: number
+                    format: float
+                  example:
+                  - 12.9721
+                  - 77.5933
+                  minItems: 2
+                  maxItems: 3
+                example:
+                - - 22.4707
+                  - 70.0577
+                - - 12.9721
+                  - 77.5933
+                minItems: 2
+          - type: object
+            properties:
+              type:
+                type: string
+                enum:
+                - Polygon
+              coordinates:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: array
+                    items:
+                      type: number
+                      format: float
+                    example:
+                    - 12.9721
+                    - 77.5933
+                    minItems: 2
+                    maxItems: 3
+                  example:
+                  - - 22.4707
+                    - 70.0577
+                  - - 12.9721
+                    - 77.5933
+                  minItems: 4
+                example:
+                - - - 0.0
+                    - 0.0
+                  - - 0.0
+                    - 50.0
+                  - - 50.0
+                    - 50.0
+                  - - 50.0
+                    - 0.0
+                  - - 0.0
+                    - 0.0
+        bbox:
+          type: array
+          items:
+            type: number
+          minItems: 4
+          maxItems: 4
+          example:
+          - 12.9721
+          - 77.5933
+          - 12.9721
+          - 77.5933
+        properties:
+          type: object
+          properties:
+            title:
+              type: string
+              description: A name that describes the resource
+    ResourceList:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+        title:
+          type: string
+          description: A name that describes the resource
+        uri:
+          type: string
+          title: URI of the resource
+        created_at:
+          type: string
+          format: date-time
+        last_modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        dataset_id:
+          type: string
+        dataset:
+          type: string
+          format: uri
+          readOnly: true
+        role:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        access_type:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AccessTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        description:
+          type: string
+      required:
+      - dataset
+      - dataset_id
+      - id
+      - last_modified_at
+      - uri
+      - url
+    RestAuthDetail:
+      type: object
+      properties:
+        detail:
+          type: string
+          readOnly: true
+      required:
+      - detail
+    RoleEnum:
+      enum:
+      - data
+      - presentation
+      - documentation
+      - metadata
+      - raw_data
+      type: string
+      description: |-
+        * `data` - Data
+        * `presentation` - Presentation
+        * `documentation` - Documentation
+        * `metadata` - Metadata
+        * `raw_data` - Raw Data
+    StatusEnum:
+      enum:
+      - N
+      - T
+      - P
+      - C
+      type: string
+      description: |-
+        * `N` - Active
+        * `T` - Completed
+        * `P` - Parked
+        * `C` - Not completed
+    TabularResource:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+        title:
+          type: string
+          description: A name that describes the resource
+        uri:
+          type: string
+          title: URI of the resource
+        created_at:
+          type: string
+          format: date-time
+        last_modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        dataset_id:
+          type: string
+        dataset:
+          type: string
+          format: uri
+          readOnly: true
+        role:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        access_type:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AccessTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        description:
+          type: string
+        metadata:
+          nullable: true
+          title: GDAL Metadata
+        user_metadata:
+          nullable: true
+          title: User provided metadata
+        is_metadata_manual:
+          type: boolean
+        last_sync:
+          nullable: true
+      required:
+      - dataset
+      - dataset_id
+      - id
+      - last_modified_at
+      - uri
+      - url
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    TokenVerify:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+      required:
+      - token
+    Type348Enum:
+      enum:
+      - IsCitedBy
+      - Cites
+      - IsSupplementTo
+      - IsSupplementedBy
+      - IsContinuedBy
+      - Continues
+      - IsDescribedBy
+      - Describes
+      - HasMetadata
+      - IsMetadataFor
+      - HasVersion
+      - IsVersionOf
+      - IsNewVersionOf
+      - IsPreviousVersionOf
+      - IsPartOf
+      - HasPart
+      - IsPublishedIn
+      - IsReferencedBy
+      - References
+      - IsDocumentedBy
+      - Documents
+      - IsCompiledBy
+      - Compiles
+      - IsVariantFormOf
+      - IsOriginalFormOf
+      - IsIdenticalTo
+      - IsReviewedBy
+      - Reviews
+      - IsDerivedFrom
+      - IsSourceOf
+      - Requires
+      - IsRequiredBy
+      - IsObsoletedBy
+      - Obsoletes
+      type: string
+      description: |-
+        * `IsCitedBy` - Is cited by
+        * `Cites` - Cites
+        * `IsSupplementTo` - Is supplement to
+        * `IsSupplementedBy` - Is supplemented by
+        * `IsContinuedBy` - Is continued by
+        * `Continues` - Continues
+        * `IsDescribedBy` - Is described by
+        * `Describes` - Describes
+        * `HasMetadata` - Has metadata
+        * `IsMetadataFor` - Is metadata for
+        * `HasVersion` - Has version
+        * `IsVersionOf` - Is version of
+        * `IsNewVersionOf` - Is new version of
+        * `IsPreviousVersionOf` - Is previous version of
+        * `IsPartOf` - Is part of
+        * `HasPart` - Has part
+        * `IsPublishedIn` - Is published in
+        * `IsReferencedBy` - Is referenced by
+        * `References` - References
+        * `IsDocumentedBy` - Is documented by
+        * `Documents` - Documents
+        * `IsCompiledBy` - Is compiled by
+        * `Compiles` - Compiles
+        * `IsVariantFormOf` - Is variant form of
+        * `IsOriginalFormOf` - Is original form of
+        * `IsIdenticalTo` - Is identical to
+        * `IsReviewedBy` - Is reviewed by
+        * `Reviews` - Reviews
+        * `IsDerivedFrom` - Is derived from
+        * `IsSourceOf` - Is source of
+        * `Requires` - Requires
+        * `IsRequiredBy` - Is required by
+        * `IsObsoletedBy` - Is obsoleted by
+        * `Obsoletes` - Obsoletes
+    UserDetails:
+      type: object
+      description: User model w/o password
+      properties:
+        pk:
+          type: integer
+          readOnly: true
+          title: ID
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          readOnly: true
+          nullable: true
+          title: Email address
+        first_name:
+          type: string
+          maxLength: 200
+        last_name:
+          type: string
+          maxLength: 200
+      required:
+      - email
+      - first_name
+      - last_name
+      - pk
+      - username
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    jwtCookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+    jwtHeaderAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
