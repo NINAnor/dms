@@ -27,7 +27,6 @@ if [[ -z "${DJANGO_MIGRATE}" ]]
 then
   echo "Skip migration and setup"
 else
-  uv run manage.py makemigrations
   uv run manage.py migrate
   uv run manage.py setup
   echo "Generate OpenAPI schema"
