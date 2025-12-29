@@ -141,6 +141,13 @@ class DMPPreviewView(PermissionRequiredMixin, DetailView):
 
         conf = ProjectsConfiguration.objects.select_related("dmp_survey_config").first()
 
+        if self.object.data == {}:
+            return HttpResponse(
+                "DMP data is empty, cannot generate preview.",
+                content_type="text/plain",
+                status=400,
+            )
+
         latex_content = render_to_tex(conf.dmp_survey_config.config, self.object.data)
         if format_param == "latex":
             return latex_content
