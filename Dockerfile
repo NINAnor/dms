@@ -45,7 +45,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm run build
 
 FROM app AS production
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --extra prod
+    uv sync --group prod
 ENV PATH="/app/.venv/bin:$PATH"
 
 FROM production AS translation
@@ -67,7 +67,7 @@ RUN uv run manage.py tailwind build
 
 FROM app AS django
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --extra ldap --extra prod
+    uv sync --group prod
 COPY --from=production /app .
 COPY --from=translation /app/src/dms/locale /app/src/dms/locale
 COPY --from=source /app .
@@ -79,7 +79,7 @@ ENTRYPOINT ["./entrypoint.sh"]
 FROM app AS dev
 COPY --from=production /app .
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --all-extras
+    uv sync --all-groups
 COPY --from=django /app/src src
 COPY --from=translation /app/src/dms/locale /app/src/dms/locale
 COPY --from=django /app/entrypoint.sh .
