@@ -87,12 +87,12 @@
 
 {% block body_javascript %}
 {{ block.super }}
-{% if projects_config.dmp_survey_config and not dmp.is_external %}
+{% if projects_config and not dmp.is_external %}
 
 {% url 'api_v1:dmps-detail' pk=dmp.id as dmp_api_url %}
 {{ dmp_api_url|safe|json_script:"dmp_api_url" }}
 
-{{ projects_config.dmp_survey_config.config|json_script:"dmp-config" }}
+{{ projects_config|json_script:"dmp-config" }}
 {{ dmp.data|json_script:"dmp" }}
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script type="text/javascript" src="https://unpkg.com/survey-core/survey.core.min.js"></script>

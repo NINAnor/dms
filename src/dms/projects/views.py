@@ -113,7 +113,9 @@ class DMPDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["projects_config"] = ProjectsConfiguration.get_solo()
+        ctx["projects_config"] = self.object.schema or (
+            ProjectsConfiguration.get_solo().dmp_survey_config.config
+        )
         return ctx
 
 
@@ -139,7 +141,12 @@ class DMPPreviewView(PermissionRequiredMixin, DetailView):
         else:
             selected_format = self.formats[format_param]
 
-        conf = ProjectsConfiguration.objects.select_related("dmp_survey_config").first()
+        conf = (
+            self.object.schema
+            or ProjectsConfiguration.objects.select_related("dmp_survey_config")
+            .first()
+            .dmp_survey_config.config
+        )
 
         if self.object.data == {}:
             return HttpResponse(
@@ -148,7 +155,7 @@ class DMPPreviewView(PermissionRequiredMixin, DetailView):
                 status=400,
             )
 
-        latex_content = render_to_tex(conf.dmp_survey_config.config, self.object.data)
+        latex_content = render_to_tex(conf, self.object.data)
         if format_param == "latex":
             return latex_content
 
