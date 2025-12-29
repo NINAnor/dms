@@ -30,6 +30,8 @@ else
   uv run manage.py makemigrations
   uv run manage.py migrate
   uv run manage.py setup
+  echo "Generate OpenAPI schema"
+  uv run manage.py spectacular > schema.yml
 fi
 
 if [[ -z "${DJANGO_TAILWIND}" ]]

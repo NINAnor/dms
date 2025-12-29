@@ -72,6 +72,7 @@ x-django-dev: &django-dev
     - ./media:/app/media
     - ./certs/:/usr/local/share/ca-certificates/
     - ./uv.lock:/app/uv.lock
+    - ./docs/schema.yml:/app/schema.yml
   command: uv run manage.py runserver 0.0.0.0:8000
 
 services:

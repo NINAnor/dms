@@ -108,6 +108,9 @@ class Dataset(RulesModel):
         return new_instance
 
     def compute_extent(self):
+        """
+        Compute the union of the extents of all resources and update the dataset extent.
+        """
         self.extent = None
         for r in self.resources.exclude(extent=None):
             if self.extent:
@@ -306,6 +309,11 @@ class Resource(LifecycleModelMixin, RulesModel):
             return {}
 
     def infer_metadata(self, deferred=True):
+        """
+        Infer the metadata of the resource. For generic resources this
+        only checks if the uri supports HTTP protocol and in case extracts
+        the http headers using the HEAD method.
+        """
         if self.is_metadata_manual:
             return
 
@@ -329,6 +337,11 @@ class Resource(LifecycleModelMixin, RulesModel):
         on_commit=True,
     )
     def populate(self):
+        """
+        Automatically infer metadata when the URI changes
+
+        **NOTE**: this is triggered by LifecycleModelMixin after saving the model
+        """
         self.__class__.objects.get_subclass(id=self.pk).infer_metadata()
 
     def get_edit_url(self):
@@ -343,6 +356,14 @@ class Resource(LifecycleModelMixin, RulesModel):
 
     @transaction.atomic()
     def to_class(self, cls):
+        """
+        Convert the current resource to another subclass of Resource.
+
+        Args:
+            cls (Type[Resource]): The desired subclass to convert to.
+        Raises:
+            TypeError: If the desired class is not a subclass of Resource.
+        """
         cursor = connection.cursor()
         if cls != self.__class__:
             if issubclass(cls, Resource):
@@ -406,6 +427,13 @@ class RasterResource(Resource):
 
     @property
     def preview_url(self):
+        """
+        Return a URL to preview the resource using titiler
+        **NOTE** this only works for cloud optimized geotiffs
+
+        Returns:
+            url (str): the url of the preview as a TMS endpoint
+        """
         params = {
             **self.titiler,
             "url": self.uri,
@@ -442,6 +470,12 @@ class RasterResource(Resource):
         return settings.DATASETS_TITILER_URL + "/cog/preview/?" + urlencode(params)
 
     def infer_metadata(self, deferred=True):
+        """
+        Infer the metadata of the resuurce using GDAL.
+
+        Args:
+            deferred (bool): should the inference be executed in a deferred task?
+        """
         if self.is_metadata_manual:
             return
 
@@ -516,6 +550,12 @@ class TabularResource(Resource):
         return "tabular"
 
     def infer_metadata(self, deferred=True):
+        """
+        Infer the metadata of the resuurce using GDAL.
+
+        Args:
+            deferred (bool): should the inference be executed in a deferred task?
+        """
         if self.is_metadata_manual:
             return
 
