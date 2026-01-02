@@ -150,12 +150,16 @@
     <c-accordion.item value='related'>
         <c-accordion.trigger value='related' class="text-2xl font-bold"><h3 id="relationships">Relationships</h3></c-accordion.trigger>
         <c-accordion.content value='related'>
+            {% if internal_related_table %}
             <h4 class="text-xl font-bold">DMS Related Datasets</h4>
             <p>All the datasets registered in the DMS that have some relationship to this</p>
             {% render_table internal_related_table %}
+            {% endif %}
+            {% if related_table %}
             <h4 class="text-xl font-bold mt-4">Related Resources</h4>
             <p>Any published resource</p>
             {% render_table related_table %}
+            {% endif %}
         </c-accordion.content>
     </c-accordion.item>
     <c-accordion.item value='contrib'>
