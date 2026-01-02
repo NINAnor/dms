@@ -1,6 +1,7 @@
 volumes:
   pgdata: {}
   statics: {}
+  rustfs-data: {}
 
 x-django-env: &django-env
   DATABASE_URL: "postgis://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres?sslmode=disable"
@@ -199,18 +200,35 @@ services:
     volumes:
       - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:ro
 
-  minio:
-    image: quay.io/minio/minio
-    entrypoint: sh
-    command: -c 'mkdir -p /data/${S3_BUCKET:-dms} && minio server /data --console-address ":9091" --address ":9090"'
+  rustfs:
+    image: rustfs/rustfs:latest
+    command: /data
     ports:
-      - 9090:9090
-      - 9091:9091
+      - 9000:9000
+      - 9001:9001
     volumes:
-      - ./volumes/minio:/data
+      - rustfs-data:/data
     environment:
-      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-}
-      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-}
+      RUSTFS_ACCESS_KEY: ${AWS_ACCESS_KEY_ID:-}
+      RUSTFS_SECRET_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      RUSTFS_CONSOLE_ENABLE: true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.rustfs.rule=Host(`${RUSTFS_HOSTNAME:-rustfs.local}`)"
+      - "traefik.http.routers.rustfs.entrypoints=web"
+      - "traefik.http.routers.rustfs.priority=100"
+      - "traefik.http.services.rustfs.loadbalancer.server.port=9000"
+
+  rustfs-setup:
+    build:
+      context: rustfs-setup
+    depends_on:
+      - rustfs
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      BUCKET_HOST: http://rustfs:9000
+      BUCKET_NAME: ${AWS_STORAGE_BUCKET_NAME:-}
 
   titiler:
     image: ghcr.io/ninanor/titiler-app-titiler:next
