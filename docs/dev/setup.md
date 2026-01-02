@@ -16,7 +16,7 @@
 cp .env.example .env
 ```
 
-2. **Configure required environment variables** in `.env`: Only `POSTGRES_PASSWORD` and `DJANGO_SECRET_KEY` are required. For these values you can choose your own
+2. **Configure required environment variables** in `.env`: if using an external bucket make sure to fill the correct values.
 
 3. **Start the application:**
 
@@ -53,11 +53,20 @@ A super user is created on first run with the following credentials:
 - **postgres**: PostGIS-enabled PostgreSQL database
 - **nginx**: Nginx for static file serving (prod only)
 - **traefik**: Reverse proxy
-- **minio**: S3-compatible object storage (dev only)
+- **rustfs**: S3-compatible object storage (dev only)
 - **tusd**: S3 upload service
 - **frontend**: Frontend development server for high interaction pages (dev only)
+- **titiler**: A TMS service to provide previews of COG files
+- **fastdoc**: pandoc converter API (for generating nice documents in multi formats, pdf generation)
 
 ## Development mode
+In development mode it's especially important to set correctly the rustfs endpoint.
+The address of the bucket must be resolvable both by the browser and the docker containers, so:
+- if you are using an external bucket, set the `AWS` variables ignoring rustfs
+- if you have `sudo`, edit `/etc/hosts` adding `rustfs.local`
+- if you don't have `sudo`, use your computer hostname (execute `hostname` in any shell)
+
+This will ensure that your browser works and docker will fallback to host for domain resolution (localhost instead would be resolved in the running container)
 
 **Start development environment:**
 
