@@ -992,7 +992,6 @@ dependencies = [
     { name = "drf-spectacular" },
     { name = "drf-standardized-errors", extra = ["openapi"] },
     { name = "fontawesomefree" },
-    { name = "gdal" },
     { name = "langdetect" },
     { name = "mistune" },
     { name = "pillow" },
@@ -1000,7 +999,6 @@ dependencies = [
     { name = "psycopg", extra = ["binary", "pool"] },
     { name = "pyjwt", extra = ["crypto"] },
     { name = "pylatex" },
-    { name = "pyproj" },
     { name = "python-slugify" },
     { name = "requests" },
     { name = "rules" },
@@ -1038,13 +1036,19 @@ docs = [
     { name = "neoteroi-mkdocs" },
     { name = "pymdown-extensions" },
 ]
+gis = [
+    { name = "gdal" },
+    { name = "pyproj" },
+]
 ldap = [
     { name = "django-auth-ldap" },
     { name = "python-ldap" },
 ]
 prod = [
     { name = "django-auth-ldap" },
+    { name = "gdal" },
     { name = "gunicorn" },
+    { name = "pyproj" },
     { name = "python-ldap" },
 ]
 test = [
@@ -1103,7 +1107,6 @@ requires-dist = [
     { name = "drf-spectacular", specifier = ">=0.27.2" },
     { name = "drf-standardized-errors", extras = ["openapi"] },
     { name = "fontawesomefree" },
-    { name = "gdal", specifier = "==3.11.2" },
     { name = "langdetect" },
     { name = "mistune" },
     { name = "pillow", specifier = "==11.1.0" },
@@ -1111,7 +1114,6 @@ requires-dist = [
     { name = "psycopg", extras = ["binary", "pool"], specifier = ">=3.2.4" },
     { name = "pyjwt", extras = ["crypto"], specifier = ">=2.9.0" },
     { name = "pylatex" },
-    { name = "pyproj" },
     { name = "python-slugify", specifier = ">=8.0.1" },
     { name = "requests" },
     { name = "rules", specifier = ">=3.3" },
@@ -1149,13 +1151,19 @@ docs = [
     { name = "neoteroi-mkdocs" },
     { name = "pymdown-extensions" },
 ]
+gis = [
+    { name = "gdal", specifier = "==3.11.2" },
+    { name = "pyproj" },
+]
 ldap = [
     { name = "django-auth-ldap" },
     { name = "python-ldap" },
 ]
 prod = [
     { name = "django-auth-ldap" },
+    { name = "gdal", specifier = "==3.11.2" },
     { name = "gunicorn" },
+    { name = "pyproj" },
     { name = "python-ldap" },
 ]
 test = [
