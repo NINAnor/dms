@@ -51,7 +51,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 FROM production AS translation
 COPY --from=source /app .
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync
+    uv sync --group prod
 ENV DJANGO_SETTINGS_MODULE="dms.core.settings.test"
 ENV DATABASE_URL=""
 RUN uv run manage.py compilemessages -l no
@@ -59,7 +59,7 @@ RUN uv run manage.py compilemessages -l no
 FROM production AS tailwind
 COPY --from=source /app .
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync
+    uv sync --group prod
 ENV DJANGO_SETTINGS_MODULE="dms.core.settings.test"
 ENV DATABASE_URL=""
 RUN uv run manage.py tailwind install
