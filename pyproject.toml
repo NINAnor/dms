@@ -16,8 +16,12 @@ dev = [
   "python-semantic-release>=10.5.3"
 ]
 docs = ["mkdocs", "mkdocs-material", "pymdown-extensions", "neoteroi-mkdocs", "mkdocstrings[python]"]
+gis = [
+  "gdal==3.11.2",
+  "pyproj"
+]
 ldap = ["python-ldap", "django-auth-ldap"]
-prod = ["gunicorn", {include-group = "ldap"}]
+prod = ["gunicorn", {include-group = "ldap"}, {include-group = "gis"}]
 test = [
   "pytest",
   "pytest-sugar",
@@ -71,9 +75,6 @@ dependencies = [
   "dj-rest-auth",
   "drf-standardized-errors[openapi]",
   "djangorestframework-simplejwt",
-  # gis
-  "gdal==3.11.2",
-  "pyproj",
   # queue
   "procrastinate[django]>=3.0.0",
   "setuptools>=75.8.0",
