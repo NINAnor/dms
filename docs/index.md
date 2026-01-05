@@ -2,6 +2,7 @@
 The NINA DMS is a platform for managing and linking together information that is usually scattered across different systems and formats. The system is designed to handle references between datasets, projects and IT Services.
 
 ## Key Features and design principles
+
 - **Internal**: the system is designed to be hosted and used within an organization, not as a public web service.
 - **Transparency**: all datasets and projects are visible to all users, promoting openness and collaboration.
 - **Relationships**: the system promotes the linking between the managed entities, allowing to have a centralized view of:
