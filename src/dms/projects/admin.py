@@ -9,6 +9,7 @@ from solo.admin import SingletonModelAdmin
 from .models import (
     DMP,
     Category,
+    DMPSchema,
     Project,
     ProjectMembership,
     ProjectsConfiguration,
@@ -56,6 +57,11 @@ class SectionAdmin(admin.ModelAdmin):
 
 @admin.register(DMP)
 class DMPAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(DMPSchema)
+class DMPSchemaAdmin(admin.ModelAdmin):
     pass
 
 

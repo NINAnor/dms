@@ -6,6 +6,7 @@ from taggit.models import Tag
 from dms.datasets.autocomplete import DatasetAutocomplete
 from dms.projects.autocomplete import (
     CategoryAutocomplete,
+    DMPSchemaAutocomplete,
     MyProjectAutocomplete,
     ProjectAutocomplete,
     ProjectTopicAutocomplete,
@@ -33,6 +34,11 @@ urlpatterns = [
     path("projects/project/", ProjectAutocomplete.as_view(), name="project"),
     path("projects/my-project/", MyProjectAutocomplete.as_view(), name="my_project"),
     path("projects/topic/", ProjectTopicAutocomplete.as_view(), name="project_topic"),
+    path(
+        "projects/dmp-schema/",
+        DMPSchemaAutocomplete.as_view(),
+        name="project_dmpschema",
+    ),
     path("user/", UserAutocomplete.as_view(), name="user"),
     path("tag/", TagAutocomplete.as_view(), name="tag"),
     path("datasets/dataset/", DatasetAutocomplete.as_view(), name="dataset"),

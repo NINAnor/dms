@@ -59,7 +59,7 @@
 <div class="mt-5">
     {% if dmp.is_external %}
     <p>Reference to the external DMP:<br /><b>{{ dmp.external_reference|default_if_none:"No reference provided"}}</b></p>
-    {% elif projects_config.dmp_survey_config %}
+    {% elif dmp.schema %}
     <div id="surveyContainer"></div>
     {% csrf_token %}
     {% else %}

@@ -21,7 +21,7 @@ from dms.services.tables import ServiceTable
 from .filters import DMPFilter, ProjectFilter
 from .forms import DMPForm, ProjectForm
 from .libs.render_latex import render_to_tex
-from .models import DMP, Project, ProjectsConfiguration
+from .models import DMP, Project
 from .tables import DMPTable, ProjectTable
 
 
@@ -113,9 +113,7 @@ class DMPDetailView(PermissionRequiredMixin, DetailBreadcrumbMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["projects_config"] = self.object.schema or (
-            ProjectsConfiguration.get_solo().dmp_survey_config.config
-        )
+        ctx["projects_config"] = self.object.schema
         return ctx
 
 
@@ -141,12 +139,7 @@ class DMPPreviewView(PermissionRequiredMixin, DetailView):
         else:
             selected_format = self.formats[format_param]
 
-        conf = (
-            self.object.schema
-            or ProjectsConfiguration.objects.select_related("dmp_survey_config")
-            .first()
-            .dmp_survey_config.config
-        )
+        conf = self.object.schema
 
         if self.object.data == {}:
             return HttpResponse(
