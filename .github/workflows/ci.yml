@@ -22,6 +22,10 @@ jobs:
   pytest:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+      pull-requests: write
+
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@v4
@@ -41,7 +45,20 @@ jobs:
         run: docker compose --profile dev run --rm django-dev uv run manage.py spectacular --validate
 
       - name: Run Django Tests
-        run: docker compose --profile dev run django-dev uv run pytest src
+        run: docker compose --profile dev run django-dev uv run pytest
 
       - name: Tear down the Stack
         run: docker compose --profile dev down
+
+      - name: Code Coverage Summary
+        uses: insightsengineering/coverage-action@v3
+        with:
+          path: ./media/cov.xml
+          threshold: 50
+          fail: true
+          publish: true
+          diff: true
+          uncovered-statements-increase-failure: false
+          new-uncovered-statements-failure: false
+          coverage-rate-reduction-failure: true
+          token: ${{ github.token }}
