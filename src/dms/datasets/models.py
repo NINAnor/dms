@@ -1,4 +1,5 @@
 import json
+import re
 import traceback
 import uuid
 from urllib.parse import urlencode
@@ -17,7 +18,7 @@ from django.utils.timezone import now
 from django.utils.translation import gettext as _
 from django_jsonform.models.fields import ArrayField
 from django_jsonform.models.fields import JSONField as JSONBField
-from django_lifecycle import AFTER_SAVE, LifecycleModelMixin, hook
+from django_lifecycle import AFTER_SAVE, BEFORE_SAVE, LifecycleModelMixin, hook
 from django_lifecycle.conditions import WhenFieldHasChanged
 from model_utils.managers import InheritanceManager
 from osgeo import gdal  # type: ignore[import]
@@ -485,6 +486,17 @@ class RasterResource(Resource):
             )
             return
 
+        if not re.search(r"^https?://", self.uri):
+            self.last_sync = {
+                "status": "not started",
+                "timestamp": now(),
+                "error": "resource is not reachable",
+                "warnings": [],
+            }
+            self.metadata = {}
+            self.save(update_fields=["last_sync", "metadata"])
+            return
+
         try:
             # Disable permenent auxillary files to prevent GDAL
             # creating a stats file with a remote resource
@@ -504,13 +516,23 @@ class RasterResource(Resource):
 
                     self.metadata = metadata
                     self.last_sync = {"timestamp": now(), "status": "ok"}
-                    self.extent = GEOSGeometry(json.dumps(metadata.get("wgs84Extent")))
-                    self.save(update_fields=["metadata", "last_sync", "extent"])
+                    self.save(update_fields=["metadata", "last_sync"])
         except Exception as e:
             self.last_sync = {"status": "fail", "timestamp": now(), "error": str(e)}
             self.metadata = {}
-            self.extent = None
-            self.save(update_fields=["last_sync", "metadata", "extent"])
+            self.save(update_fields=["last_sync", "metadata"])
+
+    @hook(
+        BEFORE_SAVE,
+        condition=WhenFieldHasChanged("metadata", has_changed=True),
+    )
+    def _extract_from_metadata(self):
+        try:
+            self.extent = GEOSGeometry(json.dumps(self.metadata.get("wgs84Extent")))
+            self.save(update_fields=["extent"])
+        except Exception:
+            self.last_sync["warnings"].append(traceback.format_exc())
+            self.save(update_fields=["warnings"])
 
     def get_edit_url(self):
         return reverse(
@@ -565,6 +587,17 @@ class TabularResource(Resource):
             )
             return
 
+        if not re.search(r"^https?://", self.uri):
+            self.last_sync = {
+                "status": "not started",
+                "timestamp": now(),
+                "error": "resource is not reachable",
+                "warnings": [],
+            }
+            self.metadata = {}
+            self.save(update_fields=["last_sync", "metadata"])
+            return
+
         try:
             with gdal.Run(
                 "vector",
@@ -580,59 +613,17 @@ class TabularResource(Resource):
 
                 self.metadata = metadata
                 self.last_sync = {"timestamp": now(), "status": "ok", "warnings": []}
-                with transaction.atomic():
-                    layers = self.metadata.get("layers", [])
 
-                    tables = []
-                    coverage = None
-                    for layer in layers:
-                        geometries = layer.get("geometryFields", [])
-                        extent = None
-
-                        try:
-                            if len(geometries):
-                                geom = geometries[0]
-
-                                extent = Polygon.from_bbox(geom.get("extent"))
-                                extent.srid = int(
-                                    geom.get("coordinateSystem")
-                                    .get("projjson")
-                                    .get("id")
-                                    .get("code")
-                                )
-
-                                if extent.srid != 4326:
-                                    extent.transform(4326)
-
-                                coverage = (
-                                    extent if not coverage else coverage.union(extent)
-                                )
-                        except Exception:
-                            self.last_sync["warnings"].append(traceback.format_exc())
-
-                        tables.append(
-                            DataTable(
-                                name=layer.get("name").replace("_gdal_http_", ""),
-                                fields=layer.get("fields", []),
-                                metadata=layer.get("metadata", {}),
-                                resource=self,
-                                count=layer.get("featureCount"),
-                                geometryFields=geometries,
-                                extent=extent,
-                            )
-                        )
-
-                    DataTable.objects.filter(resource=self).delete()
-                    DataTable.objects.bulk_create(tables)
-
-                    self.extent = coverage
-
-                    self.save(update_fields=["metadata", "last_sync", "extent"])
+                self.save(
+                    update_fields=[
+                        "metadata",
+                        "last_sync",
+                    ]
+                )
 
         except Exception as e:
             self.last_sync = {"status": "fail", "timestamp": now(), "error": str(e)}
             self.metadata = {}
-            self.extent = None
             self.save(update_fields=["last_sync", "metadata"])
 
     def get_edit_url(self):
@@ -640,6 +631,62 @@ class TabularResource(Resource):
             "datasets:tabularresource_update",
             kwargs={"dataset_pk": self.dataset_id, "pk": self.pk},
         )
+
+    @hook(
+        BEFORE_SAVE,
+        condition=WhenFieldHasChanged("metadata", has_changed=True),
+    )
+    def _extract_from_metadata(self):
+        """
+        Extract from GDAL's ogrinfo output the:
+        - layers, with structure and CRS
+        - extent
+        """
+        with transaction.atomic():
+            layers = self.metadata.get("layers", [])
+
+            tables = []
+            coverage = None
+            for layer in layers:
+                geometries = layer.get("geometryFields", [])
+                extent = None
+
+                try:
+                    if len(geometries):
+                        geom = geometries[0]
+
+                        extent = Polygon.from_bbox(geom.get("extent"))
+                        extent.srid = int(
+                            geom.get("coordinateSystem")
+                            .get("projjson")
+                            .get("id")
+                            .get("code")
+                        )
+
+                        if extent.srid != 4326:
+                            extent.transform(4326)
+
+                        coverage = extent if not coverage else coverage.union(extent)
+                except Exception:
+                    self.last_sync["warnings"].append(traceback.format_exc())
+
+                tables.append(
+                    DataTable(
+                        name=layer.get("name").replace("_gdal_http_", ""),
+                        fields=layer.get("fields", []),
+                        metadata=layer.get("metadata", {}),
+                        resource=self,
+                        count=layer.get("featureCount"),
+                        geometryFields=geometries,
+                        extent=extent,
+                    )
+                )
+
+            DataTable.objects.filter(resource=self).delete()
+            DataTable.objects.bulk_create(tables)
+
+            self.extent = coverage
+            self.save(update_fields=["extent", "last_sync"])
 
 
 class PartitionedResource(Resource):
