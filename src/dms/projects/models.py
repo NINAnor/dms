@@ -74,10 +74,32 @@ def upload_external_dmp(instance, filename):
     return f"dmps/{instance.id}/external{Path(filename).suffix}"
 
 
+class DMPSchema(RulesModel):
+    name = models.CharField()
+    config = models.JSONField(default=dict)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    disabled_at = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        rules_permissions = {
+            "add": rules.is_staff,
+            "view": rules.always_allow,
+            "change": rules.is_staff,
+            "delete": rules.is_staff,
+        }
+
+
 class DMP(RulesModel):
     name = models.CharField()
     data = models.JSONField(null=True, blank=True)
     schema = models.JSONField(null=True, blank=True)
+    schema_from = models.ForeignKey(
+        "DMPSchema", on_delete=models.SET_NULL, null=True, blank=True
+    )
     project = models.OneToOneField(
         "Project", null=True, blank=True, on_delete=models.SET_NULL, related_name="dmp"
     )

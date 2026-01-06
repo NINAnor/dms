@@ -1,6 +1,6 @@
 from dal import autocomplete
 
-from .models import Category, Project, ProjectTopic, Section
+from .models import Category, DMPSchema, Project, ProjectTopic, Section
 
 
 class ProjectAutocomplete(autocomplete.Select2QuerySetView):
@@ -44,3 +44,10 @@ class MyProjectAutocomplete(autocomplete.Select2QuerySetView):
         if self.request.user.is_authenticated:
             qs = qs.filter(members__user=self.request.user)
         return qs
+
+
+class DMPSchemaAutocomplete(autocomplete.Select2QuerySetView):
+    model = DMPSchema
+    search_fields = [
+        "name",
+    ]

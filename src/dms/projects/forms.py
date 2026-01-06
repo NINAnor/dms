@@ -3,7 +3,7 @@ from crispy_forms.layout import Submit
 from dal import autocomplete
 from django import forms
 
-from .models import DMP, Project, ProjectMembership, ProjectsConfiguration
+from .models import DMP, Project, ProjectMembership
 
 
 class ProjectForm(forms.ModelForm):
@@ -42,6 +42,11 @@ class DMPForm(forms.ModelForm):
         self.helper.include_media = False
         self.helper.add_input(Submit("submit", "Submit"))
 
+        print(self.initial)
+
+        if self.initial.get("schema_from"):
+            del self.fields["schema_from"]
+
         self.user = user
         self.fields["project"].queryset = Project.objects.filter(
             number__in=user.memberships.filter(
@@ -52,11 +57,23 @@ class DMPForm(forms.ModelForm):
     def save(self, *args, **kwargs):
         instance = super().save(commit=False)
         instance.owner = self.user
-        instance.schema = ProjectsConfiguration.get_solo().dmp_survey_config.config
+        if not instance.schema:
+            instance.schema = instance.schema_from.config
         instance.save()
         self.save_m2m()
         return instance
 
     class Meta:
         model = DMP
-        fields = ["name", "project", "external_reference", "external_file"]
+        fields = [
+            "name",
+            "schema_from",
+            "project",
+            "external_reference",
+            "external_file",
+        ]
+        widgets = {
+            "schema_from": autocomplete.ModelSelect2(
+                url="autocomplete:project_dmpschema"
+            ),
+        }
