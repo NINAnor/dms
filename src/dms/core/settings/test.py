@@ -33,3 +33,5 @@ TEMPLATES[0]["OPTIONS"]["debug"] = True  # type: ignore # noqa: F405
 MEDIA_URL = "http://media.testserver/"
 # Your stuff...
 # ------------------------------------------------------------------------------
+
+STORAGES["default"]["BACKEND"] = "django.core.files.storage.InMemoryStorage"  # noqa: F405
