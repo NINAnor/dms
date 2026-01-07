@@ -321,7 +321,17 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
                     "spatial": is_spatial,
                 }
             )
-
+        elif (
+            self.object.metadata
+            and self.object.metadata.get("driverShortName") == "GRASS"
+        ):
+            snippets.append(
+                {
+                    "template": BASE_TEMPLATE_PATH + "grass-vector",
+                    "lang": "bash",
+                    "title": "Grass GIS",
+                }
+            )
         return {
             "snippets": snippets,
             "snippets_default": snippets[0].get("template") if snippets else "",
@@ -335,7 +345,18 @@ class ResourceDetailView(PermissionRequiredMixin, DetailView):
 
         BASE_TEMPLATE_PATH = "datasets/snippets/"
 
-        if self.object.metadata and self.object.metadata.get("driverShortName"):
+        if (
+            self.object.metadata
+            and self.object.metadata.get("driverShortName") == "GRASS"
+        ):
+            snippets.append(
+                {
+                    "template": BASE_TEMPLATE_PATH + "grass-raster",
+                    "lang": "bash",
+                    "title": "Grass GIS",
+                }
+            )
+        elif self.object.metadata and self.object.metadata.get("driverShortName"):
             snippets.append(
                 {
                     "template": BASE_TEMPLATE_PATH + "r-terra",
