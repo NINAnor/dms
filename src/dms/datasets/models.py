@@ -18,7 +18,7 @@ from django.utils.timezone import now
 from django.utils.translation import gettext as _
 from django_jsonform.models.fields import ArrayField
 from django_jsonform.models.fields import JSONField as JSONBField
-from django_lifecycle import AFTER_SAVE, BEFORE_SAVE, LifecycleModelMixin, hook
+from django_lifecycle import AFTER_SAVE, LifecycleModelMixin, hook
 from django_lifecycle.conditions import WhenFieldHasChanged
 from model_utils.managers import InheritanceManager
 from osgeo import gdal  # type: ignore[import]
@@ -528,10 +528,15 @@ class RasterResource(Resource):
             self.save(update_fields=["last_sync", "metadata"])
 
     @hook(
-        BEFORE_SAVE,
+        AFTER_SAVE,
         condition=WhenFieldHasChanged("metadata", has_changed=True),
     )
     def _extract_from_metadata(self):
+        if not self.last_sync:
+            self.last_sync = {
+                "status": "never",
+                "warnings": [],
+            }
         try:
             self.extent = GEOSGeometry(json.dumps(self.metadata.get("wgs84Extent")))
             self.save(update_fields=["extent"])
@@ -643,7 +648,7 @@ class TabularResource(Resource):
         )
 
     @hook(
-        BEFORE_SAVE,
+        AFTER_SAVE,
         condition=WhenFieldHasChanged("metadata", has_changed=True),
     )
     def _extract_from_metadata(self):
@@ -652,6 +657,12 @@ class TabularResource(Resource):
         - layers, with structure and CRS
         - extent
         """
+        if not self.last_sync:
+            self.last_sync = {
+                "status": "never",
+                "warnings": [],
+            }
+
         with transaction.atomic():
             layers = self.metadata.get("layers", [])
 

@@ -1,0 +1,4 @@
+{% load utils %}
+$ grass {{ uri|parse_uri_part:"path" }}
+
+> v.info map={{ uri|parse_uri_part:"username" }}
