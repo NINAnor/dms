@@ -518,7 +518,12 @@ class RasterResource(Resource):
                     self.last_sync = {"timestamp": now(), "status": "ok"}
                     self.save(update_fields=["metadata", "last_sync"])
         except Exception as e:
-            self.last_sync = {"status": "fail", "timestamp": now(), "error": str(e)}
+            self.last_sync = {
+                "status": "fail",
+                "timestamp": now(),
+                "error": str(e),
+                "warnings": [],
+            }
             self.metadata = {}
             self.save(update_fields=["last_sync", "metadata"])
 
@@ -532,7 +537,7 @@ class RasterResource(Resource):
             self.save(update_fields=["extent"])
         except Exception:
             self.last_sync["warnings"].append(traceback.format_exc())
-            self.save(update_fields=["warnings"])
+            self.save(update_fields=["last_sync"])
 
     def get_edit_url(self):
         return reverse(
@@ -622,7 +627,12 @@ class TabularResource(Resource):
                 )
 
         except Exception as e:
-            self.last_sync = {"status": "fail", "timestamp": now(), "error": str(e)}
+            self.last_sync = {
+                "status": "fail",
+                "timestamp": now(),
+                "error": str(e),
+                "warnings": [],
+            }
             self.metadata = {}
             self.save(update_fields=["last_sync", "metadata"])
 
