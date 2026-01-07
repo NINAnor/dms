@@ -13,4 +13,6 @@ The system integrates with external services like LDAP for authentication, S3-co
 
 
 ## How to setup
+**NOTE**: This project is meant to be run with Docker, other setups are not tested or supported.
+
 Check the [development setup instructions](docs/dev/setup.md) for details on how to get started with development.
