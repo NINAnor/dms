@@ -2,6 +2,10 @@
 {% load rules %}
 {% load render_table from django_tables2 %}
 
+{% block title %}
+{{ object }} | {{ block.super }}
+{% endblock %}
+
 {% block article %}
 
 {% has_perm 'projects.change_project' request.user project as can_edit_project %}

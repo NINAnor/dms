@@ -2,6 +2,10 @@
 {% load leaflet_tags %}
 {% block page-title %}Datasets{% endblock %}
 
+{% block title %}
+Datasets | {{ block.super }}
+{% endblock %}
+
 {% block page-actions %}
 <div class="flex gap-4">
     <a class="btn btn-secondary text-secondary-content" href="{% url 'datasets:resource_list' %}">View Resources</a>

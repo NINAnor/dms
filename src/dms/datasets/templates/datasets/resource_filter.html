@@ -1,6 +1,10 @@
 {% extends 'base_filter.html' %}
 {% load leaflet_tags %}
 
+{% block title %}
+Resources | {{ block.super }}
+{% endblock %}
+
 {% block page-title %}All Resources{% endblock %}
 
 {% block body_javascript %}

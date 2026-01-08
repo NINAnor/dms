@@ -1,6 +1,10 @@
 {% extends "app.html" %}
 {% load crispy_forms_tags static leaflet_tags %}
 
+{% block title %}
+{% if object %}Edit: {{ object }}{% else %}Create Dataset{% endif %} | {{ block.super }}
+{% endblock %}
+
 {% block article %}
 <style>
     .leaflet-container {
