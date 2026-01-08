@@ -5,6 +5,10 @@
 {% load i18n %}
 {% block article %}
 
+{% block title %}
+DMP {{ object }} | {{ block.super }}
+{% endblock %}
+
 {% has_perm 'projects.change_dmp' request.user dmp as can_edit %}
 {% has_perm 'projects.delete_dmp' request.user dmp as can_delete %}
 

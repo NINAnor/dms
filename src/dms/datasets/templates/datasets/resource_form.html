@@ -2,6 +2,10 @@
 {% load crispy_forms_tags static leaflet_tags %}
 {% load django_htmx %}
 
+{% block title %}
+{% if object %}Edit: {{ object }}{% else %}Create Resource{% endif %} | {{ block.super }}
+{% endblock %}
+
 {% block article %}
 <style>
     .leaflet-container {

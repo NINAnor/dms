@@ -5,6 +5,10 @@
 {% load i18n %}
 {% load utils %}
 
+{% block title %}
+{{ object }} | {{ block.super }}
+{% endblock %}
+
 {% block article %}
 
 <div class="flex items-center justify-between">

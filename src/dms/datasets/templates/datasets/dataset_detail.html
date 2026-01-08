@@ -7,6 +7,9 @@
 {% load leaflet_tags %}
 {% load utils %}
 
+{% block title %}
+{{ object }} | {{ block.super }}
+{% endblock %}
 
 {% block body_javascript %}
 {{ block.super }}

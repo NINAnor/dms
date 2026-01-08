@@ -1,5 +1,11 @@
 {% extends 'base_filter.html' %}
 
+
+{% block title %}
+{{ title }} | {{ block.super }}
+{% endblock %}
+
+
 {% block page-title %}{{ title }}{% endblock %}
 
 {% block page-actions %}
