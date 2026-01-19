@@ -9,7 +9,11 @@ from taggit.managers import TaggableManager
 
 from dms.core.models import GenericStringTaggedItem
 
-from .rules import is_owner, project_role_is
+from .rules import (
+    dmp_project_role_is,
+    is_dmp_project_participant,
+    project_role_is,
+)
 
 User = get_user_model()
 
@@ -118,8 +122,8 @@ class DMP(RulesModel):
         rules_permissions = {
             "add": rules.is_authenticated,
             "view": rules.always_allow,
-            "change": is_owner,
-            "delete": is_owner,
+            "change": is_dmp_project_participant,
+            "delete": dmp_project_role_is(ProjectMembership.Role.OWNER),
         }
 
     def __str__(self):

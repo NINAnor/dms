@@ -3,7 +3,7 @@ from crispy_forms.layout import Submit
 from dal import autocomplete
 from django import forms
 
-from .models import DMP, Project, ProjectMembership
+from .models import DMP, Project
 
 
 class ProjectForm(forms.ModelForm):
@@ -49,9 +49,8 @@ class DMPForm(forms.ModelForm):
 
         self.user = user
         self.fields["project"].queryset = Project.objects.filter(
-            number__in=user.memberships.filter(
-                role=ProjectMembership.Role.OWNER
-            ).values_list("project")
+            number__in=user.memberships.values_list("project"),
+            dmp__id=None,
         )
 
     def save(self, *args, **kwargs):
