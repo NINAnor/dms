@@ -148,6 +148,17 @@ class TestDMPForm:
 
     def test_form_project_queryset_filtered_by_user(self, owner_user):
         """Test that project queryset is filtered by user ownership."""
+        schema = DMPSchema.objects.create(
+            name="Test Schema",
+            config={"pages": []},
+        )
+
+        dmp = DMP.objects.create(
+            name="Test DMP",
+            owner=owner_user,
+            schema_from=schema,
+        )
+
         # Create a project where user is owner
         project1 = Project.objects.create(number="P001", start_date=timezone.now())
         ProjectMembership.objects.create(
@@ -164,12 +175,24 @@ class TestDMPForm:
             role=ProjectMembership.Role.MEMBER,
         )
 
+        project3 = Project.objects.create(number="P003", start_date=timezone.now())
+        project4 = Project.objects.create(number="P004", start_date=timezone.now())
+        ProjectMembership.objects.create(
+            project=project4,
+            user=owner_user,
+            role=ProjectMembership.Role.MEMBER,
+        )
+        dmp.project = project4
+        dmp.save()
+
         form = DMPForm(user=owner_user)
         queryset = form.fields["project"].queryset
 
         # Only project1 should be in queryset
         assert project1 in queryset
-        assert project2 not in queryset
+        assert project2 in queryset
+        assert project3 not in queryset
+        assert project4 not in queryset
 
     def test_form_project_field_empty_for_user_without_projects(self):
         """Test that project queryset is empty for user without owned projects."""
