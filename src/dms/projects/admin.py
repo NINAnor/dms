@@ -4,7 +4,6 @@ import traceback
 from django.contrib import admin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
-from solo.admin import SingletonModelAdmin
 
 from .models import (
     DMP,
@@ -12,7 +11,6 @@ from .models import (
     DMPSchema,
     Project,
     ProjectMembership,
-    ProjectsConfiguration,
     ProjectTopic,
     Section,
 )
@@ -87,6 +85,3 @@ class ProjectMembershipAdmin(admin.ModelAdmin):
     search_fields = ["project__number", "project__name", "user__email"]
     list_filter = ["role"]
     list_display = ["project", "user", "role"]
-
-
-admin.site.register(ProjectsConfiguration, SingletonModelAdmin)

@@ -21,7 +21,7 @@ This is the primary application code. Important subpackages:
 - `services/` — service-related apps and endpoints.
 - `frontend/` — Django-side integration for the modern frontend (views to serve the SPA, build config in `frontend/`).
 - `theme/` — UI theme layer, templates and static sources for shared look-and-feel.
-- `uploads/`, `users/`, `surveys/` — smaller apps handling file uploads, user extensions, and surveys.
+- `uploads/`, `users/` — smaller apps handling file uploads, user extensions.
 
 Each app typically contains `models.py`, `admin.py`, `views.py`, `urls.py`, `templates/`, and `migrations/`.
 

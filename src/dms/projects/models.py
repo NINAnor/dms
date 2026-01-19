@@ -5,7 +5,6 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
 from rules.contrib.models import RulesModel
-from solo.models import SingletonModel
 from taggit.managers import TaggableManager
 
 from dms.core.models import GenericStringTaggedItem
@@ -13,18 +12,6 @@ from dms.core.models import GenericStringTaggedItem
 from .rules import is_owner, project_role_is
 
 User = get_user_model()
-
-
-class ProjectsConfiguration(SingletonModel):
-    dmp_survey_config = models.ForeignKey(
-        "surveys.Survey", on_delete=models.PROTECT, null=True, blank=True
-    )
-
-    def __str__(self):
-        return self._meta.verbose_name
-
-    class Meta:
-        verbose_name = "Projects Configuration"
 
 
 class ProjectMembership(models.Model):

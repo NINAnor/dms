@@ -138,7 +138,6 @@ LOCAL_APPS = [
     "dms.theme",
     "dms.frontend",
     "dms.projects",
-    "dms.surveys",
     "dms.datasets",
     "dms.services",
 ]
