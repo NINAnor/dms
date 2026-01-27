@@ -11,7 +11,7 @@ from dms.core.models import GenericStringTaggedItem
 
 from .rules import (
     dmp_project_role_is,
-    is_dmp_project_participant,
+    is_owner,
     project_role_is,
 )
 
@@ -22,6 +22,7 @@ class ProjectMembership(models.Model):
     class Role(models.TextChoices):
         OWNER = "owner", "Leader"
         MANAGER = "manager", "Manager"
+        DATA_MANAGER = "data_manager", "Data Manager"
         MEMBER = "member", "Member"
 
     project = models.ForeignKey(
@@ -122,8 +123,18 @@ class DMP(RulesModel):
         rules_permissions = {
             "add": rules.is_authenticated,
             "view": rules.always_allow,
-            "change": is_dmp_project_participant,
-            "delete": dmp_project_role_is(ProjectMembership.Role.OWNER),
+            "change": rules.is_authenticated
+            & (
+                dmp_project_role_is(ProjectMembership.Role.DATA_MANAGER)
+                | dmp_project_role_is(ProjectMembership.Role.OWNER)
+                | is_owner
+            ),
+            "delete": rules.is_authenticated
+            & (
+                dmp_project_role_is(ProjectMembership.Role.DATA_MANAGER)
+                | dmp_project_role_is(ProjectMembership.Role.OWNER)
+                | is_owner
+            ),
         }
 
     def __str__(self):
