@@ -1,6 +1,6 @@
 import requests
 from django.conf import settings
-from django.db.models import F, Prefetch
+from django.db.models import F, Prefetch, Q
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, UpdateView
@@ -103,7 +103,13 @@ class MyDMPListView(
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            return super().get_queryset().filter(owner=self.request.user)
+            return (
+                super()
+                .get_queryset()
+                .filter(
+                    Q(owner=self.request.user) | Q(project__members=self.request.user)
+                )
+            )
         return super().get_queryset().none()
 
 
