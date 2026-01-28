@@ -46,15 +46,23 @@ class DMPForm(forms.ModelForm):
         self.helper.include_media = False
         self.helper.add_input(Submit("submit", "Submit"))
 
-        print(self.initial)
-
         if self.initial.get("schema_from"):
             del self.fields["schema_from"]
 
         self.user = user
         self.fields["project"].queryset = Project.objects.filter(
-            number__in=user.memberships.values_list("project"),
-            dmp__id=None,
+            (
+                db.models.Q(dmp__id=None)
+                & db.models.Q(
+                    number__in=user.memberships.filter(
+                        role__in=[
+                            ProjectMembership.Role.DATA_MANAGER,
+                            ProjectMembership.Role.OWNER,
+                        ]
+                    ).values_list("project")
+                )
+            )
+            | db.models.Q(pk=self.instance.project_id),
         )
 
     def save(self, *args, **kwargs):
