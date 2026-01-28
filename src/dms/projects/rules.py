@@ -30,6 +30,13 @@ def is_owner(user, instance):
     return instance.owner == user
 
 
+@rules.predicate
+def is_protected(user, instance):
+    if not instance:
+        return True
+    return instance.protected
+
+
 def dmp_project_role_is(role):
     @rules.predicate
     def has_role_in_project(user, dmp):

@@ -267,6 +267,9 @@ class Resource(LifecycleModelMixin, RulesModel):
     tags = TaggableManager(through=GenericStringTaggedItem, blank=True)
 
     extent = gis_models.GeometryField(null=True, blank=True)
+    # metadata_url = models.URLField(
+    #     null=True, blank=True, help_text="URL to the xml file holding the metadata"
+    # )
 
     class Meta:
         rules_permissions = {
