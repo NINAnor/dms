@@ -126,6 +126,10 @@
     {% endif %}
     <a class="btn btn-primary" href="{% url 'projects:project_update' pk=project.number %}">Edit</a>
     {% endif %}
+    {% has_perm 'projects.manage_members_project' user project as can_manage_members %}
+    {% if can_manage_members %}
+    <a class="btn btn-accent" href="{% url 'projects:project_membership_manage' project_pk=project.number %}">Manage members</a>
+    {% endif %}
 </div>
 
 {% endblock article %}

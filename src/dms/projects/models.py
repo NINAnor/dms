@@ -12,18 +12,35 @@ from dms.core.models import GenericStringTaggedItem
 from .rules import (
     dmp_project_role_is,
     is_owner,
+    is_protected,
     project_role_is,
 )
 
 User = get_user_model()
 
 
-class ProjectMembership(models.Model):
-    class Role(models.TextChoices):
-        OWNER = "owner", "Leader"
-        MANAGER = "manager", "Manager"
-        DATA_MANAGER = "data_manager", "Data Manager"
-        MEMBER = "member", "Member"
+class Role(models.TextChoices):
+    OWNER = "owner", "Leader"
+    MANAGER = "manager", "Manager"
+    DATA_MANAGER = "data_manager", "Data Manager"
+    MEMBER = "member", "Member"
+
+    @classmethod
+    def SCHEMA(self):
+        return {
+            "type": "array",
+            "uniqueItems": True,
+            "items": {
+                "type": "string",
+                "choices": [
+                    {"label": label, "value": value} for value, label in Role.choices
+                ],
+            },
+        }
+
+
+class ProjectMembership(RulesModel):
+    Role = Role
 
     project = models.ForeignKey(
         "Project", on_delete=models.CASCADE, related_name="members", db_constraint=False
@@ -35,13 +52,26 @@ class ProjectMembership(models.Model):
         choices=Role,
         default=Role.MEMBER,
     )
+    protected = models.BooleanField(
+        db_default=models.Value(value=False, output_field=models.BooleanField())
+    )
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["project", "user"], name="unique_user_per_project"
+                fields=["project", "user", "role"], name="unique_user_per_project"
             )
         ]
+        rules_permissions = {
+            "add": rules.is_authenticated,
+            "view": rules.always_allow,
+            "change": rules.is_authenticated
+            & ~is_protected
+            & dmp_project_role_is(Role.OWNER),
+            "delete": rules.is_authenticated
+            & ~is_protected
+            & dmp_project_role_is(Role.OWNER),
+        }
 
     def __str__(self) -> str:
         return f"{self.project_id} {self.user} - {self.get_role_display()}"
@@ -202,4 +232,5 @@ class Project(RulesModel):
             "view": rules.always_allow,
             "change": project_role_is(ProjectMembership.Role.OWNER),
             "delete": rules.is_staff,
+            "manage_members": project_role_is(ProjectMembership.Role.OWNER),
         }

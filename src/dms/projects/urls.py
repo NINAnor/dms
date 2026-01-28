@@ -21,4 +21,24 @@ urlpatterns = [
     path("dmps/<int:pk>/preview/", views.DMPPreviewView.as_view(), name="dmp_preview"),
     path("dmps/<int:pk>/edit/", views.DMPUpdateView.as_view(), name="dmp_update"),
     path("dmps/<int:pk>/delete/", views.DMPDeleteView.as_view(), name="dmp_delete"),
+    path(
+        "projects/<str:project_pk>/membership/edit/",
+        views.ProjectMembershipManageView.as_view(),
+        name="project_membership_manage",
+    ),
+    path(
+        "projects/<str:project_pk>/membership/create/",
+        views.ProjectMembershipCreateView.as_view(),
+        name="project_membership_create",
+    ),
+    path(
+        "projects/<str:project_pk>/membership/edit/<int:user_pk>/",
+        views.ProjectMembershipUpdateView.as_view(),
+        name="project_membership_update",
+    ),
+    path(
+        "projects/<str:project_pk>/membership/delete/<int:user_pk>/",
+        views.ProjectMembershipDeleteView.as_view(),
+        name="project_membership_delete",
+    ),
 ]

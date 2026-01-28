@@ -1,9 +1,13 @@
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from dal import autocomplete
-from django import forms
+from django import db, forms
+from django.contrib.auth import get_user_model
+from django_jsonform.forms.fields import JSONFormField
 
-from .models import DMP, Project
+from .models import DMP, Project, ProjectMembership
+
+User = get_user_model()
 
 
 class ProjectForm(forms.ModelForm):
@@ -76,3 +80,33 @@ class DMPForm(forms.ModelForm):
                 url="autocomplete:project_dmpschema"
             ),
         }
+
+
+class ProjectMembershipForm(forms.Form):
+    user = forms.ModelChoiceField(queryset=User.objects.all())
+    roles = JSONFormField(schema=ProjectMembership.Role.SCHEMA)
+
+    def __init__(self, *args, project, replace=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_method = "post"
+        self.helper.form_action = ""
+        self.helper.add_input(Submit("submit", "Submit", **{"hr-post": "."}))
+        self.project = project
+        self.replace = replace
+
+    def save(self, *args, **kwargs):
+        self.user = self.cleaned_data["user"]
+        self.roles = self.cleaned_data["roles"]
+
+        with db.transaction.atomic():
+            if self.replace:
+                self.project.members.filter(user=self.user).exclude(
+                    protected=True
+                ).delete()
+            for role in self.roles:
+                ProjectMembership.objects.get_or_create(
+                    project=self.project,
+                    user=self.user,
+                    role=role,
+                )

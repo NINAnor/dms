@@ -1,9 +1,17 @@
 import requests
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db.models import F, Prefetch, Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DeleteView, DetailView, UpdateView
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    FormView,
+    ListView,
+    UpdateView,
+)
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 from rules.contrib.views import PermissionRequiredMixin
@@ -19,10 +27,12 @@ from dms.datasets.tables import DatasetTable
 from dms.services.tables import ServiceTable
 
 from .filters import DMPFilter, ProjectFilter
-from .forms import DMPForm, ProjectForm
+from .forms import DMPForm, ProjectForm, ProjectMembershipForm
 from .libs.render_latex import render_to_tex
-from .models import DMP, Project
+from .models import DMP, Project, ProjectMembership
 from .tables import DMPTable, ProjectTable
+
+User = get_user_model()
 
 
 class ProjectListView(
@@ -106,9 +116,13 @@ class MyDMPListView(
             return (
                 super()
                 .get_queryset()
+                .select_related("project")
+                .prefetch_related("project__memberships")
                 .filter(
-                    Q(owner=self.request.user) | Q(project__members=self.request.user)
+                    Q(owner=self.request.user)
+                    | Q(project__members__user=self.request.user)
                 )
+                .distinct()
             )
         return super().get_queryset().none()
 
@@ -214,3 +228,120 @@ class DMPDeleteView(PermissionRequiredMixin, DeleteBreadcrumbMixin, DeleteView):
     permission_required = "projects.delete_dmp"
     model = DMP
     success_url = reverse_lazy("projects:dmp_list")
+
+
+class ProjectMembershipManageView(PermissionRequiredMixin, ListView):
+    model = ProjectMembership
+    permission_required = "projects.manage_members_project"
+
+    def get_object(self, *args, **kwargs):
+        return Project.objects.get(pk=self.kwargs["project_pk"])
+
+    def get_template_names(self):
+        if self.request.htmx:
+            return "projects/partials/form.html"
+        return super().get_template_names()
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .filter(project_id=self.kwargs["project_pk"])
+            .order_by("user_id")
+            .distinct("user_id")
+        )
+
+
+class ProjectMembershipCreateView(PermissionRequiredMixin, FormView):
+    form_class = ProjectMembershipForm
+    permission_required = "projects.add_projectmembership"
+    model = ProjectMembership
+
+    def get_template_names(self):
+        if self.request.htmx:
+            return "projects/partials/projectmembership_form.html"
+        return super().get_template_names()
+
+    def get_queryset(self):
+        return super().get_queryset().filter(project_id=self.kwargs["project_pk"])
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["project"] = Project.objects.get(pk=self.kwargs["project_pk"])
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        return HttpResponseRedirect(
+            reverse_lazy(
+                "projects:project_membership_update",
+                kwargs={
+                    "project_pk": self.kwargs["project_pk"],
+                    "user_pk": form.user.pk,
+                },
+            )
+        )
+
+
+class ProjectMembershipUpdateView(PermissionRequiredMixin, FormView):
+    form_class = ProjectMembershipForm
+    permission_required = "projects.manage_members_project"
+
+    def get_template_names(self):
+        if self.request.htmx:
+            return "projects/partials/projectmembership_form.html"
+        return super().get_template_names()
+
+    def get_queryset(self):
+        return super().get_queryset().filter(project_id=self.kwargs["project_pk"])
+
+    def get_object(self, *args, **kwargs):
+        return Project.objects.get(pk=self.kwargs["project_pk"])
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["project"] = Project.objects.get(pk=self.kwargs["project_pk"])
+        kwargs["prefix"] = f"DC{self.kwargs['user_pk']}"
+        kwargs["replace"] = True
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
+
+    def get_initial(self):
+        initial = super().get_initial()
+        roles = ProjectMembership.objects.filter(
+            project_id=self.kwargs["project_pk"], user_id=self.kwargs["user_pk"]
+        ).values_list("role", flat=True)
+        initial["roles"] = list(roles)
+        initial["user"] = User.objects.filter(pk=self.kwargs["user_pk"]).first()
+        return initial
+
+    def get_success_url(self):
+        return reverse_lazy(
+            "projects:project_membership_update",
+            kwargs={
+                "project_pk": self.kwargs["project_pk"],
+                "user_pk": self.kwargs["user_pk"],
+            },
+        )
+
+
+class ProjectMembershipDeleteView(PermissionRequiredMixin, DeleteView):
+    model = ProjectMembership
+    permission_required = "projects.manage_members_project"
+
+    def get_object(self, *args, **kwargs):
+        return Project.objects.get(pk=self.kwargs["project_pk"])
+
+    def get_template_names(self):
+        if self.request.htmx:
+            return "projects/partials/projectmembership_form.html"
+        return super().get_template_names()
+
+    def form_valid(self, form):
+        self.get_object().members.filter(user__pk=self.kwargs["user_pk"]).exclude(
+            protected=True
+        ).delete()
+        return HttpResponse("")
