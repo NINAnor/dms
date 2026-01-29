@@ -1,6 +1,7 @@
 import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db.models import F, Prefetch, Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -239,7 +240,7 @@ class ProjectMembershipManageView(PermissionRequiredMixin, ListView):
 
     def get_template_names(self):
         if self.request.htmx:
-            return "projects/partials/form.html"
+            return "projects/partials/projectmembership_form.html"
         return super().get_template_names()
 
     def get_queryset(self):
@@ -252,10 +253,16 @@ class ProjectMembershipManageView(PermissionRequiredMixin, ListView):
         )
 
 
-class ProjectMembershipCreateView(PermissionRequiredMixin, FormView):
+class ProjectMembershipCreateView(UserPassesTestMixin, FormView):
     form_class = ProjectMembershipForm
-    permission_required = "projects.add_projectmembership"
     model = ProjectMembership
+    template_name = "projects/projectmembership_form.html"
+
+    def test_func(self):
+        self.project = Project.objects.get(pk=self.kwargs["project_pk"])
+        return self.request.user.has_perm(
+            "projects.manage_members_project", self.project
+        )
 
     def get_template_names(self):
         if self.request.htmx:
@@ -267,7 +274,7 @@ class ProjectMembershipCreateView(PermissionRequiredMixin, FormView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs["project"] = Project.objects.get(pk=self.kwargs["project_pk"])
+        kwargs["project"] = self.project
         return kwargs
 
     def form_valid(self, form):
@@ -286,6 +293,7 @@ class ProjectMembershipCreateView(PermissionRequiredMixin, FormView):
 class ProjectMembershipUpdateView(PermissionRequiredMixin, FormView):
     form_class = ProjectMembershipForm
     permission_required = "projects.manage_members_project"
+    template_name = "projects/projectmembership_form.html"
 
     def get_template_names(self):
         if self.request.htmx:
@@ -344,4 +352,14 @@ class ProjectMembershipDeleteView(PermissionRequiredMixin, DeleteView):
         self.get_object().members.filter(user__pk=self.kwargs["user_pk"]).exclude(
             protected=True
         ).delete()
-        return HttpResponse("")
+        print(self.request)
+        if self.request.htmx:
+            return HttpResponse("")
+        else:
+            return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse_lazy(
+            "projects:project_membership_manage",
+            kwargs={"project_pk": self.kwargs["project_pk"]},
+        )
