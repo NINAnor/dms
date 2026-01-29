@@ -7,8 +7,6 @@ from django.utils import timezone
 
 from dms.projects.models import DMP, DMPSchema, Project, ProjectMembership
 
-from ..rules import dmp_project_role_is, is_dmp_project_participant
-
 User = get_user_model()
 
 
@@ -113,234 +111,100 @@ def dmp_test_data():
 
 
 @pytest.mark.django_db(transaction=True)
-class TestIsDmpProjectParticipant:
-    """Test cases for is_dmp_project_participant predicate."""
-
-    def test_authenticated_user_in_project_is_participant(self, dmp_test_data):
-        """Test that authenticated user in project is considered a participant."""
-        ProjectMembership.objects.create(
-            project=dmp_test_data["project1"],
-            user=dmp_test_data["owner_user"],
-            role=ProjectMembership.Role.OWNER,
-        )
-        predicate = is_dmp_project_participant
-        assert (
-            predicate(dmp_test_data["owner_user"], dmp_test_data["dmp_with_project"])
-            is True
-        )
-
-    def test_member_user_in_project_is_participant(self, dmp_test_data):
-        """Test that project member is considered a participant."""
-        ProjectMembership.objects.create(
-            project=dmp_test_data["project1"],
-            user=dmp_test_data["member_user"],
-            role=ProjectMembership.Role.MEMBER,
-        )
-        predicate = is_dmp_project_participant
-        assert (
-            predicate(dmp_test_data["member_user"], dmp_test_data["dmp_with_project"])
-            is True
-        )
-
-    def test_user_not_in_project_is_not_participant(self, dmp_test_data):
-        """Test that user not in project is not a participant."""
-        predicate = is_dmp_project_participant
-        assert (
-            predicate(
-                dmp_test_data["non_member_user"], dmp_test_data["dmp_with_project"]
-            )
-            is False
-        )
-
-    def test_unauthenticated_user_is_not_participant(self, dmp_test_data):
-        """Test that unauthenticated user is not a participant."""
-        unauthenticated_user = AnonymousUser()
-        predicate = is_dmp_project_participant
-        assert (
-            predicate(unauthenticated_user, dmp_test_data["dmp_with_project"]) is False
-        )
-
-    def test_standalone_dmp_allows_any_authenticated_user(self, dmp_test_data):
-        """Test that standalone DMP (no project) does not allow any authenticated user."""  # noqa: E501
-        predicate = is_dmp_project_participant
-        assert (
-            predicate(
-                dmp_test_data["non_member_user2"], dmp_test_data["dmp_without_project"]
-            )
-            is False
-        )
-
-    def test_dmp_with_none_project_allows_authenticated_user(self, dmp_test_data):
-        """Test that DMP with None project allows owner"""
-        dmp = DMP.objects.create(
-            name="DMP with None Project",
-            owner=dmp_test_data["owner_user"],
-            schema_from=dmp_test_data["schema"],
-            project=None,
-        )
-        predicate = is_dmp_project_participant
-        assert predicate(dmp_test_data["owner_user"], dmp) is True
-
-    def test_manager_is_participant(self, dmp_test_data):
-        """Test that project manager is a participant."""
-        ProjectMembership.objects.create(
-            project=dmp_test_data["project1"],
-            user=dmp_test_data["manager_user"],
-            role=ProjectMembership.Role.MANAGER,
-        )
-        predicate = is_dmp_project_participant
-        assert (
-            predicate(dmp_test_data["manager_user"], dmp_test_data["dmp_with_project"])
-            is True
-        )
-
-
-@pytest.mark.django_db(transaction=True)
 class TestDmpProjectRoleIs:
-    """Test cases for dmp_project_role_is predicate factory."""
+    """Test cases for DMP permissions based on project roles."""
 
     def test_owner_role_allows_project_owner(self, dmp_test_data):
-        """Test that user with OWNER role in project can perform owner actions."""
+        """Test that user with OWNER role in project has change permission."""
         ProjectMembership.objects.create(
             project=dmp_test_data["project1"],
             user=dmp_test_data["owner_user"],
             role=ProjectMembership.Role.OWNER,
         )
-        predicate = dmp_project_role_is(ProjectMembership.Role.OWNER)
-        assert (
-            predicate(dmp_test_data["owner_user"], dmp_test_data["dmp_with_project"])
-            is True
+        assert dmp_test_data["owner_user"].has_perm(
+            "projects.change_dmp", dmp_test_data["dmp_with_project"]
         )
 
     def test_owner_role_denies_manager(self, dmp_test_data):
-        """Test that user with MANAGER role cannot perform owner actions."""
+        """Test that user with MANAGER role does not have change permission."""
         ProjectMembership.objects.create(
             project=dmp_test_data["project1"],
             user=dmp_test_data["manager_user"],
             role=ProjectMembership.Role.MANAGER,
         )
-        predicate = dmp_project_role_is(ProjectMembership.Role.OWNER)
-        assert (
-            predicate(dmp_test_data["manager_user"], dmp_test_data["dmp_with_project"])
-            is False
+        assert not dmp_test_data["manager_user"].has_perm(
+            "projects.change_dmp", dmp_test_data["dmp_with_project"]
         )
 
     def test_owner_role_denies_member(self, dmp_test_data):
-        """Test that user with MEMBER role cannot perform owner actions."""
+        """Test that user with MEMBER role does not have change permission."""
         ProjectMembership.objects.create(
             project=dmp_test_data["project1"],
             user=dmp_test_data["member_user"],
             role=ProjectMembership.Role.MEMBER,
         )
-        predicate = dmp_project_role_is(ProjectMembership.Role.OWNER)
-        assert (
-            predicate(dmp_test_data["member_user"], dmp_test_data["dmp_with_project"])
-            is False
+        assert not dmp_test_data["member_user"].has_perm(
+            "projects.change_dmp", dmp_test_data["dmp_with_project"]
         )
 
     def test_owner_role_denies_non_member(self, dmp_test_data):
-        """Test that non-member user cannot perform owner actions."""
-        predicate = dmp_project_role_is(ProjectMembership.Role.OWNER)
-        assert (
-            predicate(
-                dmp_test_data["non_member_user"], dmp_test_data["dmp_with_project"]
-            )
-            is False
+        """Test that non-member user does not have change permission."""
+        assert not dmp_test_data["non_member_user"].has_perm(
+            "projects.change_dmp", dmp_test_data["dmp_with_project"]
         )
 
     def test_dmp_owner_can_perform_owner_actions_without_project(self, dmp_test_data):
-        """Test that DMP owner can perform owner actions on standalone DMP."""
-        predicate = dmp_project_role_is(ProjectMembership.Role.OWNER)
-        assert (
-            predicate(dmp_test_data["owner_user"], dmp_test_data["dmp_without_project"])
-            is True
+        """Test that DMP owner has change permission on standalone DMP."""
+        assert dmp_test_data["owner_user"].has_perm(
+            "projects.change_dmp", dmp_test_data["dmp_without_project"]
         )
 
     def test_non_dmp_owner_cannot_perform_owner_actions_on_standalone(
         self, dmp_test_data
     ):
-        """Test that non-owner cannot perform owner actions on standalone DMP."""
-        predicate = dmp_project_role_is(ProjectMembership.Role.OWNER)
-        assert (
-            predicate(
-                dmp_test_data["member_user"], dmp_test_data["dmp_without_project"]
-            )
-            is False
+        """Test that non-owner does not have change permission on standalone DMP."""
+        assert not dmp_test_data["member_user"].has_perm(
+            "projects.change_dmp", dmp_test_data["dmp_without_project"]
         )
 
-    def test_manager_role_allows_manager(self, dmp_test_data):
-        """Test that user with MANAGER role can perform manager actions."""
+    def test_data_manager_role_allows_data_manager(self, dmp_test_data):
+        """Test that user with DATA_MANAGER role has change permission."""
+        ProjectMembership.objects.create(
+            project=dmp_test_data["project1"],
+            user=dmp_test_data["manager_user"],
+            role=ProjectMembership.Role.DATA_MANAGER,
+        )
+        assert dmp_test_data["manager_user"].has_perm(
+            "projects.change_dmp", dmp_test_data["dmp_with_project"]
+        )
+
+    def test_manager_role_denies_manager(self, dmp_test_data):
+        """Test that user with MANAGER role does not have change permission."""
         ProjectMembership.objects.create(
             project=dmp_test_data["project1"],
             user=dmp_test_data["manager_user"],
             role=ProjectMembership.Role.MANAGER,
         )
-        predicate = dmp_project_role_is(ProjectMembership.Role.MANAGER)
-        assert (
-            predicate(dmp_test_data["manager_user"], dmp_test_data["dmp_with_project"])
-            is True
+        assert not dmp_test_data["manager_user"].has_perm(
+            "projects.change_dmp", dmp_test_data["dmp_with_project"]
         )
 
-    def test_manager_role_allows_owner(self, dmp_test_data):
-        """Test that user with OWNER role cannot perform manager-only actions."""
-        ProjectMembership.objects.create(
-            project=dmp_test_data["project1"],
-            user=dmp_test_data["owner_user"],
-            role=ProjectMembership.Role.OWNER,
-        )
-        predicate = dmp_project_role_is(ProjectMembership.Role.MANAGER)
-        assert (
-            predicate(dmp_test_data["owner_user"], dmp_test_data["dmp_with_project"])
-            is False
-        )
-
-    def test_manager_role_denies_member(self, dmp_test_data):
-        """Test that user with MEMBER role cannot perform manager actions."""
+    def test_member_role_denies_member(self, dmp_test_data):
+        """Test that user with MEMBER role does not have change permission."""
         ProjectMembership.objects.create(
             project=dmp_test_data["project1"],
             user=dmp_test_data["member_user"],
             role=ProjectMembership.Role.MEMBER,
         )
-        predicate = dmp_project_role_is(ProjectMembership.Role.MANAGER)
-        assert (
-            predicate(dmp_test_data["member_user"], dmp_test_data["dmp_with_project"])
-            is False
+        assert not dmp_test_data["member_user"].has_perm(
+            "projects.change_dmp", dmp_test_data["dmp_with_project"]
         )
 
-    def test_member_role_allows_member(self, dmp_test_data):
-        """Test that user with MEMBER role can perform member actions."""
-        ProjectMembership.objects.create(
-            project=dmp_test_data["project1"],
-            user=dmp_test_data["member_user"],
-            role=ProjectMembership.Role.MEMBER,
+    def test_unauthenticated_user_denied_all_permissions(self, dmp_test_data):
+        """Test that unauthenticated user has no change permission."""
+        assert not AnonymousUser().has_perm(
+            "projects.change_dmp", dmp_test_data["dmp_with_project"]
         )
-        predicate = dmp_project_role_is(ProjectMembership.Role.MEMBER)
-        assert (
-            predicate(dmp_test_data["member_user"], dmp_test_data["dmp_with_project"])
-            is True
+        assert not AnonymousUser().has_perm(
+            "projects.change_dmp", dmp_test_data["dmp_without_project"]
         )
-
-    def test_member_role_denies_non_member(self, dmp_test_data):
-        """Test that non-member user cannot perform member actions."""
-        predicate = dmp_project_role_is(ProjectMembership.Role.MEMBER)
-        assert (
-            predicate(
-                dmp_test_data["non_member_user"], dmp_test_data["dmp_with_project"]
-            )
-            is False
-        )
-
-    def test_unauthenticated_user_denied_all_roles(self, dmp_test_data):
-        """Test that unauthenticated user is denied all role-based actions."""
-        unauthenticated_user = AnonymousUser()
-
-        for role in [
-            ProjectMembership.Role.OWNER,
-            ProjectMembership.Role.MANAGER,
-            ProjectMembership.Role.MEMBER,
-        ]:
-            predicate = dmp_project_role_is(role)
-            assert (
-                predicate(unauthenticated_user, dmp_test_data["dmp_with_project"])
-                is False
-            )
