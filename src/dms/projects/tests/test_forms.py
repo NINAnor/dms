@@ -4,7 +4,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from dms.projects.forms import DMPForm, ProjectForm
+from dms.projects.forms import DMPForm, ProjectForm, ProjectMembershipForm
 from dms.projects.models import DMP, DMPSchema, Project, ProjectMembership, ProjectTopic
 
 User = get_user_model()
@@ -290,3 +290,148 @@ class TestDMPForm:
         if form.is_valid():
             dmp = form.save()
             assert dmp.schema == dmp_schema.config
+
+
+@pytest.mark.django_db(transaction=True)
+class TestProjectMembershipForm:
+    """Test cases for ProjectMembershipForm."""
+
+    @pytest.fixture
+    def project(self):
+        """Create a test project."""
+        return Project.objects.create(
+            number="P001",
+            name="Test Project",
+            start_date=timezone.now(),
+        )
+
+    @pytest.fixture
+    def user(self):
+        """Create a test user."""
+        return User.objects.create_user(
+            username="testuser",
+            email="test@example.com",
+            password="testpass123",  # noqa: S106
+        )
+
+    # ========== Form Validation ==========
+
+    def test_form_valid_data(self, project, user):
+        """Test form with valid data."""
+        form_data = {
+            "user": user.id,
+            "roles": [ProjectMembership.Role.MEMBER],
+        }
+        form = ProjectMembershipForm(data=form_data, project=project)
+
+        assert form.is_valid()
+
+    def test_form_valid_with_multiple_roles(self, project, user):
+        """Test form with multiple roles."""
+        form_data = {
+            "user": user.id,
+            "roles": [ProjectMembership.Role.MEMBER, ProjectMembership.Role.MANAGER],
+        }
+        form = ProjectMembershipForm(data=form_data, project=project)
+
+        assert form.is_valid()
+
+    def test_form_requires_user(self, project):
+        """Test that form requires a user."""
+        form_data = {
+            "user": "",
+            "roles": [ProjectMembership.Role.MEMBER],
+        }
+        form = ProjectMembershipForm(data=form_data, project=project)
+
+        assert not form.is_valid()
+
+    def test_form_requires_roles(self, project, user):
+        """Test that form requires roles."""
+        form_data = {
+            "user": user.id,
+            "roles": [],
+        }
+        form = ProjectMembershipForm(data=form_data, project=project)
+
+        assert not form.is_valid()
+
+    # ========== Form Save ==========
+
+    def test_form_save_creates_membership(self, project, user):
+        """Test that saving form creates membership."""
+        form_data = {
+            "user": user.id,
+            "roles": [ProjectMembership.Role.MEMBER],
+        }
+        form = ProjectMembershipForm(data=form_data, project=project)
+
+        assert form.is_valid()
+        form.save()
+
+        assert ProjectMembership.objects.filter(
+            project=project, user=user, role=ProjectMembership.Role.MEMBER
+        ).exists()
+
+    def test_form_save_with_replace_deletes_existing_roles(self, project, user):
+        """Test that save with replace=True removes existing roles."""
+        # Create initial membership
+        ProjectMembership.objects.create(
+            project=project, user=user, role=ProjectMembership.Role.MEMBER
+        )
+
+        form_data = {
+            "user": user.id,
+            "roles": [ProjectMembership.Role.MANAGER],
+        }
+        form = ProjectMembershipForm(data=form_data, project=project, replace=True)
+
+        assert form.is_valid()
+        form.save()
+
+        assert not ProjectMembership.objects.filter(
+            project=project, user=user, role=ProjectMembership.Role.MEMBER
+        ).exists()
+        assert ProjectMembership.objects.filter(
+            project=project, user=user, role=ProjectMembership.Role.MANAGER
+        ).exists()
+
+    def test_form_save_creates_multiple_roles(self, project, user):
+        """Test that saving form creates multiple role memberships."""
+        form_data = {
+            "user": user.id,
+            "roles": [
+                ProjectMembership.Role.MEMBER,
+                ProjectMembership.Role.DATA_MANAGER,
+            ],
+        }
+        form = ProjectMembershipForm(data=form_data, project=project)
+
+        assert form.is_valid()
+        form.save()
+
+        assert ProjectMembership.objects.filter(
+            project=project, user=user, role=ProjectMembership.Role.MEMBER
+        ).exists()
+        assert ProjectMembership.objects.filter(
+            project=project, user=user, role=ProjectMembership.Role.DATA_MANAGER
+        ).exists()
+
+    def test_form_save_idempotent(self, project, user):
+        """Test that saving form multiple times is idempotent."""
+        form_data = {
+            "user": user.id,
+            "roles": [ProjectMembership.Role.MEMBER],
+        }
+        form = ProjectMembershipForm(data=form_data, project=project)
+
+        assert form.is_valid()
+        form.save()
+        form.save()
+
+        assert (
+            ProjectMembership.objects.filter(
+                project=project, user=user, role=ProjectMembership.Role.MEMBER
+            ).count()
+            == 1
+        )
