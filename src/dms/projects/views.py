@@ -308,7 +308,7 @@ class ProjectMembershipUpdateView(PermissionRequiredMixin, FormView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs["project"] = Project.objects.get(pk=self.kwargs["project_pk"])
+        kwargs["project"] = self.get_object()
         kwargs["prefix"] = f"DC{self.kwargs['user_pk']}"
         kwargs["replace"] = True
         return kwargs
