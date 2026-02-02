@@ -25,9 +25,8 @@ mindmap
       UBW
       DMP
     Datasets
-      Catalog
+      Maps
       Metadata
-      DOI
       Sharing
         GBIF
         GeoNorge
@@ -35,7 +34,4 @@ mindmap
         Zenodo
         IPT
         NINA S3
-    Maps
-        Internal
-        Public
 ```
