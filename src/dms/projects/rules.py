@@ -40,7 +40,7 @@ def is_protected(user, instance):
 def dmp_project_role_is(role):
     @rules.predicate
     def has_role_in_project(user, dmp):
-        if user.is_authenticated and dmp.project:
+        if user.is_authenticated and dmp and dmp.project:
             return dmp.project.members.filter(user=user, role=role).exists()
         return False
 
