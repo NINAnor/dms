@@ -118,6 +118,8 @@ class ResourceForm(forms.ModelForm):
         self.helper.form_action = ""
         self.helper.add_input(Submit("submit", "Submit"))
 
+        self.fields["title"].required = True
+
         self.user = user
         self.dataset = dataset
 
