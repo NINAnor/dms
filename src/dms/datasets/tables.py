@@ -25,6 +25,7 @@ class DatasetTable(tables.Table):
             "created_at",
             "last_modified_at",
             "project",
+            "tags",
         )
         template_name = "django_tables2/bootstrap.html"
         order_by = "-last_modified_at"

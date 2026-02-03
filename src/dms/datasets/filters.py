@@ -3,6 +3,7 @@ from dal import autocomplete
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db.models import Q
 from leaflet.forms.widgets import LeafletWidget
+from taggit.models import Tag
 
 from dms.projects.models import Project
 from dms.users.models import User
@@ -39,6 +40,12 @@ class DatasetFilter(filters.FilterSet):
         to_field_name="username",
     )
 
+    tags = filters.ModelMultipleChoiceFilter(
+        queryset=Tag.objects.all(),
+        widget=autocomplete.ModelSelect2Multiple(url="autocomplete:tag"),
+        method="filter_tags",
+    )
+
     def filter_extent(self, queryset, name, value):
         try:
             geom = self.form.cleaned_data.get("extent")
@@ -73,6 +80,11 @@ class DatasetFilter(filters.FilterSet):
             .filter(rank__gt=0.01)
             .order_by("-rank")
         )
+
+    def filter_tags(self, queryset, name, value):
+        if value:
+            return queryset.filter(tags__name__in=value).distinct()
+        return queryset
 
     class Meta:
         model = models.Dataset
