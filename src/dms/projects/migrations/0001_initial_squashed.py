@@ -10,21 +10,6 @@ import dms.projects.models
 
 
 class Migration(migrations.Migration):
-    replaces = [
-        ("projects", "0001_initial"),
-        ("projects", "0002_project_dmp_projectsconfiguration"),
-        ("projects", "0003_alter_project_tags"),
-        ("projects", "0004_remove_project_dmp_dmp"),
-        ("projects", "0005_alter_dmp_project_alter_project_status"),
-        ("projects", "0006_alter_project_status"),
-        ("projects", "0007_projecttopic_project_topics"),
-        ("projects", "0008_dmp_external_file_dmp_external_reference"),
-        ("projects", "0009_dmp_featured_at"),
-        ("projects", "0010_alter_project_tags"),
-        ("projects", "0011_dmp_schema"),
-        ("projects", "0012_dmpschema_dmp_schema_from"),
-    ]
-
     dependencies = [
         ("core", "0001_initial"),
         (
