@@ -27,6 +27,7 @@ class DatasetTable(tables.Table):
             "project",
         )
         template_name = "django_tables2/bootstrap.html"
+        order_by = "-last_modified_at"
 
 
 class ResourceTable(tables.Table):
@@ -48,6 +49,7 @@ class ResourceTable(tables.Table):
             "uri",
         )
         template_name = "django_tables2/bootstrap.html"
+        order_by = "-last_modified_at"
 
 
 class ResourceListTable(ResourceTable):
