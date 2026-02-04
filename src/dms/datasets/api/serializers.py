@@ -86,6 +86,13 @@ class ResourceListSerializer(serializers.HyperlinkedModelSerializer):
             "description",
         )
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Hide URI if the dataset is under embargo
+        if instance.dataset.under_embargo:
+            data["uri"] = None
+        return data
+
 
 class ResourceSerializer(ResourceListSerializer):
     class Meta(ResourceListSerializer.Meta):
