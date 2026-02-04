@@ -49,3 +49,4 @@ class DMPTable(tables.Table):
             "project",
         )
         template_name = "django_tables2/bootstrap.html"
+        order_by = (("-featured_at", "-updated_at"),)
