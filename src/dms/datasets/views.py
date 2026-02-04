@@ -74,7 +74,7 @@ class DatasetListView(
     permission_required = "datasets.view_dataset"
 
     def get_queryset(self):
-        return super().get_queryset().select_related("project")
+        return super().get_queryset().select_related("project").prefetch_related("tags")
 
 
 class ResourceListView(
