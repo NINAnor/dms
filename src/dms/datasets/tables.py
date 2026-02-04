@@ -43,6 +43,11 @@ class ResourceTable(tables.Table):
     def render_resource_type(self, record):
         return record.__class__.__name__
 
+    def render_uri(self, value):
+        if value and (value.startswith("http://") or value.startswith("https://")):
+            return mark_safe(f'<a href="{value}" target="_blank">{value}</a>')  # noqa: S308
+        return value
+
     class Meta:
         model = Resource
         fields = (
@@ -58,7 +63,11 @@ class ResourceTable(tables.Table):
 
 class ResourceListTable(ResourceTable):
     dataset = tables.LinkColumn()
-    project = tables.LinkColumn()
+    project = tables.Column(empty_values=(), orderable=False)
+
+    def render_project(self, record):
+        project = record.dataset.project
+        return mark_safe(f'<a href="{project.get_absolute_url()}">{project}</a>')  # noqa: S308
 
     class Meta(ResourceTable.Meta):
         fields = (
@@ -68,7 +77,6 @@ class ResourceListTable(ResourceTable):
             "last_modified_at",
             "uri",
             "dataset",
-            "project",
         )
         template_name = "django_tables2/bootstrap.html"
 
