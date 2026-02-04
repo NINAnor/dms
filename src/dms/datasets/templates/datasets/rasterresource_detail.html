@@ -5,8 +5,24 @@
 <c-accordion.item value='preview'>
     <c-accordion.trigger value='preview' class="text-2xl font-bold">Preview</c-accordion.trigger>
     <c-accordion.content value='preview'>
-        <img src="{{object.preview_url}}" loading="lazy" />
+        <img id="raster-preview" loading="lazy" />
     </c-accordion.content>
 </c-accordion.item>
+<script>
+    const imgElement = document.getElementById('raster-preview');
+    const imgUrl = "{{object.preview_url}}";
+
+    // Use Intersection Observer to load image lazily when visible
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !imgElement.src) {
+                imgElement.src = imgUrl;
+                observer.unobserve(imgElement);
+            }
+        });
+    });
+
+    observer.observe(imgElement);
+</script>
 {% endif %}
 {% endblock resource_specific_content %}
