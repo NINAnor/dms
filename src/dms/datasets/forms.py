@@ -50,7 +50,7 @@ class DatasetForm(forms.ModelForm):
 
     class Meta:
         model = Dataset
-        fields = ["title", "project", "embargo_end_date", "tags"]
+        fields = ["title", "project", "version", "embargo_end_date", "tags"]
         widgets = {
             "tags": autocomplete.TaggitSelect2(url="autocomplete:tag"),
             "project": autocomplete.ModelSelect2(url="autocomplete:my_project"),
