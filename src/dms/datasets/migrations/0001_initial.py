@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("projects", "0007_projecttopic_project_topics"),
+        ("projects", "0001_initial_squashed"),
     ]
 
     operations = [
