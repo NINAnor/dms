@@ -22,7 +22,13 @@
 </c-accordion.item>
 <script>
     const query = btoa(document.getElementById('datasets/snippets/duckdb-sql-code').textContent.trim());
-    document.getElementById('parquet-preview').src = "{{ DUCKUI_URL }}?query=" + query;
+    const title = "{{ object.title }} - {{ object.id }}";
+    const params = new URLSearchParams({
+        query: query,
+        execute: 'true',
+        title: title
+    });
+    document.getElementById('parquet-preview').src = "{{ DUCKUI_URL }}?" + params.toString();
 </script>
 {% endif %}
 {% endblock resource_specific_content %}
