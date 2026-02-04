@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("projects", "0001_initial_squashed"),
         ("services", "0002_service_projects"),
     ]
 

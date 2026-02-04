@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("projects", "0005_alter_dmp_project_alter_project_status"),
+        ("projects", "0001_initial_squashed"),
     ]
 
     operations = [

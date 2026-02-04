@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("projects", "0005_alter_dmp_project_alter_project_status"),
         ("services", "0001_initial"),
     ]
 
