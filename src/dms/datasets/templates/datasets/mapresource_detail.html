@@ -1,6 +1,7 @@
 {% extends 'datasets/resource_detail_base.html' %}
 
 {% block resource_specific_content %}
+{% if not object.dataset.under_embargo %}
 <c-accordion.item value='preview'>
     <c-accordion.trigger value='preview' class="text-2xl font-bold">Preview</c-accordion.trigger>
     <c-accordion.content value='preview'>
@@ -11,4 +12,5 @@
         {% endif %}
     </c-accordion.content>
 </c-accordion.item>
+{% endif %}
 {% endblock resource_specific_content %}

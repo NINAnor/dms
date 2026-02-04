@@ -1,7 +1,7 @@
 {% extends 'datasets/resource_detail_base.html' %}
 
 {% block resource_specific_content %}
-{% if object.metadata.driverShortName == 'GTiff' and object.metadata.metadata.IMAGE_STRUCTURE.LAYOUT == 'COG' %}
+{% if object.metadata.driverShortName == 'GTiff' and object.metadata.metadata.IMAGE_STRUCTURE.LAYOUT == 'COG' and not object.dataset.under_embargo %}
 <c-accordion.item value='preview'>
     <c-accordion.trigger value='preview' class="text-2xl font-bold">Preview</c-accordion.trigger>
     <c-accordion.content value='preview'>

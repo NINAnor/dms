@@ -43,7 +43,9 @@ class ResourceTable(tables.Table):
     def render_resource_type(self, record):
         return record.__class__.__name__
 
-    def render_uri(self, value):
+    def render_uri(self, value, record):
+        if record.dataset.under_embargo:
+            return None
         if value and (value.startswith("http://") or value.startswith("https://")):
             return mark_safe(f'<a href="{value}" target="_blank">{value}</a>')  # noqa: S308
         return value
@@ -64,6 +66,13 @@ class ResourceTable(tables.Table):
 class ResourceListTable(ResourceTable):
     dataset = tables.LinkColumn()
     project = tables.Column(empty_values=(), orderable=False)
+
+    def render_uri(self, value, record):
+        if record.dataset.under_embargo:
+            return None
+        if value and (value.startswith("http://") or value.startswith("https://")):
+            return mark_safe(f'<a href="{value}" target="_blank">{value}</a>')  # noqa: S308
+        return value
 
     def render_project(self, record):
         project = record.dataset.project

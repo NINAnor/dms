@@ -48,7 +48,7 @@
     </div>
 </div>
 
-<p class="mt-5">Resource path: <a href="{{ object.uri }}">{{ object.uri }}</a></p>
+<p class="mt-5">Resource path: {% if not object.dataset.under_embargo %}<a href="{{ object.uri }}">{{ object.uri }}</a>{% else %}(hidden due to embargo){% endif %}</p>
 <p class="mt-2">Role: <em>{{ object.role|default_if_none:'Not defined' }}</em></p>
 <p class="mt-2">Access type: <em>{{ object.access_type }}</em></p>
 
@@ -98,7 +98,7 @@
         </c-accordion.content>
     </c-accordion.item>
     {% endif %}
-    {% if snippets %}
+    {% if snippets and not object.dataset.under_embargo %}
     <c-accordion.item value='snippets'>
         <c-accordion.trigger value='snippets' class="text-2xl font-bold">Snippets</c-accordion.trigger>
         <c-accordion.content value='snippets'>
