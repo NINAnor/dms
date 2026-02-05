@@ -1,14 +1,19 @@
 {% load i18n static %}
 
-<header class="sticky top-0 z-999 flex w-full navbar bg-white drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none">
+<header class="sticky top-0 z-999 flex w-full navbar bg-white drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none" x-data="{ mobileMenuOpen: false }">
   <div class="flex flex-grow items-center justify-between px-4 py-4 shadow-2 md:px-6 2xl:px-11">
     <div class="text-2xl font-bold uppercase">
       <a class="navbar-brand fw-bolder no-underline flex gap-8 items-center" href="{% url 'home' %}">
         <img src="{% static 'images/logo.png' %}" style="max-width: 100px" />
-        <span class="font-bold">NINA DMS</span>
+        <span class="font-bold hidden sm:inline">NINA DMS</span>
       </a>
     </div>
-    <div>
+    <!-- Mobile menu button -->
+    <button @click="mobileMenuOpen = !mobileMenuOpen" class="sm:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 focus:outline-none">
+      <i class="fas fa-bars fa-lg"></i>
+    </button>
+    <!-- Desktop navigation -->
+    <div class="hidden sm:block">
       <c-navigation-menu>
         <c-navigation-menu.list>
           <c-navigation-menu.item>
@@ -63,6 +68,29 @@
           </c-navigation-menu.item>
         </c-navigation-menu.list>
       </c-navigation-menu>
+    </div>
+  </div>
+  <!-- Mobile menu -->
+  <div x-show="mobileMenuOpen"
+       x-transition
+       class="fixed top-20 left-0 right-0 bg-white shadow-lg z-50 max-h-[calc(100vh-5rem)] overflow-y-auto">
+    <div class="flex flex-col gap-2 p-4">
+      <a href="{% url 'projects:project_list' %}?status=N" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"><i class="fas fa-people-group"></i> Projects</a>
+      <a href="{% url 'datasets:dataset_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"><i class="fas fa-database"></i> Datasets</a>
+      <a href="{% url 'datasets:resource_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"><i class="fas fa-file"></i> Resources</a>
+      <a href="{% url 'services:service_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"><i class="fas fa-server"></i> Services</a>
+      <a href="{% url 'projects:dmp_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"><i class="fas fa-file-shield"></i> Data Management Plans</a>
+      {% if user.is_authenticated %}
+      <hr class="my-2">
+      <a href="{% url 'projects:dmp_list-personal' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"><i class="fas fa-file-shield"></i> My DMPs</a>
+      <a href="{% url 'projects:project_list' %}?participant={{request.user.username}}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"><i class="fas fa-people-group"></i> My Projects</a>
+      {% if user.is_staff %}
+      <a href="{% url 'admin:index' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"><i class="fas fa-cog"></i> Admin</a>
+      {% endif %}
+      <a href="{% url 'account_logout' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"><i class="fas fa-right-from-bracket"></i> Log Out</a>
+      {% else %}
+      <a href="{% url 'account_login' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Login</a>
+      {% endif %}
     </div>
   </div>
 </header>
