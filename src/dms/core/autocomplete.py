@@ -21,7 +21,7 @@ from dms.users.autocomplete import UserAutocomplete
 
 class TagAutocomplete(LoginRequiredMixin, autocomplete.Select2QuerySetView):
     model = Tag
-    search_fields = "name"
+    search_fields = ["name"]
 
     def get_create_option(self, context, q):
         return []
