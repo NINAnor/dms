@@ -15,7 +15,7 @@
 {{ block.super }}
 {% leaflet_js %}
 {% leaflet_css %}
-
+<script src="{% static 'js/map-resize.js' %}"></script>
 {% endblock body_javascript %}
 
 {% block article %}

@@ -1,5 +1,5 @@
 {% extends 'base_filter.html' %}
-{% load leaflet_tags %}
+{% load leaflet_tags static %}
 {% block page-title %}Datasets{% endblock %}
 
 {% block title %}
@@ -17,5 +17,6 @@ Datasets | {{ block.super }}
 {{ block.super }}
 {% leaflet_js plugins="forms" %}
 {% leaflet_css plugins="forms" %}
+<script src="{% static 'js/map-resize.js' %}"></script>
 {{ form.media }}
 {% endblock body_javascript %}

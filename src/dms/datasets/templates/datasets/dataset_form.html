@@ -34,5 +34,6 @@
 {% include "shared/jquery.html" %}
 {% leaflet_js plugins="forms" %}
 {% leaflet_css plugins="forms" %}
+<script src="{% static 'js/map-resize.js' %}"></script>
 {{ form.media }}
 {% endblock body_javascript %}
