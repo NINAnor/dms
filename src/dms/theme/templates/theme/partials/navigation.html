@@ -73,6 +73,7 @@
   <!-- Mobile menu -->
   <div x-show="mobileMenuOpen"
        x-transition
+       x-cloak
        class="fixed top-20 left-0 right-0 bg-white shadow-lg z-50 max-h-[calc(100vh-5rem)] overflow-y-auto">
     <div class="flex flex-col gap-2 p-4">
       <a href="{% url 'projects:project_list' %}?status=N" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"><i class="fas fa-people-group"></i> Projects</a>
