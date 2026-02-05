@@ -39,19 +39,23 @@
     <div class="flex gap-2 flex-wrap sm:gap-4 order-last">
         {% if dataset.project %}<a class="btn btn-primary text-primary-content"
             href="{% url 'projects:project_detail' pk=dataset.project_id %}">Project</a>{% endif %}
-        <a class="btn btn-primary text-primary-content" href="{% url 'datasets:dataset_relationship_list' pk=dataset.id %}">Relationships</a>
+        <a class="btn btn-primary text-primary-content"
+            href="{% url 'datasets:dataset_relationship_list' pk=dataset.id %}">Relationships</a>
         {% has_perm 'datasets.add_dataset' user dataset as can_clone %}
         {% if can_clone %}
         <form class="inline" method="post" action="{% url 'datasets:dataset_clone' pk=dataset.id %}">
             {% csrf_token %}
-            <button type="submit" class="btn btn-secondary text-secondary-content" title="Create a copy of this dataset">
+            <button type="submit" class="btn btn-secondary text-secondary-content"
+                title="Create a copy of this dataset">
                 <i class="fas fa-clone"></i> Clone
             </button>
         </form>
         {% endif %}
         {% if can_change %}
-        <a class="btn btn-primary text-primary-content" href="{% url 'datasets:dataset_update' pk=dataset.id %}">Edit</a>
-        <a class="btn btn-primary text-primary-content" href="{% url 'datasets:dataset_update_metadata' pk=dataset.id %}">Edit Metadata</a>
+        <a class="btn btn-primary text-primary-content"
+            href="{% url 'datasets:dataset_update' pk=dataset.id %}">Edit</a>
+        <a class="btn btn-primary text-primary-content"
+            href="{% url 'datasets:dataset_update_metadata' pk=dataset.id %}">Edit Metadata</a>
         <a class="btn btn-primary text-primary-content"
             href="{% url 'datasets:dataset_contribution_manage' dataset_pk=dataset.pk %}">Contributions</a>
         {% endif %}
@@ -62,8 +66,8 @@
     </div>
 </div>
 
-<div class="flex flex-col lg:flex-row gap-4 lg:gap-2">
-    <div class="order-2 lg:order-1 p-1 w-full lg:w-sm hidden lg:block">
+<div class="flex flex-col lg:flex-row lg:gap-2">
+    <div class="md:order-2 p-1 w-full md:w-60 hidden md:block">
         <ul class="menu sticky top-[70px]">
             <li>
                 <h3 class="menu-title">Table of Contents</h3>
@@ -78,166 +82,180 @@
             </li>
         </ul>
     </div>
-<c-accordion type='multiple' open="{'item-1': false, 'item-2': true, 'contrib': true, 'map': true, 'desc': true, 'related': true}" class="mt-4 grow order-1 lg:order-2 w-full">
-    <c-accordion.item value='desc'>
-        <c-accordion.trigger value='desc' class="text-2xl font-bold"><h3 id="metadata">Metadata</h3></c-accordion.trigger>
-        <c-accordion.content value='desc' class="flex flex-col gap-2">
-            {% for t in object.metadata.titles %}
-            <div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
-                <h4 class="font-bold min-w-fit">{{t.titleType}}</h4>
-                <p>{{t.title}}</p>
-            </div>
-            {% endfor %}
-            {% for d in object.metadata.descriptions %}
-            <div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
-                <h4 class="font-bold min-w-fit">{{d.descriptionType}}</h4>
-                <div>{{d.description|markdown}}</div>
-            </div>
-            {% endfor %}
-            {% if object.metadata.alternateIdentifiers %}
-            <div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
-                <h4 class="font-bold min-w-fit">Unique identifiers</h4>
-                <ul>
-                    {% for i in object.metadata.alternateIdentifiers %}
-                    <li>{{i.alternateIdentifierType}}: {{i.alternateIdentifier}}</li>
-                    {% endfor %}
+    <c-accordion type='multiple'
+        open="{'item-1': false, 'item-2': true, 'contrib': true, 'map': true, 'desc': true, 'related': true}"
+        class="mt-4 grow order-2 lg:order-1 w-full">
+        <c-accordion.item value='desc'>
+            <c-accordion.trigger value='desc' class="text-2xl font-bold">
+                <h3 id="metadata">Metadata</h3>
+            </c-accordion.trigger>
+            <c-accordion.content value='desc' class="flex flex-col gap-2">
+                {% for t in object.metadata.titles %}
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
+                    <h4 class="font-bold min-w-fit">{{t.titleType}}</h4>
+                    <p>{{t.title}}</p>
                 </div>
-            </div>
-            {% endif %}
-            {% if object.metadata.rightsList%}
-            <div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
-                <h4 class="font-bold min-w-fit">Rights and licenses</h4>
-                <div>
-                    {% for r in object.metadata.rightsList %}
-                    <p>{{r.rights}} {{r.rightsIdentifier}} {% if r.rightsURI %}({{r.rightsURI}}){% endif %}</p>
-                    {% endfor %}
+                {% endfor %}
+                {% for d in object.metadata.descriptions %}
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
+                    <h4 class="font-bold min-w-fit">{{d.descriptionType}}</h4>
+                    <div>{{d.description|markdown}}</div>
                 </div>
-            </div>
-            {% endif %}
-            {% if object.metadata.language %}
-            <div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
-                <h4 class="font-bold min-w-fit">Language</h4>
-                <p>{{object.metadata.language}}</p>
-            </div>
-            {% endif %}
-            {% if object.metadata.publicationYear %}
-            <div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
-                <h4 class="font-bold min-w-fit">Publication Year</h4>
-                <p>{{object.metadata.publicationYear}}</p>
-            </div>
-            {% endif %}
-            {% for d in object.metadata.dates %}
-            <div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
-                <h4 class="font-bold min-w-fit">{{d.dateType}}</h4>
-                <p>{{d.date}}{% if d.dateInformation %} - {{ d.dateInformation }}{% endif %}</p>
-            </div>
-            {% endfor %}
-            {% if object.metadata.subjects %}
-            <div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
-                <h4 class="font-bold min-w-fit">Subjects</h4>
-                <ul>
-                    {% for i in object.metadata.subjects %}
-                    <li>{{i.subject}}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
-        </c-accordion.content>
-    </c-accordion.item>
-    {% if object.extent %}
-    <c-accordion.item value='map'>
-        <c-accordion.trigger value='map' class="text-2xl font-bold"><h3 id="spatial-extent">Spatial Extent</h3></c-accordion.trigger>
-        <c-accordion.content value='map'>
-            {% include 'datasets/partials/maplibre.html' with url=FEATURE_URL map_height="400px" %}
-        </c-accordion.content>
-    </c-accordion.item>
-    {% endif %}
-    <c-accordion.item value='related'>
-        <c-accordion.trigger value='related' class="text-2xl font-bold"><h3 id="relationships">Relationships</h3></c-accordion.trigger>
-        <c-accordion.content value='related'>
-            {% if internal_related_table %}
-            <h4 class="text-xl font-bold">DMS Related Datasets</h4>
-            <p>All the datasets registered in the DMS that have some relationship to this</p>
-            {% render_table internal_related_table %}
-            {% endif %}
-            {% if related_table %}
-            <h4 class="text-xl font-bold mt-4">Related Resources</h4>
-            <p>Any published resource</p>
-            {% render_table related_table %}
-            {% endif %}
-        </c-accordion.content>
-    </c-accordion.item>
-    <c-accordion.item value='contrib'>
-        <c-accordion.trigger value='contrib' class="text-2xl font-bold"><h3 id="contributors">Contributors</h3></c-accordion.trigger>
-        <c-accordion.content value='contrib'>
-            {% render_table contributor_table %}
-        </c-accordion.content>
-    </c-accordion.item>
-    {% if object.metadata %}
-    <c-accordion.item value='item-1'>
-        <c-accordion.trigger value='item-1' class="text-2xl font-bold"><h3 id="raw-metadata">Raw Metadata</h3></c-accordion.trigger>
-        <c-accordion.content value='item-1'>
-            {{ metadata_preview|safe }}
-        </c-accordion.content>
-    </c-accordion.item>
-    {% endif %}
-    {% if dataset.under_embargo %}
-    <div class="alert alert-warning mt-4">
-        <div>
-            <i class="fas fa-lock"></i> This dataset is under embargo until {{ dataset.embargo_end_date }}.
-        </div>
+                {% endfor %}
+                {% if object.metadata.alternateIdentifiers %}
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
+                    <h4 class="font-bold min-w-fit">Unique identifiers</h4>
+                    <ul>
+                        {% for i in object.metadata.alternateIdentifiers %}
+                        <li>{{i.alternateIdentifierType}}: {{i.alternateIdentifier}}</li>
+                        {% endfor %}
+                </div>
+</div>
+{% endif %}
+{% if object.metadata.rightsList%}
+<div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
+    <h4 class="font-bold min-w-fit">Rights and licenses</h4>
+    <div>
+        {% for r in object.metadata.rightsList %}
+        <p>{{r.rights}} {{r.rightsIdentifier}} {% if r.rightsURI %}({{r.rightsURI}}){% endif %}</p>
+        {% endfor %}
     </div>
-    {% endif %}
-    <c-accordion.item value='item-2'>
-        <c-accordion.trigger value='item-2' class="text-2xl font-bold"><h3 id="resources">Resources</h3></c-accordion.trigger>
-        <c-accordion.content value='item-2'>
-            {% if can_change %}
-            <c-navigation-menu class="mb-4">
-                <c-navigation-menu.list class="items-center justify-start gap-2 flex-wrap">
-                    <c-navigation-menu.item>
-                        <c-navigation-menu.link class="bg-secondary text-secondary-content"
-                            href='{% url "datasets:resource_create" dataset_pk=dataset.pk %}'>
-                            <i class="fas fa-plus"></i> Generic Resource
-                        </c-navigation-menu.link>
-                    </c-navigation-menu.item>
-                    <c-navigation-menu.item>
-                        <c-navigation-menu.link class="bg-blue-500 text-white"
-                            href='{% url "datasets:mapresource_create" dataset_pk=dataset.pk %}'>
-                            <i class="fas fa-plus"></i> Map Resource <i class="fas fa-map"></i>
-                        </c-navigation-menu.link>
-                    </c-navigation-menu.item>
-                    <c-navigation-menu.item>
-                        <c-navigation-menu.link class="bg-green-500 text-white"
-                            href='{% url "datasets:rasterresource_create" dataset_pk=dataset.pk %}'>
-                            <i class="fas fa-plus"></i> Raster Resource <i class="fas fa-image"></i>
-                        </c-navigation-menu.link>
-                    </c-navigation-menu.item>
-                    <c-navigation-menu.item>
-                        <c-navigation-menu.link class="bg-purple-500 text-white"
-                            href='{% url "datasets:tabularresource_create" dataset_pk=dataset.pk %}'>
-                            <i class="fas fa-plus"></i> Tabular Resource <i class="fas fa-table"></i>
-                        </c-navigation-menu.link>
-                    </c-navigation-menu.item>
-                    {% comment %}
-                    <c-navigation-menu.item>
-                        <c-navigation-menu.link class="bg-orange-500 text-white"
-                            href='{% url "datasets:partitionedresource_create" dataset_pk=dataset.pk %}'>
-                            <i class="fas fa-plus"></i><i class="fas fa-th-large"></i> Partitioned Resource
-                        </c-navigation-menu.link>
-                    </c-navigation-menu.item>
-                    {% endcomment %}
-                    <c-navigation-menu.item>
-                        <c-navigation-menu.link class="bg-secondary text-secondary-content"
-                            href='{% url "datasets:resource_upload" pk=dataset.pk %}'>
-                            <i class="fas fa-upload"></i> Upload Resource
-                        </c-navigation-menu.link>
-                    </c-navigation-menu.item>
-                </c-navigation-menu.list>
-            </c-navigation-menu>
-            {% endif %}
-            {% render_table resource_table %}
-        </c-accordion.content>
-    </c-accordion.item>
+</div>
+{% endif %}
+{% if object.metadata.language %}
+<div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
+    <h4 class="font-bold min-w-fit">Language</h4>
+    <p>{{object.metadata.language}}</p>
+</div>
+{% endif %}
+{% if object.metadata.publicationYear %}
+<div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
+    <h4 class="font-bold min-w-fit">Publication Year</h4>
+    <p>{{object.metadata.publicationYear}}</p>
+</div>
+{% endif %}
+{% for d in object.metadata.dates %}
+<div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
+    <h4 class="font-bold min-w-fit">{{d.dateType}}</h4>
+    <p>{{d.date}}{% if d.dateInformation %} - {{ d.dateInformation }}{% endif %}</p>
+</div>
+{% endfor %}
+{% if object.metadata.subjects %}
+<div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
+    <h4 class="font-bold min-w-fit">Subjects</h4>
+    <ul>
+        {% for i in object.metadata.subjects %}
+        <li>{{i.subject}}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+</c-accordion.content>
+</c-accordion.item>
+{% if object.extent %}
+<c-accordion.item value='map'>
+    <c-accordion.trigger value='map' class="text-2xl font-bold">
+        <h3 id="spatial-extent">Spatial Extent</h3>
+    </c-accordion.trigger>
+    <c-accordion.content value='map'>
+        {% include 'datasets/partials/maplibre.html' with url=FEATURE_URL map_height="400px" %}
+    </c-accordion.content>
+</c-accordion.item>
+{% endif %}
+<c-accordion.item value='related'>
+    <c-accordion.trigger value='related' class="text-2xl font-bold">
+        <h3 id="relationships">Relationships</h3>
+    </c-accordion.trigger>
+    <c-accordion.content value='related'>
+        {% if internal_related_table %}
+        <h4 class="text-xl font-bold">DMS Related Datasets</h4>
+        <p>All the datasets registered in the DMS that have some relationship to this</p>
+        {% render_table internal_related_table %}
+        {% endif %}
+        {% if related_table %}
+        <h4 class="text-xl font-bold mt-4">Related Resources</h4>
+        <p>Any published resource</p>
+        {% render_table related_table %}
+        {% endif %}
+    </c-accordion.content>
+</c-accordion.item>
+<c-accordion.item value='contrib'>
+    <c-accordion.trigger value='contrib' class="text-2xl font-bold">
+        <h3 id="contributors">Contributors</h3>
+    </c-accordion.trigger>
+    <c-accordion.content value='contrib'>
+        {% render_table contributor_table %}
+    </c-accordion.content>
+</c-accordion.item>
+{% if object.metadata %}
+<c-accordion.item value='item-1'>
+    <c-accordion.trigger value='item-1' class="text-2xl font-bold">
+        <h3 id="raw-metadata">Raw Metadata</h3>
+    </c-accordion.trigger>
+    <c-accordion.content value='item-1'>
+        {{ metadata_preview|safe }}
+    </c-accordion.content>
+</c-accordion.item>
+{% endif %}
+{% if dataset.under_embargo %}
+<div class="alert alert-warning mt-4">
+    <div>
+        <i class="fas fa-lock"></i> This dataset is under embargo until {{ dataset.embargo_end_date }}.
+    </div>
+</div>
+{% endif %}
+<c-accordion.item value='item-2'>
+    <c-accordion.trigger value='item-2' class="text-2xl font-bold">
+        <h3 id="resources">Resources</h3>
+    </c-accordion.trigger>
+    <c-accordion.content value='item-2'>
+        {% if can_change %}
+        <c-navigation-menu class="mb-4">
+            <c-navigation-menu.list class="items-center justify-start gap-2 flex-wrap">
+                <c-navigation-menu.item>
+                    <c-navigation-menu.link class="bg-secondary text-secondary-content"
+                        href='{% url "datasets:resource_create" dataset_pk=dataset.pk %}'>
+                        <i class="fas fa-plus"></i> Generic Resource
+                    </c-navigation-menu.link>
+                </c-navigation-menu.item>
+                <c-navigation-menu.item>
+                    <c-navigation-menu.link class="bg-blue-500 text-white"
+                        href='{% url "datasets:mapresource_create" dataset_pk=dataset.pk %}'>
+                        <i class="fas fa-plus"></i> Map Resource <i class="fas fa-map"></i>
+                    </c-navigation-menu.link>
+                </c-navigation-menu.item>
+                <c-navigation-menu.item>
+                    <c-navigation-menu.link class="bg-green-500 text-white"
+                        href='{% url "datasets:rasterresource_create" dataset_pk=dataset.pk %}'>
+                        <i class="fas fa-plus"></i> Raster Resource <i class="fas fa-image"></i>
+                    </c-navigation-menu.link>
+                </c-navigation-menu.item>
+                <c-navigation-menu.item>
+                    <c-navigation-menu.link class="bg-purple-500 text-white"
+                        href='{% url "datasets:tabularresource_create" dataset_pk=dataset.pk %}'>
+                        <i class="fas fa-plus"></i> Tabular Resource <i class="fas fa-table"></i>
+                    </c-navigation-menu.link>
+                </c-navigation-menu.item>
+                {% comment %}
+                <c-navigation-menu.item>
+                    <c-navigation-menu.link class="bg-orange-500 text-white"
+                        href='{% url "datasets:partitionedresource_create" dataset_pk=dataset.pk %}'>
+                        <i class="fas fa-plus"></i><i class="fas fa-th-large"></i> Partitioned Resource
+                    </c-navigation-menu.link>
+                </c-navigation-menu.item>
+                {% endcomment %}
+                <c-navigation-menu.item>
+                    <c-navigation-menu.link class="bg-secondary text-secondary-content"
+                        href='{% url "datasets:resource_upload" pk=dataset.pk %}'>
+                        <i class="fas fa-upload"></i> Upload Resource
+                    </c-navigation-menu.link>
+                </c-navigation-menu.item>
+            </c-navigation-menu.list>
+        </c-navigation-menu>
+        {% endif %}
+        {% render_table resource_table %}
+    </c-accordion.content>
+</c-accordion.item>
 </c-accordion>
 </div>
 
