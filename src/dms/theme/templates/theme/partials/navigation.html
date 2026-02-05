@@ -3,8 +3,9 @@
 <header class="sticky top-0 z-999 flex w-full navbar bg-white drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none">
   <div class="flex flex-grow items-center justify-between px-4 py-4 shadow-2 md:px-6 2xl:px-11">
     <div class="text-2xl font-bold uppercase">
-      <a class="navbar-brand fw-bolder no-underline" href="{% url 'home' %}">
+      <a class="navbar-brand fw-bolder no-underline flex gap-8 items-center" href="{% url 'home' %}">
         <img src="{% static 'images/logo.png' %}" style="max-width: 100px" />
+        <span class="font-bold">NINA DMS</span>
       </a>
     </div>
     <div>
@@ -15,6 +16,23 @@
           </c-navigation-menu.item>
           <c-navigation-menu.item>
             <c-navigation-menu.link href="{% url 'datasets:dataset_list' %}"><i class="fas fa-database"></i> Datasets</c-navigation-menu.link>
+          </c-navigation-menu.item>
+          <c-navigation-menu.item>
+            <c-navigation-menu.trigger index='other'>{% trans 'Other' %}</c-navigation-menu.trigger>
+            <c-navigation-menu.content index='other' class="bg-white md:w-[10rem]">
+              <c-navigation-menu.link href="{% url 'datasets:resource_list' %}">
+                <i class="fas fa-file"></i>
+                {% trans 'Resources' %}
+              </c-navigation-menu.link>
+              <c-navigation-menu.link href="{% url 'services:service_list' %}">
+                <i class="fas fa-server"></i>
+                {% trans 'Services' %}
+              </c-navigation-menu.link>
+              <c-navigation-menu.link href="{% url 'projects:dmp_list' %}">
+                <i class="fas fa-file-shield"></i>
+                {% trans 'Data Management Plans' %}
+              </c-navigation-menu.link>
+            </c-navigation-menu.content>
           </c-navigation-menu.item>
           <c-navigation-menu.item>
           {% if user.is_authenticated %}
