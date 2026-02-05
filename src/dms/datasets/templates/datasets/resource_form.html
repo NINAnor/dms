@@ -24,6 +24,7 @@
 
 {% block body_javascript %}
 {{ block.super }}
+{% include "shared/jquery.html" %}
 {{ form.media }}
 {% htmx_script %}
 {% leaflet_js plugins="forms" %}

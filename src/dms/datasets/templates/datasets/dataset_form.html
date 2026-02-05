@@ -31,8 +31,7 @@
 
 {% block body_javascript %}
 {{ block.super }}
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"
-    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+{% include "shared/jquery.html" %}
 {% leaflet_js plugins="forms" %}
 {% leaflet_css plugins="forms" %}
 {{ form.media }}
