@@ -141,3 +141,11 @@ table.table thead th.asc.orderable a::after {
 .table-container {
   @apply overflow-x-auto;
 }
+
+.select2 {
+  width:100%!important;
+}
+
+.select2-container {
+  min-width: unset !important;
+}
