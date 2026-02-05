@@ -19,11 +19,11 @@
     [&_svg]:size-4
     [&_svg]:shrink-0
 
-    {% if variant == 'default' %}bg-primary text-primary-foreground shadow-sm hover:bg-primary/90
-    {% elif variant == 'destructive' %}bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90
-    {% elif variant == 'outline' %}border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground
-    {% elif variant == 'secondary' %}bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80
-    {% elif variant == 'ghost' %}hover:bg-accent hover:text-accent-foreground
+    {% if variant == 'default' %}bg-primary text-primary-content shadow-sm hover:bg-primary/90
+    {% elif variant == 'destructive' %}bg-destructive text-destructive-content shadow-xs hover:bg-destructive/90
+    {% elif variant == 'outline' %}border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-content
+    {% elif variant == 'secondary' %}bg-secondary text-secondary-content shadow-xs hover:bg-secondary/80
+    {% elif variant == 'ghost' %}hover:bg-accent hover:text-accent-content
     {% elif variant == 'link' %}text-primary underline-offset-4 hover:underline
     {% endif %}
 
