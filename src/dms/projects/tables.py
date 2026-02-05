@@ -28,10 +28,10 @@ class ProjectTable(tables.Table):
         template_name = "django_tables2/bootstrap.html"
 
     def render_tags(self, value, record):
-        return ", ".join(value.all().values_list("name", flat=True))
+        return ", ".join([str(v) for v in value.all()])
 
     def render_topics(self, value, record):
-        return ", ".join(value.all().values_list("id", flat=True))
+        return ", ".join([str(v) for v in value.all()])
 
 
 class DMPTable(tables.Table):

@@ -49,7 +49,7 @@ class ProjectListView(
             super()
             .get_queryset()
             .select_related("category", "section")
-            .prefetch_related("tags")
+            .prefetch_related("tags", "topics")
         )
 
 

@@ -17,7 +17,7 @@ class DatasetTable(tables.Table):
     last_modified_at = tables.DateColumn(format="d/m/Y")
 
     def render_tags(self, value, record):
-        return ", ".join(value.all().values_list("name", flat=True))
+        return ", ".join([str(v) for v in value.all()])
 
     class Meta:
         model = Dataset
