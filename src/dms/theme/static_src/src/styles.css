@@ -137,3 +137,7 @@ table.table thead th.asc.orderable a::after {
 .textarea {
   @apply border border-gray-300 !important;
 }
+
+.table-container {
+  @apply overflow-x-auto;
+}
