@@ -1,5 +1,9 @@
 {% extends 'datasets/resource_detail_base.html' %}
 
+{% block accordion_state %}
+{'meta': false, 'preview': true, 'schema': false, 'snippets': false, 'map': true, 'data': false, 'desc': true, 'user-meta': true}
+{% endblock accordion_state %}
+
 {% block resource_specific_content %}
 {% if not object.dataset.under_embargo %}
 <c-accordion.item value='preview'>
