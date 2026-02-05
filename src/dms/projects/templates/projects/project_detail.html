@@ -13,21 +13,22 @@
 <div class="prose-xl">
     <h1 class="font-bold">{{ project.name }}</h1>
     <p>{{ project.description|default_if_none:'No description provided' }}</p>
-    <div class="flex gap-1">
+    <div class="flex gap-1 flex-wrap">
         {% for tag in object.tags.all %}
         <div class="badge badge-info">{{ tag }}</div>
         {% endfor %}
     </div>
 
     <h2>Additional info</h2>
-    <table class="table table-zebra table-pin-cols table-lg">
-        <thead>
-            <tr>
-                <th>Field</th>
-                <th>Value</th>
-            </tr>
-        </thead>
-        <tbody>
+    <div class="overflow-x-auto">
+        <table class="table table-zebra table-lg min-w-full">
+            <thead>
+                <tr>
+                    <th class="whitespace-nowrap">Field</th>
+                    <th class="whitespace-nowrap">Value</th>
+                </tr>
+            </thead>
+            <tbody>
             <tr>
                 <td>Status</td>
                 <td>{{ project.get_status_display }}</td>
@@ -79,24 +80,26 @@
     </table>
 
     <h2>Involved</h2>
-    <table class="table table-zebra table-pin-cols table-lg">
-        <thead>
-            <tr>
-                <th>User</th>
-                <th>Role</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for member in project.members.all %}
-            {% if member.user %}
-            <tr>
-                <td>{{ member.user }}</td>
-                <td>{{ member.get_role_display }}</td>
-            </tr>
-            {% endif %}
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="overflow-x-auto">
+        <table class="table table-zebra table-lg min-w-full">
+            <thead>
+                <tr>
+                    <th class="whitespace-nowrap">User</th>
+                    <th class="whitespace-nowrap">Role</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in project.members.all %}
+                {% if member.user %}
+                <tr>
+                    <td class="whitespace-nowrap">{{ member.user }}</td>
+                    <td class="whitespace-nowrap">{{ member.get_role_display }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
 
 <c-accordion type='multiple' open="{'item-1': true, 'item-2': true, 'fetch': true}" class="mt-4">
@@ -116,7 +119,7 @@
 
 
 </div>
-<div class="flex mt-5 gap-4">
+<div class="flex flex-wrap gap-2 sm:gap-4 mt-5">
     {% if project.dmp %}
     <a class="btn btn-secondary" href="{% url 'projects:dmp_detail' pk=project.dmp.id %}">DMP</a>
     {% endif %}
