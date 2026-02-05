@@ -9,6 +9,10 @@ Sentry.init({
       colorScheme: "system",
     }),
   ],
+  ignoreErrors: [
+    // Ignore errors from extensions like Grammarly
+    'jQuery is not defined',
+  ],
   tracesSampleRate: 0.2,
   // beforeSend(event, hint) {
   //   if (event.exception && event.event_id) {
