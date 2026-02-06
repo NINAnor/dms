@@ -68,6 +68,7 @@ module.exports = {
           "accent-content": "#fff",
           neutral: "#425563",
           "base-100": "#ffffff",
+          "error-content": "#fff",
         },
       },
     ],
