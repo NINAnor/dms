@@ -15,14 +15,15 @@
         {% render_table table %}
         {% block after-table %}{% endblock %}
       </div>
-      <div class="order-1 lg:order-1 basis-full lg:basis-1/5">
+      <div class="order-1 lg:order-1 basis-full lg:basis-1/4">
         {% block before-filter %}{% endblock %}
         {% if filter %}
-        <form method="get" class="py-3 px-4 border mb-3 ">
+        <form method="get" class="py-3 px-4 border mb-3 flex flex-col gap-4">
+          <button class="btn btn-primary w-full mb-2" type="submit">Search</button>
           <div class="flex flex-col gap-4">
               {{ filter.form | crispy }}
           </div>
-            <button class="btn btn-primary w-full" type="submit">Search</button>
+          <button class="btn btn-primary w-full" type="submit">Search</button>
         </form>
         {% endif %}
       </div>
