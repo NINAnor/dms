@@ -15,6 +15,7 @@ class DatasetTable(tables.Table):
     title = tables.LinkColumn()
     created_at = tables.DateColumn(format="d/m/Y")
     last_modified_at = tables.DateColumn(format="d/m/Y")
+    project = tables.LinkColumn()
 
     def render_tags(self, value, record):
         return ", ".join([str(v) for v in value.all()])
@@ -23,7 +24,6 @@ class DatasetTable(tables.Table):
         model = Dataset
         fields = (
             "title",
-            "name",
             "version",
             "created_at",
             "last_modified_at",
