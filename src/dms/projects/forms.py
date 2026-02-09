@@ -68,7 +68,7 @@ class DMPForm(forms.ModelForm):
     def save(self, *args, **kwargs):
         instance = super().save(commit=False)
         instance.owner = self.user
-        if not instance.schema:
+        if not instance.schema and instance.schema_from:
             instance.schema = instance.schema_from.config
         instance.save()
         self.save_m2m()
