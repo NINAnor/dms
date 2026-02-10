@@ -33,6 +33,7 @@ DMP {{ object }} | {{ block.super }}
             <option value="{{ code }}" {% if current_language == code %}selected{% endif %}>{{ name }}</option>
             {% endfor %}
         </select>
+        {% if dmp.data %}
         <a class="btn btn-secondary" href="{{ preview_url }}" target="_blank">Preview</a>
 
         <details class="dropdown">
@@ -44,6 +45,7 @@ DMP {{ object }} | {{ block.super }}
                 <li><a class="no-underline hover:bg-secondary hover:text-secondary-content" target="_blank" href="{{preview_url}}?format=docx">Microsoft Word</a></li>
             </ul>
         </details>
+        {% endif %}
         {% elif dmp.external_file %}
             <a class="btn btn-secondary" href="{{ dmp.external_file.url }}" target="_blank">Download</a>
         {% endif %}

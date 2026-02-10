@@ -1,6 +1,6 @@
 from typing import Any
 
-from langdetect import detect
+from langdetect import LangDetectException, detect
 from pylatex import Command, Document, Itemize, Section, Subsection
 from pylatex.package import Package
 
@@ -155,9 +155,12 @@ def render_to_tex(
     """
 
     # Detect language from result data
-    detected_lang = detect(
-        "\n".join([v for k, v in result_data.items() if isinstance(v, str)])
-    )
+    try:
+        detected_lang = detect(
+            "\n".join([v for k, v in result_data.items() if isinstance(v, str)])
+        )
+    except LangDetectException:
+        detected_lang = "en"
 
     geometry_options = {"margin": "1in"}
     doc = Document(geometry_options=geometry_options)
