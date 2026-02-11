@@ -54,13 +54,13 @@
 
 <c-accordion type='multiple'
     open="{% block accordion_state %}{'meta': true, 'preview': false, 'schema': true, 'snippets': true, 'map': true, 'data': true, 'desc': true, 'user-meta': true}{% endblock %}" class="mt-4">
-    {% if object.extent %}
     <c-accordion.item value='desc'>
         <c-accordion.trigger value='desc' class="text-2xl font-bold">Description</c-accordion.trigger>
         <c-accordion.content value='desc'>
             <div>{{object.description|markdown}}</div>
         </c-accordion.content>
     </c-accordion.item>
+    {% if object.extent %}
     <c-accordion.item value='map'>
         <c-accordion.trigger value='map' class="text-2xl font-bold">Spatial Extent</c-accordion.trigger>
         <c-accordion.content value='map'>
