@@ -5,5 +5,5 @@ from taggit.models import CommonGenericTaggedItemBase, TaggedItemBase
 
 class GenericStringTaggedItem(CommonGenericTaggedItemBase, TaggedItemBase):
     object_id = models.CharField(
-        max_length=50, verbose_name=_("Object id"), db_index=True
+        max_length=150, verbose_name=_("Object id"), db_index=True
     )
