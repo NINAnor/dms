@@ -26,7 +26,7 @@
     "@uppy/status-bar": "^5.0.2",
     "@uppy/tus": "^5.0.2",
     "@xyflow/react": "^12.8.6",
-    "axios": "^1.12.2",
+    "axios": "^1.13.5",
     "classnames": "^2.5.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
