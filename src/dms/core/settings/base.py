@@ -91,11 +91,6 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     "crispy_forms",
     "crispy_tailwind",
-    "allauth_ui",
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.openid_connect",
     "django_probes",
     "health_check",
     "health_check.db",
@@ -142,7 +137,18 @@ LOCAL_APPS = [
     "dms.services",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
-INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+INSTALLED_APPS = (
+    DJANGO_APPS
+    + THIRD_PARTY_APPS
+    + LOCAL_APPS
+    + [
+        "allauth_ui",
+        "allauth",
+        "allauth.account",
+        "allauth.socialaccount",
+        "allauth.socialaccount.providers.openid_connect",
+    ]
+)
 
 # MIGRATIONS
 # ------------------------------------------------------------------------------
@@ -364,6 +370,11 @@ LOGGING = {
             "level": "DEBUG",
             "propagate": True,
         },
+        "allauth": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
     },
     "root": {"level": "INFO", "handlers": ["console"]},
 }
@@ -371,20 +382,18 @@ LOGGING = {
 
 # django-allauth
 # ------------------------------------------------------------------------------
-ACCOUNT_ALLOW_REGISTRATION = False
+ACCOUNT_ALLOW_REGISTRATION = True
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 
 ACCOUNT_SIGNUP_FIELDS = ["username*", "password1*", "password2*"]
 
-ACCOUNT_LOGIN_METHODS = {"username"}
+ACCOUNT_LOGIN_METHODS = {"username", "email"}
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_EMAIL_VERIFICATION = "none"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_ADAPTER = "dms.users.adapters.AccountAdapter"
-if env("SOCIALACCOUNT_ADAPTER", default=None):
-    SOCIALACCOUNT_ADAPTER = env("SOCIALACCOUNT_ADAPTER")
+# ACCOUNT_ADAPTER = "dms.users.adapters.AccountAdapter"
 
 # https://django-allauth.readthedocs.io/en/latest/forms.html
 ACCOUNT_FORMS = {"signup": "dms.users.forms.UserSignupForm"}
@@ -392,8 +401,13 @@ ACCOUNT_FORMS = {"signup": "dms.users.forms.UserSignupForm"}
 if env("SOCIALACCOUNT_ADAPTER", default=None):
     SOCIALACCOUNT_ADAPTER = env("SOCIALACCOUNT_ADAPTER")
 
+SOCIALACCOUNT_ADAPTER = "dms.core.nina.adapters.FeideSocialAccountAdapter"
+
+print(f"Using social account adapter: {SOCIALACCOUNT_ADAPTER}")
+
+
 if OIDC_CLIENT_ID := env("OIDC_CLIENT_ID", default=None):
-    SOCIALACCOUNT_ONLY = env.bool("SOCIALACCOUNT_ONLY", default=True)
+    SOCIALACCOUNT_ONLY = env.bool("SOCIALACCOUNT_ONLY", default=False)
     SOCIALACCOUNT_STORE_TOKENS = env("SOCIALACCOUNT_STORE_TOKENS", default=False)
     extra = {}
     if OIDC_SECRET := env("OIDC_SECRET", default=None):

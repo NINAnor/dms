@@ -77,7 +77,7 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 
 # ALLAUTH
 # ------------------------------------------------------------------------------
-SOCIALACCOUNT_ADAPTER = "dms.users.adapters.SocialAccountAdapter"
+# SOCIALACCOUNT_ADAPTER = "dms.users.adapters.SocialAccountAdapter"
 
 # MIGRATION LINTER
 # ------------------------------------------------------------------------------
