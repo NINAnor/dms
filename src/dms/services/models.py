@@ -141,6 +141,14 @@ class Resource(RulesModel):
     type = models.CharField(null=True, blank=True)
     internal_ref = models.CharField(null=True)
     external = models.BooleanField(default=False)
+    featured = models.BooleanField(default=False)
+    featured_order = models.PositiveIntegerField(null=True, blank=True)
+    featured_icon = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        help_text="Font Awesome icon class (e.g., 'fa-database', 'fa-server')",
+    )
 
     class Meta:
         rules_permissions = {
