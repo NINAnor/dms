@@ -2,7 +2,7 @@ default_stages: [pre-commit]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -20,13 +20,14 @@ repos:
         args: [--assume-in-merge]
 
   - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.14.0
+    rev: v2.16.0
     hooks:
       - id: pretty-format-toml
         args: [--autofix]
+        exclude: ^uv\.lock$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.6
+    rev: v0.15.5
     hooks:
       - id: ruff
       - id: ruff-format
@@ -45,7 +46,7 @@ repos:
 
 
   - repo: https://github.com/adamchainz/django-upgrade
-    rev: '1.23.1'
+    rev: '1.30.0'
     hooks:
       - id: django-upgrade
         args: ['--target-version', '5.0']
@@ -57,7 +58,7 @@ repos:
   #       args: [--exclude-files=src/dms/users/fixtures/users.json]
 
   - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: 'v4.3.0'
+    rev: 'v4.4.0'
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]
