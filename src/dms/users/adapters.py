@@ -7,17 +7,19 @@ from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.conf import settings
 from django.http import HttpRequest
 
+logger = logging.getLogger(__name__)
+
 
 def report(e, error):
-    logging.error(str(e))
-    logging.error(str(error))
+    logger.error(str(e))
+    logger.error(str(error))
     try:
         from sentry_sdk import capture_exception, set_context
 
         set_context("oauth error", {"error": str(error)})
         capture_exception(e)
     except Exception:
-        logging.error(traceback.format_exc())
+        logger.error(traceback.format_exc())
 
 
 class AccountAdapter(DefaultAccountAdapter):
