@@ -9,6 +9,8 @@ from rest_framework.views import APIView
 from ..models import HookRequest
 from .serializers import TUSDHookSerializer
 
+logger = logging.getLogger(__name__)
+
 
 class UploadWebhookAPIView(APIView):
     permission_classes = [AllowAny]
@@ -30,7 +32,7 @@ class UploadWebhookAPIView(APIView):
 
             return getattr(self, f"{action_type.replace('-', '_')}")()
         except AttributeError:
-            logging.error(f"{serializer.validated_data('Type')} event type")
+            logger.error(f"{serializer.validated_data('Type')} event type")
             self.hook.completed_at = now()
             self.hook.save()
             return {

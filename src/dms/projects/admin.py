@@ -15,6 +15,8 @@ from .models import (
     Section,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class ProjectResource(resources.ModelResource):
     def save_instance(self, instance, is_create, row, **kwargs):
@@ -26,7 +28,7 @@ class ProjectResource(resources.ModelResource):
                     topic, _ = ProjectTopic.objects.get_or_create(id=t)
                     instance.topics.add(topic)
         except Exception:
-            logging.error(traceback.format_exc())
+            logger.error(traceback.format_exc())
 
     class Meta:
         model = Project

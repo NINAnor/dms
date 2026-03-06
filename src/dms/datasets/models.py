@@ -199,7 +199,7 @@ class DatasetContribution(RulesModel):
     user = models.ForeignKey(
         "users.User", on_delete=models.PROTECT, related_name="dataset_contributions"
     )
-    roles = ArrayField(models.CharField(choices=ContributionType.choices), default=list)
+    roles = ArrayField(models.CharField(choices=ContributionType), default=list)
 
     class Meta:
         rules_permissions = {

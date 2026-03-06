@@ -8,6 +8,8 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from ldap.controls import SimplePagedResultsControl
 
+logger = logging.getLogger(__name__)
+
 
 def get_string(entry, attribute):
     return entry.get(attribute, [b""])[0].decode("utf-8").strip()
@@ -58,7 +60,7 @@ class Command(BaseCommand):
                         defaults[k] = get_string(entry, m)
 
                     if not all(defaults.values()) or not username or not user_id:
-                        logging.warning(
+                        logger.warning(
                             f"Skipping {username} as some fields are empty: {str(defaults)}"  # noqa: E501
                         )
                         continue
@@ -79,8 +81,8 @@ class Command(BaseCommand):
                             else:
                                 self.stdout.write(f"Updated user: {username}")
                     except Exception:
-                        logging.error(f"Error with {username}. Not importing")
-                        logging.error(traceback.format_exc())
+                        logger.error(f"Error with {username}. Not importing")
+                        logger.error(traceback.format_exc())
 
                 # Check if more pages exist
                 pctrls = [
