@@ -583,4 +583,14 @@ FASTDOC_CONVERT_API_URL = env("FASTDOC_CONVERT_API_URL", default=None)
 LEAFLET_CONFIG = {
     "DEFAULT_CENTER": (70, 10),
     "DEFAULT_ZOOM": 3,
+    "TILES": [
+        (
+            _("OSM"),
+            "//tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                "attribution": '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',  # noqa: E501
+                "referrerPolicy": "strict-origin",
+            },
+        )
+    ],
 }
