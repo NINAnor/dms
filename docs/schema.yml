@@ -368,6 +368,14 @@ paths:
           type: string
         description: Search
       - in: query
+        name: tags
+        schema:
+          type: array
+          items:
+            type: string
+        explode: true
+        style: form
+      - in: query
         name: version
         schema:
           type: string
@@ -2756,7 +2764,7 @@ components:
           type: string
           readOnly: true
         type:
-          $ref: '#/components/schemas/Type348Enum'
+          $ref: '#/components/schemas/Type636Enum'
         uuid:
           type: string
           format: uuid
@@ -2788,7 +2796,7 @@ components:
         target:
           type: string
         type:
-          $ref: '#/components/schemas/Type348Enum'
+          $ref: '#/components/schemas/Type636Enum'
       required:
       - source
       - target
@@ -3974,7 +3982,7 @@ components:
           writeOnly: true
       required:
       - token
-    Type348Enum:
+    Type636Enum:
       enum:
       - IsCitedBy
       - Cites

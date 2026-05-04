@@ -2,13 +2,24 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 from django.views import defaults as default_views
+from health_check.views import HealthCheckView
 
 urlpatterns = [
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
     # User management
     path("accounts/", include("allauth.urls")),
-    path("ht/", include("health_check.urls")),
+    path(
+        "ht/",
+        HealthCheckView.as_view(
+            checks=[
+                "health_check.Cache",
+                "health_check.Database",
+                "health_check.Mail",
+                "health_check.Storage",
+            ]
+        ),
+    ),
     path("hijack/", include("hijack.urls")),
     path("autocomplete/", include("dms.core.autocomplete", namespace="autocomplete")),
     path("api/v1/", include("dms.core.router", namespace="api_v1")),

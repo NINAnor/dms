@@ -86,6 +86,7 @@ DJANGO_APPS = [
     "django.forms",
     "django.contrib.gis",
     "django.contrib.admin",
+    "django.contrib.postgres",
 ]
 
 THIRD_PARTY_APPS = [
@@ -98,8 +99,6 @@ THIRD_PARTY_APPS = [
     "allauth.socialaccount.providers.openid_connect",
     "django_probes",
     "health_check",
-    "health_check.db",
-    "health_check.contrib.migrations",
     "psqlextra",
     "solo",
     "corsheaders",
