@@ -26,14 +26,15 @@ WORKDIR /app
 COPY src src
 
 
-FROM node:22-slim AS frontend-base
+FROM node:24-slim AS frontend-base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
 WORKDIR /app
 COPY src/dms/frontend/package.json src/dms/frontend/pnpm-lock.yaml src/dms/frontend/pnpm-workspace.yaml ./
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+# explicitly allow esbuild postinstall
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm add --allow-build=esbuild esbuild && pnpm install --frozen-lockfile
 
 
 FROM frontend-base AS frontend
