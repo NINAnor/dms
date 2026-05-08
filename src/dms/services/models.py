@@ -140,8 +140,8 @@ class Resource(RulesModel):
     access = models.CharField(choices=AccessType.choices)
     type = models.CharField(null=True, blank=True)
     internal_ref = models.CharField(null=True)
-    external = models.BooleanField(default=False)
-    featured = models.BooleanField(default=False)
+    external = models.BooleanField(db_default=False, null=True)
+    featured = models.BooleanField(db_default=False, null=True)
     featured_order = models.PositiveIntegerField(null=True, blank=True)
     featured_icon = models.CharField(
         max_length=50,
