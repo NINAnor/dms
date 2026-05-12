@@ -1295,7 +1295,7 @@ docs = [
     { name = "pymdown-extensions" },
 ]
 gis = [
-    { name = "gdal", specifier = "==3.11.2" },
+    { name = "gdal", specifier = "==3.13.0" },
     { name = "pyproj" },
 ]
 ldap = [
@@ -1304,7 +1304,7 @@ ldap = [
 ]
 prod = [
     { name = "django-auth-ldap" },
-    { name = "gdal", specifier = "==3.11.2" },
+    { name = "gdal", specifier = "==3.13.0" },
     { name = "gunicorn" },
     { name = "pyproj" },
     { name = "python-ldap" },
@@ -1461,9 +1461,9 @@ wheels = [
 
 [[package]]
 name = "gdal"
-version = "3.11.2"
+version = "3.13.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d8/bd/78a98628250f44a3d0fac4850045af18980daa854c97297075f7f91933a7/gdal-3.11.2.tar.gz", hash = "sha256:ee3acb0ca11c22ca71f8313effa8e5789acf677297ef8343096c4f35da54dfd4", size = 878180, upload-time = "2025-07-11T08:56:13.327Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/28/58/c1d628c5b5a38d31e93e825199fd4dfd39b658104a52dfce3228d1067042/gdal-3.13.0.tar.gz", hash = "sha256:b440bcecbcdb96690a74da223142f2d51c6a540ee78674e10f9dca933d0e9006", size = 940507, upload-time = "2026-05-08T10:33:19.112Z" }
 
 [[package]]
 name = "ghp-import"
