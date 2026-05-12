@@ -39,7 +39,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm add --allow-build=esbuild
 
 FROM frontend-base AS frontend
 COPY src/dms/frontend/src src
-COPY src/dms/frontend/vite.config.ts src/dms/frontend/eslint.config.js src/dms/frontend/*.json src/dms/frontend/.prettierignore ./
+COPY src/dms/frontend/vite.config.ts src/dms/frontend/*.json ./
 
 FROM frontend AS frontend-prod
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm run build
