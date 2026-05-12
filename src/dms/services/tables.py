@@ -1,6 +1,6 @@
 import django_tables2 as tables
 from django.urls import reverse
-from django.utils.html import format_html
+from django.utils.html import format_html, format_html_join
 
 from .models import Contributor, Resource, Service
 
@@ -20,7 +20,7 @@ class ServiceTable(tables.Table):
             for p in value.all()
             if p
         ]
-        return format_html(", ".join(text))
+        return format_html_join(", ", "{}", ((t,) for t in text))
 
     class Meta:
         model = Service
@@ -69,16 +69,20 @@ class ServiceResourceTable(tables.Table):
 
     def render_uri(self, value):
         if value.startswith("http"):
-            return format_html(f'<a href="{value}">{value}</a>')
+            return format_html('<a href="{}">{}</a>', value, value)
         return value
 
     def render_service__projects(self, value):
-        text = [
-            f'<a href="{reverse("projects:project_detail", kwargs={"pk": p.pk})}">{p.pk}</a>'  # noqa: E501
-            for p in value.all()
-            if p
-        ]
-        return format_html(", ".join(text))
+
+        return format_html_join(
+            ", ",
+            '<a href="{}">{}</a>',
+            (
+                (reverse("projects:project_detail", kwargs={"pk": p.pk}), p.pk)
+                for p in value.all()
+                if p
+            ),
+        )
 
 
 class ContributorTable(tables.Table):
