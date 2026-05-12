@@ -21,7 +21,11 @@ export const LabeledHandle = forwardRef<
   <div
     ref={ref}
     title={title}
-    className={cn('relative flex items-center bg-slate-300 py-2', flexDirections[position], className)}
+    className={cn(
+      'relative flex items-center bg-slate-300 py-2',
+      flexDirections[position],
+      className,
+    )}
   >
     <Handle
       ref={ref}

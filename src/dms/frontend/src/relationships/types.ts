@@ -1,4 +1,10 @@
-import { type Edge, type Node, type OnNodesChange, type OnEdgesChange, type OnConnect } from '@xyflow/react';
+import {
+  type Edge,
+  type Node,
+  type OnNodesChange,
+  type OnEdgesChange,
+  type OnConnect,
+} from '@xyflow/react';
 
 export type AppNode = Node<{
   label: string;

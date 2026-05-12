@@ -69,10 +69,13 @@ const useStore = create<AppState>((set, get) => ({
       });
 
     if (!res) return;
-    const updated = addEdge({
-      ...connection,
-      id: res.data.uuid,
-    }, edges);
+    const updated = addEdge(
+      {
+        ...connection,
+        id: res.data.uuid,
+      },
+      edges,
+    );
     set({ edges: updated, edgeIndex: new Set(updated.map(e => e.id)) });
   },
   setNodes: nodes => {
@@ -101,7 +104,10 @@ const useStore = create<AppState>((set, get) => ({
   addDataset: (dataset: Dataset, relationships: Relationship[]) => {
     const { nodes, edges, edgeIndex } = get();
 
-    const newEdges = [...edges, ...relationships.filter(r => !edgeIndex.has(r.uuid)).map(r => relToEdge(r))];
+    const newEdges = [
+      ...edges,
+      ...relationships.filter(r => !edgeIndex.has(r.uuid)).map(r => relToEdge(r)),
+    ];
 
     set({
       edgeIndex: new Set(newEdges.map(e => e.id)),

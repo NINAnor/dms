@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Panel } from '@xyflow/react';
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { client, config } from '../config';
 import useStore from '../store';
 import { Dataset } from '../types';
@@ -31,7 +31,7 @@ export function ManageNode() {
     }),
     [search],
   );
-  const { isPending, error, data, isSuccess } = useQuery(query);
+  const { isPending, error: _error, data, isSuccess } = useQuery(query);
   const addDataset = useStore(state => state.addDataset);
 
   const addDatasetAndEdges = async (ds: Dataset) => {
@@ -56,7 +56,9 @@ export function ManageNode() {
       <div className="flex justify-between">
         <h3 className="text-lg font-bold">Load Datasets</h3>
         <button onClick={() => setCollapsed(!collapsed)}>
-          <i className={classNames('fas', { 'fa-caret-down': collapsed, 'fa-caret-up': !collapsed })}></i>
+          <i
+            className={classNames('fas', { 'fa-caret-down': collapsed, 'fa-caret-up': !collapsed })}
+          ></i>
         </button>
       </div>
       {!collapsed && (
@@ -76,7 +78,10 @@ export function ManageNode() {
                 .filter((r: Dataset) => !nodeIds.includes(r.id))
                 .map((r: Dataset) => (
                   <div key={r.id}>
-                    <button className="p-1 border-primary rounded mr-2" onClick={() => addDatasetAndEdges(r)}>
+                    <button
+                      className="p-1 border-primary rounded mr-2"
+                      onClick={() => addDatasetAndEdges(r)}
+                    >
                       <i className="fas fa-plus"></i>
                     </button>
                     {r.title}

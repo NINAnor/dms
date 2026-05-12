@@ -15,7 +15,8 @@ export function Dashboard() {
         </a>
       </div>
       <p className="mb-5">
-        Uploaded files will be processed in background, it could take some time before they are shown in the dataset
+        Uploaded files will be processed in background, it could take some time before they are
+        shown in the dataset
       </p>
       <UppyDashboard id="dashboard" uppy={uppy!} />
     </div>

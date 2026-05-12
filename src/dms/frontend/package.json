@@ -1,15 +1,16 @@
 {
   "name": "django-multi-frontends",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
     "check": "tsc -b",
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "preview": "vite preview",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css}\""
+    "format": "oxfmt"
   },
   "dependencies": {
     "@dagrejs/dagre": "^1.1.5",
@@ -36,26 +37,15 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@eslint/js": "^9.37.0",
     "@types/css-modules": "^1.0.5",
     "@types/node": "^24.7.2",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^5.0.4",
-    "eslint": "^9.37.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.0.0",
-    "eslint-plugin-react-refresh": "^0.4.23",
     "globals": "^15.15.0",
-    "prettier": "^3.6.2",
+    "oxfmt": "^0.48.0",
+    "oxlint": "^1.63.0",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.46.1",
-    "vite": "^7.3.2"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-        "esbuild"
-    ]
+    "vite": "^8.0.11"
   }
 }

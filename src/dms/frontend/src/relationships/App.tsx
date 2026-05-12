@@ -34,7 +34,9 @@ const defaultEdgeOptions = {
 const snapGrid = [20, 20] as [number, number];
 
 function App() {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, applyLayout } = useStore(useShallow(selector));
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, applyLayout } = useStore(
+    useShallow(selector),
+  );
 
   useEffect(() => {
     setTimeout(applyLayout, 100);

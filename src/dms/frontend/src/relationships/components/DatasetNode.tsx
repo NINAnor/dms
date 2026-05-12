@@ -6,7 +6,7 @@ import { config } from '../config';
 import useStore from '../store';
 import { useCallback, useState } from 'react';
 
-export function DatasetNode({ data, selected, id, ...props }: NodeProps<AppNode>) {
+export function DatasetNode({ data, selected, id, ..._props }: NodeProps<AppNode>) {
   const addRelTypeToNode = useStore(state => state.addRelTypeToNode);
   const [selectedRel, setSelectedRel] = useState('');
 
@@ -55,7 +55,12 @@ export function DatasetNode({ data, selected, id, ...props }: NodeProps<AppNode>
         </a>
         {data?.label}
       </div>
-      <Handle type="target" position={Position.Left} className="h-10 rounded-full !bg-green-500" style={{ top: 30 }} />
+      <Handle
+        type="target"
+        position={Position.Left}
+        className="h-10 rounded-full !bg-green-500"
+        style={{ top: 30 }}
+      />
       {data.relationshipTypes.map(r => (
         <LabeledHandle
           key={r}
