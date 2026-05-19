@@ -15,12 +15,15 @@ class ServiceTable(tables.Table):
         return ", ".join(value)
 
     def render_projects(self, value):
-        text = [
-            f'<a href="{reverse("projects:project_detail", kwargs={"pk": p.pk})}">{p.pk}</a>'  # noqa: E501
-            for p in value.all()
-            if p
-        ]
-        return format_html_join(", ", "{}", ((t,) for t in text))
+        return format_html_join(
+            ", ",
+            '<a href="{}">{}</a>',
+            (
+                (reverse("projects:project_detail", kwargs={"pk": p.pk}), p.pk)
+                for p in value.all()
+                if p
+            ),
+        )
 
     class Meta:
         model = Service
@@ -73,7 +76,6 @@ class ServiceResourceTable(tables.Table):
         return value
 
     def render_service__projects(self, value):
-
         return format_html_join(
             ", ",
             '<a href="{}">{}</a>',
