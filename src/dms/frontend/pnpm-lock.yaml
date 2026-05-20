@@ -1059,8 +1059,8 @@ packages:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
 
-  devalue@5.6.2:
-    resolution: {integrity: sha512-nPRkjWzzDQlsejL1WVifk5rvcFi/y1onBRxjaFMjZeR9mFpqu2gmAZ9xUB9/IEanEP/vBtGeGganC/GO1fmufg==}
+  devalue@5.8.1:
+    resolution: {integrity: sha512-4CXDYRBGqN+57wVJkuXBYmpAVUSg3L6JAQa/DFqm238G73E1wuyc/JhGQJzN7vUf/CMphYau2zXbfWzDR5aTEw==}
 
   dom-helpers@5.2.1:
     resolution: {integrity: sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA==}
@@ -2174,7 +2174,7 @@ snapshots:
       '@tanstack/form-core': 1.24.3
       '@tanstack/react-store': 0.7.7(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       decode-formdata: 0.9.0
-      devalue: 5.6.2
+      devalue: 5.8.1
       react: 19.2.0
     transitivePeerDependencies:
       - react-dom
@@ -2535,7 +2535,7 @@ snapshots:
 
   detect-libc@2.1.2: {}
 
-  devalue@5.6.2: {}
+  devalue@5.8.1: {}
 
   dom-helpers@5.2.1:
     dependencies:
