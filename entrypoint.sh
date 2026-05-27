@@ -37,7 +37,7 @@ if [[ -z "${DJANGO_TAILWIND}" ]]
 then
   echo "Skip tailwind"
 else
-  uv run manage.py tailwind install --no-input
+  uv run manage.py tailwind install
 fi
 
 if [[ -z "${DJANGO_COLLECTSTATIC}" ]]
