@@ -27,8 +27,8 @@ x-django-env: &django-env
   AWS_RESPONSE_CHECKSUM_VALIDATION: WHEN_REQUIRED
   DATASETS_TITILER_URL: ${DATASETS_TITILER_URL:-/titiler}
   DJANGO_ALLOWED_HOSTS: "localhost,django,${HOSTNAME:-}"
-  DATASETS_NINA_MAP_PREVIEW: ${DATASETS_NINA_MAP_PREVIEW:-}
-  DATASETS_DUCKUI_URL: ${DATASETS_DUCKUI_URL:-https://duckui.nina.no}
+  DATASETS_NINA_MAP_PREVIEW: ${DATASETS_NINA_MAP_PREVIEW:-http://localhost:8081/editor?config=}
+  DATASETS_DUCKUI_URL: ${DATASETS_DUCKUI_URL:-https://demo.duckui.com}
   FASTDOC_CONVERT_API_URL: http://fastdoc:8000/convert
 
 x-django-prod-env: &django-prod-env
@@ -192,10 +192,12 @@ services:
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
+      - --entrypoints.map.address=:81
       - --log.level=DEBUG
 
     ports:
       - 8000:80
+      - 8081:81
       - 8080:8080
     volumes:
       - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:ro
@@ -242,11 +244,24 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.titiler.rule=PathPrefix(`/titiler/`)"
       - "traefik.http.routers.titiler.entrypoints=web"
+      - "traefik.http.routers.titiler.entrypoints=map"
       - "traefik.http.routers.titiler.priority=20"
       - "traefik.http.services.titiler.loadbalancer.server.port=80"
 
   fastdoc:
     image: ghcr.io/ninanor/fastdoc:main
+
+  map-editor:
+    image: ghcr.io/ninanor/map-editor:main
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.map-editor.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.map-editor.entrypoints=map"
+      - "traefik.http.routers.map-editor.priority=1"
+      - "traefik.http.services.map-editor.loadbalancer.server.port=80"
+    # volumes:
+    #   - ./config.js:/var/www/config.js:ro
+
 
   redis:
     image: redis
