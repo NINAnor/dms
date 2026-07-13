@@ -35,7 +35,7 @@ test = [
 [project]
 authors = [{name = "Niccolò Cantù", email = "niccolo.cantu@nina.no"}]
 dependencies = [
-  "django>=5.2",
+  "django>=6.0.6",
   "python-slugify>=8.0.1",
   "Pillow>=12.0",
   "argon2-cffi",
