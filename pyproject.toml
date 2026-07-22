@@ -76,7 +76,7 @@ dependencies = [
   "djangorestframework-simplejwt",
   # queue
   "procrastinate[django]>=3.0.0",
-  "setuptools>=75.8.0",
+  "setuptools>=83.0.0",
   "django-storages[s3]>=1.14.5",
   "boto3>=1.40.4",
   "django-taggit>=6.1.0",
