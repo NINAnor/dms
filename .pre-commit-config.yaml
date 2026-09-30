@@ -1,4 +1,5 @@
 default_stages: [pre-commit]
+default_install_hook_types: [pre-commit, commit-msg]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -57,12 +58,11 @@ repos:
   #     - id: detect-secrets
   #       args: [--exclude-files=src/dms/users/fixtures/users.json]
 
-  - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: 'v4.4.0'
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.18.0
     hooks:
-      - id: conventional-pre-commit
+      - id: commitizen
         stages: [commit-msg]
-        args: []
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
 ci:
