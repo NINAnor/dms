@@ -23,23 +23,29 @@ function uploadUrl(path: string) {
 }
 
 export default function App() {
-  const [storage, setStorage] = useState<Storage | null>(null);
+  const [storages, setStorages] = useState<Storage[] | null>(null);
+  const [storageId, setStorageId] = useState<number | null>(null);
   const [uppy] = useState(() => new Uppy<Meta>());
 
   useEffect(() => {
     client.get<Storage[]>(uploadUrl('available-storages/')).then(({ data }) => {
-      setStorage(data[0] ?? null);
+      setStorages(data);
+      // Auto-select when there is exactly one option; otherwise let the
+      // user pick explicitly (or leave unset when there are none).
+      if (data.length === 1) {
+        setStorageId(data[0].id);
+      }
     });
   }, []);
 
   useEffect(() => {
-    if (!storage) return;
+    if (!storageId) return;
 
     uppy.use(AwsS3, {
       shouldUseMultipart: file => (file.size ?? 0) > MULTIPART_THRESHOLD,
       getUploadParameters: async file => {
         const { data } = await client.post(uploadUrl('upload-url/'), {
-          storage: storage.id,
+          storage: storageId,
           filename: file.name,
         });
         uppy.setFileMeta(file.id, { key: data.key });
@@ -47,7 +53,7 @@ export default function App() {
       },
       createMultipartUpload: async file => {
         const { data } = await client.post(uploadUrl('upload-url/'), {
-          storage: storage.id,
+          storage: storageId,
           filename: file.name,
           multipart: true,
         });
@@ -57,7 +63,7 @@ export default function App() {
       listParts: async () => [],
       signPart: async (_file, { uploadId, key, partNumber }) => {
         const { data } = await client.post(uploadUrl('upload-url/sign-part/'), {
-          storage: storage.id,
+          storage: storageId,
           key,
           upload_id: uploadId,
           part_number: partNumber,
@@ -66,14 +72,14 @@ export default function App() {
       },
       abortMultipartUpload: async (_file, { key, uploadId }) => {
         await client.post(uploadUrl('upload-url/abort-multipart/'), {
-          storage: storage.id,
+          storage: storageId,
           key,
           upload_id: uploadId,
         });
       },
       completeMultipartUpload: async (_file, { key, uploadId, parts }) => {
         await client.post(uploadUrl('upload-url/complete-multipart/'), {
-          storage: storage.id,
+          storage: storageId,
           key,
           upload_id: uploadId,
           parts,
@@ -86,14 +92,14 @@ export default function App() {
       const plugin = uppy.getPlugin('AwsS3');
       if (plugin) uppy.removePlugin(plugin);
     };
-  }, [uppy, storage]);
+  }, [uppy, storageId]);
 
   useEffect(() => {
     const handler = (file?: UppyFile<Meta, Record<string, never>>) => {
       const key = file?.meta?.key;
-      if (!key || !storage) return;
+      if (!key || !storageId) return;
       client.post(uploadUrl('resources/confirm-upload/'), {
-        storage: storage.id,
+        storage: storageId,
         key,
       });
     };
@@ -101,15 +107,48 @@ export default function App() {
     return () => {
       uppy.off('upload-success', handler);
     };
-  }, [uppy, storage]);
+  }, [uppy, storageId]);
 
-  if (!storage) {
+  if (storages === null) {
     return <p>Loading storages…</p>;
+  }
+
+  if (storages.length === 0) {
+    return (
+      <p className="text-error">
+        No storage is configured for this dataset's project. Uploads are disabled until a storage is
+        made available.
+      </p>
+    );
   }
 
   return (
     <UppyContextProvider uppy={uppy}>
-      <Dashboard />
+      <div>
+        {storages.length > 1 && (
+          <div className="mb-3">
+            <label htmlFor="storage-select" className="mb-1 block font-bold">
+              Storage
+            </label>
+            <select
+              id="storage-select"
+              className="select select-bordered"
+              value={storageId ?? ''}
+              onChange={e => setStorageId(Number(e.target.value))}
+            >
+              <option value="" disabled>
+                Select a storage…
+              </option>
+              {storages.map(s => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        {storageId && <Dashboard />}
+      </div>
     </UppyContextProvider>
   );
 }

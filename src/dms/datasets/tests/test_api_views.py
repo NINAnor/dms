@@ -97,7 +97,12 @@ class TestUploadResourceView:
             "key": "data.csv",
             "upload_url": "https://example.com/put",
         }
-        mocked.assert_called_once_with("data.csv")
+        mocked.assert_called_once_with(
+            "data.csv",
+            project_id=dataset.project_id,
+            dataset_id=str(dataset.id),
+            user_id=user.id,
+        )
         assert not dataset.resources.exists()
 
     def test_rejects_storage_not_available_to_project(
@@ -121,6 +126,36 @@ class TestUploadResourceView:
             content_type="application/json",
         )
         assert response.status_code == 400
+
+    def test_prefix_context_contains_project_dataset_and_user(
+        self, client, user, member, dataset, storage
+    ):
+        """The server-side context passed to ``Storage.get_s3_path`` (and
+        thus rendered into the prefix template) must include
+        project_id/dataset_id/user_id, never trusting client input for it."""
+        client.force_login(user)
+        url = reverse("api_v1:datasets-upload-resource", kwargs={"pk": dataset.pk})
+        with patch.object(
+            Storage, "get_s3_path", return_value="rendered/data.csv"
+        ) as mocked_get_s3_path:
+            response = client.post(
+                url,
+                {
+                    "storage": storage.pk,
+                    "filename": "data.csv",
+                    # client-supplied context must be ignored
+                    "project_id": "attacker-project",
+                    "user_id": "999999",
+                },
+                content_type="application/json",
+            )
+        assert response.status_code == 200
+        mocked_get_s3_path.assert_called_once_with(
+            "data.csv",
+            project_id=dataset.project_id,
+            dataset_id=str(dataset.id),
+            user_id=user.id,
+        )
 
 
 class TestAvailableStoragesView:
@@ -160,7 +195,12 @@ class TestConfirmUploadView:
                 content_type="application/json",
             )
         assert response.status_code == 201
-        mocked_head.assert_called_once_with("data.csv")
+        mocked_head.assert_called_once_with(
+            "data.csv",
+            project_id=dataset.project_id,
+            dataset_id=str(dataset.id),
+            user_id=user.id,
+        )
         resource = dataset.resources.get(key="data.csv")
         assert resource.storage == storage
         assert resource.uri == "https://example.com/data.csv"
