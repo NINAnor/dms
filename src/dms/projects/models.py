@@ -3,10 +3,12 @@ from pathlib import Path
 import rules
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Q
 from django.urls import reverse
 from rules.contrib.models import RulesModel
 from taggit.managers import TaggableManager
 
+from buckets.models import Storage
 from dms.core.models import GenericStringTaggedItem
 
 from .rules import (
@@ -178,6 +180,39 @@ class ProjectTopic(models.Model):
         return self.id
 
 
+class ProjectStorage(models.Model):
+    """Explicit assignment of a ``buckets.Storage`` to a ``Project``.
+
+    ``context`` carries project-specific values (e.g. ``{"project_id": ...}``)
+    rendered as ``**context`` kwargs against the storage's ``prefix``
+    template by ``Storage.get_s3_path``/``Storage.get_http_url``.
+    """
+
+    project = models.ForeignKey(
+        "Project",
+        on_delete=models.CASCADE,
+        related_name="project_storages",
+        db_constraint=False,
+    )
+    storage = models.ForeignKey(
+        "buckets.Storage",
+        on_delete=models.CASCADE,
+        related_name="project_storages",
+        db_constraint=False,
+    )
+    context = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["project", "storage"], name="unique_storage_per_project"
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.project_id} - {self.storage}"
+
+
 class Project(RulesModel):
     class Status(models.TextChoices):
         ACTIVE = "N", "Active"
@@ -225,6 +260,13 @@ class Project(RulesModel):
             memberships__role=ProjectMembership.Role.OWNER,
             memberships__project_id=self.number,
         )
+
+    @property
+    def available_storages(self):
+        """Storages usable by this project: explicitly assigned + global ones."""
+        return Storage.objects.filter(
+            Q(project_storages__project_id=self.number) | Q(is_global=True)
+        ).distinct()
 
     class Meta:
         rules_permissions = {

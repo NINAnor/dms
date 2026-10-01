@@ -5,7 +5,13 @@ from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.utils import timezone
 
-from dms.projects.models import DMP, DMPSchema, Project, ProjectMembership
+from dms.projects.models import (
+    DMP,
+    DMPSchema,
+    Project,
+    ProjectMembership,
+    ProjectStorage,
+)
 
 User = get_user_model()
 
@@ -397,3 +403,144 @@ class TestProjectMembershipModel:
         str_repr = str(membership)
         assert " - " in str_repr
         assert str_repr.startswith(project.number)
+
+
+@pytest.mark.django_db(transaction=True)
+class TestProjectAvailableStorages:
+    """Test cases for Project.available_storages and the ProjectStorage model."""
+
+    @pytest.fixture
+    def project(self):
+        return Project.objects.create(
+            number="PS001",
+            name="Storage Project",
+            start_date=timezone.now(),
+        )
+
+    @pytest.fixture
+    def other_project(self):
+        return Project.objects.create(
+            number="PS002",
+            name="Other Storage Project",
+            start_date=timezone.now(),
+        )
+
+    def _make_storage(self, **kwargs):
+        from buckets.models import Storage
+
+        defaults = {
+            "name": "test-storage",
+            "endpoint_url": "",
+            "region": "",
+            "bucket_name": "bucket",
+            "access_key_id": "key",
+            "secret_access_key": "secret",
+            "prefix": "{project_id}",
+            "is_global": False,
+        }
+        defaults.update(kwargs)
+        return Storage.objects.create(**defaults)
+
+    def test_available_storages_empty_by_default(self, project):
+        """A project with no assignments and no global storages sees nothing."""
+        assert list(project.available_storages) == []
+
+    def test_available_storages_includes_explicitly_assigned(self, project):
+        """Explicitly assigned storages (via ProjectStorage) are available."""
+        storage = self._make_storage(name="assigned")
+        ProjectStorage.objects.create(
+            project=project, storage=storage, context={"project_id": project.number}
+        )
+
+        assert list(project.available_storages) == [storage]
+
+    def test_available_storages_includes_global_storages(self, project):
+        """Global storages are available to every project, with no assignment."""
+        storage = self._make_storage(name="global", is_global=True)
+
+        assert list(project.available_storages) == [storage]
+
+    def test_available_storages_excludes_other_projects_assignments(
+        self, project, other_project
+    ):
+        """A storage assigned to a different project is not available here."""
+        storage = self._make_storage(name="other")
+        ProjectStorage.objects.create(project=other_project, storage=storage)
+
+        assert list(project.available_storages) == []
+
+    def test_available_storages_union_no_duplicates(self, project):
+        """Explicit assignment + global on the same storage yields one row."""
+        storage = self._make_storage(name="both", is_global=True)
+        ProjectStorage.objects.create(project=project, storage=storage)
+
+        storages = list(project.available_storages)
+        assert storages == [storage]
+
+    def test_available_storages_union_of_distinct_storages(self, project):
+        """Explicitly assigned + global storages are both returned."""
+        assigned = self._make_storage(name="assigned")
+        glob = self._make_storage(name="global", is_global=True)
+        ProjectStorage.objects.create(project=project, storage=assigned)
+
+        storages = set(project.available_storages)
+        assert storages == {assigned, glob}
+
+
+@pytest.mark.django_db(transaction=True)
+class TestProjectStorageModel:
+    """Test cases for the ProjectStorage through-model."""
+
+    @pytest.fixture
+    def project(self):
+        return Project.objects.create(
+            number="PS010",
+            name="Storage Model Project",
+            start_date=timezone.now(),
+        )
+
+    @pytest.fixture
+    def storage(self):
+        from buckets.models import Storage
+
+        return Storage.objects.create(
+            name="storage-under-test",
+            bucket_name="bucket",
+            access_key_id="key",
+            secret_access_key="secret",  # noqa: S106
+            prefix="{project_id}",
+        )
+
+    def test_str(self, project, storage):
+        project_storage = ProjectStorage.objects.create(
+            project=project, storage=storage
+        )
+
+        str_repr = str(project_storage)
+        assert project.number in str_repr
+        assert storage.name in str_repr
+
+    def test_context_defaults_to_empty_dict(self, project, storage):
+        project_storage = ProjectStorage.objects.create(
+            project=project, storage=storage
+        )
+
+        assert project_storage.context == {}
+
+    def test_context_stores_render_kwargs(self, project, storage):
+        project_storage = ProjectStorage.objects.create(
+            project=project,
+            storage=storage,
+            context={"project_id": project.number},
+        )
+
+        rendered = storage.get_s3_path("file.txt", **project_storage.context)
+        assert rendered == f"{project.number}/file.txt"
+
+    def test_unique_storage_per_project_constraint(self, project, storage):
+        from django.db import IntegrityError, transaction
+
+        ProjectStorage.objects.create(project=project, storage=storage)
+
+        with pytest.raises(IntegrityError), transaction.atomic():
+            ProjectStorage.objects.create(project=project, storage=storage)
