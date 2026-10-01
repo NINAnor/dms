@@ -134,6 +134,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
+    "buckets",
     "dms.core",
     "dms.uploads",
     "dms.users",
@@ -260,6 +261,12 @@ if AWS_ACCESS_KEY_ID := env("DJANGO_AWS_ACCESS_KEY_ID", default=None):
         f"{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/{MEDIA_BASE_LOCATION}/"
     )
     STORAGES["default"]["BACKEND"] = "dms.core.storages.MediaRootS3Boto3Storage"
+
+# BUCKETS
+# ------------------------------------------------------------------------------
+# Symmetric-encryption key for buckets.Storage credential fields (Fernet key,
+# e.g. generated with `cryptography.fernet.Fernet.generate_key()`).
+STORAGE_CREDENTIALS_KEY = env("STORAGE_CREDENTIALS_KEY", default=None)
 
 
 # TEMPLATES
