@@ -34,6 +34,15 @@ class DefaultCursorPagination(CursorPagination):
     ordering = "-id"
 
 
+def _upload_context(dataset, request):
+    """Build the server-side context rendered into a ``Storage``'s prefix
+    template. Never derived from client input."""
+    context = {"dataset_id": dataset.id, "user_id": request.user.id}
+    if dataset.project_id is not None:
+        context["project_id"] = dataset.project_id
+    return context
+
+
 class DatasetViewSet(AutoPermissionViewSetMixin, ModelViewSet):
     queryset = Dataset.objects.all()
     serializer_class = serializers.DatasetSerializer
@@ -98,6 +107,7 @@ class DatasetViewSet(AutoPermissionViewSetMixin, ModelViewSet):
                 serializer.validated_data["storage"],
                 serializer.validated_data["filename"],
                 multipart=serializer.validated_data["multipart"],
+                **_upload_context(dataset, request),
             )
         except DjangoValidationError as exc:
             raise DRFValidationError(_django_validation_error_detail(exc)) from exc
@@ -112,7 +122,11 @@ class DatasetViewSet(AutoPermissionViewSetMixin, ModelViewSet):
         data = serializer.validated_data
         try:
             result = dataset.sign_upload_part(
-                data["storage"], data["key"], data["upload_id"], data["part_number"]
+                data["storage"],
+                data["key"],
+                data["upload_id"],
+                data["part_number"],
+                **_upload_context(dataset, request),
             )
         except DjangoValidationError as exc:
             raise DRFValidationError(_django_validation_error_detail(exc)) from exc
@@ -129,7 +143,11 @@ class DatasetViewSet(AutoPermissionViewSetMixin, ModelViewSet):
         data = serializer.validated_data
         try:
             result = dataset.complete_multipart_upload(
-                data["storage"], data["key"], data["upload_id"], data["parts"]
+                data["storage"],
+                data["key"],
+                data["upload_id"],
+                data["parts"],
+                **_upload_context(dataset, request),
             )
         except DjangoValidationError as exc:
             raise DRFValidationError(_django_validation_error_detail(exc)) from exc
@@ -146,7 +164,10 @@ class DatasetViewSet(AutoPermissionViewSetMixin, ModelViewSet):
         data = serializer.validated_data
         try:
             dataset.abort_multipart_upload(
-                data["storage"], data["key"], data["upload_id"]
+                data["storage"],
+                data["key"],
+                data["upload_id"],
+                **_upload_context(dataset, request),
             )
         except DjangoValidationError as exc:
             raise DRFValidationError(_django_validation_error_detail(exc)) from exc
@@ -165,7 +186,9 @@ class DatasetViewSet(AutoPermissionViewSetMixin, ModelViewSet):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         try:
-            resource = dataset.confirm_upload(data["storage"], data["key"])
+            resource = dataset.confirm_upload(
+                data["storage"], data["key"], **_upload_context(dataset, request)
+            )
         except DjangoValidationError as exc:
             raise DRFValidationError(_django_validation_error_detail(exc)) from exc
         return Response(
