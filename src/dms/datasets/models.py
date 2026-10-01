@@ -9,6 +9,7 @@ import rules
 from autoslug import AutoSlugField
 from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import GEOSGeometry, Polygon
+from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import connection, models, transaction
 from django.urls import reverse
@@ -131,6 +132,27 @@ class Dataset(RulesModel):
             and self.embargo_end_date > tz.localtime(tz.now()).date()
         )
 
+    def upload_resource(self, storage, filename, **context):
+        """Prepare a presigned upload of ``filename`` to ``storage`` for this dataset.
+
+        ``storage`` must be one of the project's ``available_storages``
+        (explicitly assigned or global); otherwise a ``ValidationError`` is
+        raised. Returns a dict with the resolved ``key`` and a presigned
+        upload URL, ready to drive a direct-to-storage upload.
+        """
+        available_storages = (
+            self.project.available_storages if self.project_id else None
+        )
+        if not available_storages or storage not in available_storages:
+            raise ValidationError(
+                f"Storage {storage} is not available for project {self.project_id}"
+            )
+
+        return {
+            "key": filename,
+            "upload_url": storage.get_presigned_upload_url(filename, **context),
+        }
+
     class Meta:
         rules_permissions = {
             "add": rules.is_authenticated,
@@ -234,6 +256,15 @@ class Resource(LifecycleModelMixin, RulesModel):
         verbose_name="URI of the resource",
         help_text="",
     )
+    storage = models.ForeignKey(
+        "buckets.Storage",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="resources",
+        db_constraint=False,
+    )
+    key = models.CharField(null=True, blank=True)
     dataset = models.ForeignKey(
         "Dataset", on_delete=models.CASCADE, related_name="resources"
     )
