@@ -11,6 +11,7 @@ from .models import (
     DMPSchema,
     Project,
     ProjectMembership,
+    ProjectStorage,
     ProjectTopic,
     Section,
 )
@@ -87,3 +88,10 @@ class ProjectMembershipAdmin(admin.ModelAdmin):
     search_fields = ["project__number", "project__name", "user__email"]
     list_filter = ["role"]
     list_display = ["project", "user", "role"]
+
+
+@admin.register(ProjectStorage)
+class ProjectStorageAdmin(admin.ModelAdmin):
+    search_fields = ["project__number", "project__name", "storage__name"]
+    list_filter = ["storage"]
+    list_display = ["project", "storage"]
