@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
+from buckets.models import Storage
+
 from ..models import (
     Dataset,
     DatasetRelationship,
@@ -243,3 +245,57 @@ class DataTableSerializer(DataTableListSerializer):
             "geometryFields",
             "metadata",
         )
+
+
+class StorageSerializer(serializers.ModelSerializer):
+    """Minimal, read-only representation of a storage a client can upload to."""
+
+    class Meta:
+        model = Storage
+        fields = ("id", "name")
+
+
+class UploadResourceRequestSerializer(serializers.Serializer):
+    """Request body for ``DatasetViewSet.upload_resource``."""
+
+    storage = serializers.PrimaryKeyRelatedField(queryset=Storage.objects.all())
+    filename = serializers.CharField()
+    multipart = serializers.BooleanField(default=False)
+
+
+class SignUploadPartRequestSerializer(serializers.Serializer):
+    """Request body for ``DatasetViewSet.sign_upload_part``."""
+
+    storage = serializers.PrimaryKeyRelatedField(queryset=Storage.objects.all())
+    key = serializers.CharField()
+    upload_id = serializers.CharField()
+    part_number = serializers.IntegerField(min_value=1)
+
+
+class MultipartPartSerializer(serializers.Serializer):
+    ETag = serializers.CharField()
+    PartNumber = serializers.IntegerField(min_value=1)
+
+
+class CompleteMultipartUploadRequestSerializer(serializers.Serializer):
+    """Request body for ``DatasetViewSet.complete_multipart_upload``."""
+
+    storage = serializers.PrimaryKeyRelatedField(queryset=Storage.objects.all())
+    key = serializers.CharField()
+    upload_id = serializers.CharField()
+    parts = MultipartPartSerializer(many=True)
+
+
+class AbortMultipartUploadRequestSerializer(serializers.Serializer):
+    """Request body for ``DatasetViewSet.abort_multipart_upload``."""
+
+    storage = serializers.PrimaryKeyRelatedField(queryset=Storage.objects.all())
+    key = serializers.CharField()
+    upload_id = serializers.CharField()
+
+
+class ConfirmUploadRequestSerializer(serializers.Serializer):
+    """Request body for ``DatasetViewSet.confirm_upload``."""
+
+    storage = serializers.PrimaryKeyRelatedField(queryset=Storage.objects.all())
+    key = serializers.CharField()
