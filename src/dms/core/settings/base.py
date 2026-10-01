@@ -261,9 +261,10 @@ if AWS_ACCESS_KEY_ID := env("DJANGO_AWS_ACCESS_KEY_ID", default=None):
 
 # BUCKETS
 # ------------------------------------------------------------------------------
-# Symmetric-encryption key for buckets.Storage credential fields (Fernet key,
-# e.g. generated with `cryptography.fernet.Fernet.generate_key()`).
+# Symmetric-encryption key for buckets.Storage credential fields, consumed by
+# django-cryptography (see django_cryptography.conf.settings.CRYPTOGRAPHY_KEY).
 STORAGE_CREDENTIALS_KEY = env("STORAGE_CREDENTIALS_KEY", default=None)
+CRYPTOGRAPHY_KEY = STORAGE_CREDENTIALS_KEY
 
 
 # TEMPLATES
