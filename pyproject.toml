@@ -81,6 +81,7 @@ dependencies = [
   "django-storages[s3]>=1.14.5",
   "boto3>=1.40.4",
   "cryptography>=43.0",
+  "django-cryptography-django5>=2.2",
   "django-taggit>=6.1.0",
   "django-autocomplete-light>=3.11.0",
   "django-view-breadcrumbs>=2.5.1",
