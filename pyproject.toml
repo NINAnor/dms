@@ -61,6 +61,7 @@ dependencies = [
   # auth
   "django-allauth==65.14.1",
   "django-allauth-ui==1.7.1",
+  "django-oauth-toolkit>=3.4.0",
   # ui
   "django-crispy-forms",
   "fontawesomefree",

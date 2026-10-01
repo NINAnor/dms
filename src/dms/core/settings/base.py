@@ -17,6 +17,8 @@ from pathlib import Path
 import environ
 from django.utils.translation import gettext_lazy as _
 
+logger = logging.getLogger(__name__)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent.parent.parent
 SRC_DIR = BASE_DIR / "src"
@@ -128,6 +130,7 @@ THIRD_PARTY_APPS = [
     "django_vite",
     "hijack",
     "hijack.contrib.admin",
+    "oauth2_provider",
 ]
 
 LOCAL_APPS = [
@@ -425,6 +428,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
         "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
+        "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
     ),
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -441,6 +445,23 @@ REST_AUTH = {
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
 }
+
+# django-oauth-toolkit: catalog's OIDC *Provider Role* — issues OAuth2/OIDC
+# tokens to other apps via the /o/ endpoint. Unrelated to, and independent
+# from, the OIDC *Client Role* settings above (OIDC_CLIENT_ID/OIDC_SECRET/
+# OIDC_PROVIDER_*) used by allauth to authenticate catalog's own users.
+# Opt-in: only enabled when OIDC_RSA_PRIVATE_KEY is provided.
+if OIDC_RSA_PRIVATE_KEY := env("OIDC_RSA_PRIVATE_KEY", default=""):
+    OAUTH2_PROVIDER = {
+        "OIDC_ENABLED": True,
+        "OIDC_RSA_PRIVATE_KEY": OIDC_RSA_PRIVATE_KEY,
+        "SCOPES": {
+            "openid": "OpenID Connect scope",
+        },
+    }
+    logger.info("OIDC_ENABLED: True")
+else:
+    logger.info("OIDC_ENABLED: False")
 
 # DRF Spectacular
 SPECTACULAR_SETTINGS = {

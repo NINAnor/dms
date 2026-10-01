@@ -12,6 +12,9 @@ x-django-env: &django-env
   OIDC_SECRET: "${OIDC_SECRET:-}"
   OIDC_PROVIDER_URL: "${OIDC_PROVIDER_URL:-}"
   OIDC_PROVIDER_NAME: NINA
+  # django-oauth-toolkit OIDC *Provider Role* signing key — unrelated to the
+  # allauth OIDC *Client Role* vars above.
+  OIDC_RSA_PRIVATE_KEY: "${OIDC_RSA_PRIVATE_KEY:-}"
   DJANGO_AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
   DJANGO_AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
   DJANGO_AWS_STORAGE_BUCKET_NAME: ${AWS_STORAGE_BUCKET_NAME}

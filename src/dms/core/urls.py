@@ -9,6 +9,8 @@ urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
     # User management
     path("accounts/", include("allauth.urls")),
+    # OIDC Provider Role: OAuth2/OIDC authorization server endpoints
+    path("o/", include("oauth2_provider.urls")),
     path(
         "ht/",
         HealthCheckView.as_view(

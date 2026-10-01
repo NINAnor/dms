@@ -9,6 +9,7 @@ wheels/
 # Virtual environments
 .venv
 .env
+oidc.key
 
 aliases-private.sh
 site
