@@ -10,8 +10,7 @@ import boto3
 from botocore.client import Config
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
-from .fields import EncryptedCharField
+from django_cryptography.fields import encrypt
 
 
 class CannedACL(models.TextChoices):
@@ -19,21 +18,10 @@ class CannedACL(models.TextChoices):
     PUBLIC_READ = "public-read", _("Public read")
     PUBLIC_READ_WRITE = "public-read-write", _("Public read/write")
     AUTHENTICATED_READ = "authenticated-read", _("Authenticated read")
-    AWS_EXEC_READ = "aws-exec-read", _("AWS exec read")
-    BUCKET_OWNER_READ = "bucket-owner-read", _("Bucket owner read")
-    BUCKET_OWNER_FULL_CONTROL = (
-        "bucket-owner-full-control",
-        _("Bucket owner full control"),
-    )
 
 
 class Storage(models.Model):
-    """A single S3-compatible bucket/endpoint + credentials.
-
-    ``prefix`` is an unvalidated template string (e.g.
-    ``"project/{project_id}/datasets/{dataset_id}"``) rendered against
-    whatever ``**context`` kwargs the caller supplies at render time.
-    """
+    """A single S3-compatible bucket/endpoint + credentials."""
 
     name = models.CharField(max_length=255)
 
@@ -45,20 +33,13 @@ class Storage(models.Model):
             "Leave blank to use real AWS S3."
         ),
     )
-    region = models.CharField(max_length=64, blank=True)
+    region = models.CharField(max_length=64, blank=True, null=True)
     bucket_name = models.CharField(max_length=255)
 
-    access_key_id = EncryptedCharField(max_length=512)
-    secret_access_key = EncryptedCharField(max_length=512)
+    access_key_id = encrypt(models.CharField(max_length=512))
+    secret_access_key = encrypt(models.CharField(max_length=512))
 
-    prefix = models.CharField(
-        max_length=255,
-        blank=True,
-        help_text=_(
-            "Template string rendered against caller-supplied context, "
-            "e.g. '{project_id}/{dataset_id}'. Not validated."
-        ),
-    )
+    prefix = models.CharField(max_length=255, blank=True)
 
     canned_acl = models.CharField(
         max_length=32,
@@ -66,10 +47,7 @@ class Storage(models.Model):
         default=CannedACL.PRIVATE,
     )
 
-    is_global = models.BooleanField(
-        default=False,
-        help_text=_("Available to every project, regardless of explicit assignment."),
-    )
+    is_global = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = _("Storage")
@@ -108,7 +86,12 @@ class Storage(models.Model):
     # -- public API ----------------------------------------------------
 
     def get_s3_path(self, key: str, **context) -> str:
-        """Render this storage's prefix template and join it with ``key``."""
+        """Render this storage's prefix template and join it with ``key``.
+
+        ``prefix`` is an unvalidated template string (e.g.
+        ``"{project_id}/{dataset_id}"``) rendered against whatever
+        ``**context`` kwargs the caller supplies.
+        """
         prefix = self._render(self.prefix, **context).strip("/")
         return f"{prefix}/{key}" if prefix else key
 

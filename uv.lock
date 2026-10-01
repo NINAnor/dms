@@ -860,6 +860,20 @@ wheels = [
 ]
 
 [[package]]
+name = "django-cryptography-django5"
+version = "2.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cryptography" },
+    { name = "django" },
+    { name = "django-appconf" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/68/e4/0e412ef4fa219db4e0a5f0042aba832030261eab0d7ceb3c5c91df3b74e2/django_cryptography_django5-2.2.tar.gz", hash = "sha256:b149685032cbbaf8b88c1b3ff6d8de7a107bb1b3cff9e84e9b32d0c61ca08346", size = 33400 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/80/0c/874f03885f20d70ee116cbffb4ea7434fb4c3325baa4015c7bbeb3b7fa6d/django_cryptography_django5-2.2-py2.py3-none-any.whl", hash = "sha256:73b5d4597d2fd4accca0c971dad7aacfcef24cb7322512f4f94b020cd55b57ff", size = 28773 },
+]
+
+[[package]]
 name = "django-debug-toolbar"
 version = "8.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1261,6 +1275,7 @@ dependencies = [
     { name = "django-cors-headers" },
     { name = "django-cotton" },
     { name = "django-crispy-forms" },
+    { name = "django-cryptography-django5" },
     { name = "django-deprecate-fields" },
     { name = "django-environ" },
     { name = "django-filter" },
@@ -1379,6 +1394,7 @@ requires-dist = [
     { name = "django-cors-headers", specifier = ">=4.3.1" },
     { name = "django-cotton", specifier = ">=2.0.3" },
     { name = "django-crispy-forms" },
+    { name = "django-cryptography-django5", specifier = ">=2.2" },
     { name = "django-deprecate-fields" },
     { name = "django-environ" },
     { name = "django-filter", specifier = ">=24.2" },
