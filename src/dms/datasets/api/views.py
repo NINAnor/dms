@@ -1,9 +1,13 @@
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.pagination import CursorPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet, mixins
 from rules.contrib.rest_framework import AutoPermissionViewSetMixin
+
+from buckets.models import Storage
 
 from .. import filters
 from ..models import (
@@ -20,9 +24,23 @@ from ..schemas import dataset_metadata
 from . import serializers
 
 
+def _django_validation_error_detail(exc):
+    """Extract a DRF-friendly detail from a Django ``ValidationError``."""
+    return exc.messages if hasattr(exc, "messages") else str(exc)
+
+
 class DefaultCursorPagination(CursorPagination):
     page_size = 20
     ordering = "-id"
+
+
+def _upload_context(dataset, request):
+    """Build the server-side context rendered into a ``Storage``'s prefix
+    template. Never derived from client input."""
+    context = {"dataset_id": dataset.id, "user_id": request.user.id}
+    if dataset.project_id is not None:
+        context["project_id"] = dataset.project_id
+    return context
 
 
 class DatasetViewSet(AutoPermissionViewSetMixin, ModelViewSet):
@@ -35,7 +53,12 @@ class DatasetViewSet(AutoPermissionViewSetMixin, ModelViewSet):
         **AutoPermissionViewSetMixin.permission_type_map,
         "metadata_schema": "view",
         "geojson": "view",
+        "available_storages": "view",
         "upload_resource": "change",
+        "sign_upload_part": "change",
+        "complete_multipart_upload": "change",
+        "abort_multipart_upload": "change",
+        "confirm_upload": "change",
     }
 
     def get_serializer_class(self):
@@ -59,6 +82,121 @@ class DatasetViewSet(AutoPermissionViewSetMixin, ModelViewSet):
     )
     def geojson(self, request, pk):
         return self.retrieve(request=request, pk=pk)
+
+    @action(detail=True, methods=["get"], url_path="available-storages")
+    def available_storages(self, request, pk=None):
+        """List the storages this dataset's project may upload files to."""
+        dataset = self.get_object()
+        if dataset.project is None:
+            storages = Storage.objects.none()
+        else:
+            storages = dataset.project.available_storages
+        serializer = serializers.StorageSerializer(storages, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], url_path="upload-url")
+    def upload_resource(self, request, pk=None):
+        """Return a presigned upload URL (or multipart upload id) for a new
+        resource file. This never creates a ``Resource`` row -- callers must
+        confirm the upload afterwards via ``confirm_upload``."""
+        dataset = self.get_object()
+        serializer = serializers.UploadResourceRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            result = dataset.upload_resource(
+                serializer.validated_data["storage"],
+                serializer.validated_data["filename"],
+                multipart=serializer.validated_data["multipart"],
+                **_upload_context(dataset, request),
+            )
+        except DjangoValidationError as exc:
+            raise DRFValidationError(_django_validation_error_detail(exc)) from exc
+        return Response(result)
+
+    @action(detail=True, methods=["post"], url_path="upload-url/sign-part")
+    def sign_upload_part(self, request, pk=None):
+        """Return a presigned PUT URL for a single part of a multipart upload."""
+        dataset = self.get_object()
+        serializer = serializers.SignUploadPartRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        try:
+            result = dataset.sign_upload_part(
+                data["storage"],
+                data["key"],
+                data["upload_id"],
+                data["part_number"],
+                **_upload_context(dataset, request),
+            )
+        except DjangoValidationError as exc:
+            raise DRFValidationError(_django_validation_error_detail(exc)) from exc
+        return Response(result)
+
+    @action(detail=True, methods=["post"], url_path="upload-url/complete-multipart")
+    def complete_multipart_upload(self, request, pk=None):
+        """Finish a multipart upload given the collected part ETags."""
+        dataset = self.get_object()
+        serializer = serializers.CompleteMultipartUploadRequestSerializer(
+            data=request.data
+        )
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        try:
+            result = dataset.complete_multipart_upload(
+                data["storage"],
+                data["key"],
+                data["upload_id"],
+                data["parts"],
+                **_upload_context(dataset, request),
+            )
+        except DjangoValidationError as exc:
+            raise DRFValidationError(_django_validation_error_detail(exc)) from exc
+        return Response(result)
+
+    @action(detail=True, methods=["post"], url_path="upload-url/abort-multipart")
+    def abort_multipart_upload(self, request, pk=None):
+        """Abort an in-progress multipart upload."""
+        dataset = self.get_object()
+        serializer = serializers.AbortMultipartUploadRequestSerializer(
+            data=request.data
+        )
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        try:
+            dataset.abort_multipart_upload(
+                data["storage"],
+                data["key"],
+                data["upload_id"],
+                **_upload_context(dataset, request),
+            )
+        except DjangoValidationError as exc:
+            raise DRFValidationError(_django_validation_error_detail(exc)) from exc
+        return Response(status=204)
+
+    @action(detail=True, methods=["post"], url_path="resources/confirm-upload")
+    def confirm_upload(self, request, pk=None):
+        """Client-driven callback confirming a direct-to-storage upload.
+
+        This is *not* an S3 event notification and must not be trusted
+        blindly: the backend performs a server-side ``head_object`` check
+        against the storage before creating the ``Resource`` row.
+        """
+        dataset = self.get_object()
+        serializer = serializers.ConfirmUploadRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        try:
+            resource = dataset.confirm_upload(
+                data["storage"], data["key"], **_upload_context(dataset, request)
+            )
+        except DjangoValidationError as exc:
+            raise DRFValidationError(_django_validation_error_detail(exc)) from exc
+        return Response(
+            serializers.ResourceSerializer(
+                resource, context=self.get_serializer_context()
+            ).data,
+            status=201,
+        )
 
 
 class ResourceViewSet(AutoPermissionViewSetMixin, ModelViewSet):

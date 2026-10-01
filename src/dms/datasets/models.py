@@ -9,6 +9,7 @@ import rules
 from autoslug import AutoSlugField
 from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import GEOSGeometry, Polygon
+from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import connection, models, transaction
 from django.urls import reverse
@@ -131,6 +132,88 @@ class Dataset(RulesModel):
             and self.embargo_end_date > tz.localtime(tz.now()).date()
         )
 
+    def _validate_storage(self, storage):
+        """Raise ``ValidationError`` unless ``storage`` is one of this dataset's
+        project's ``available_storages`` (explicitly assigned or global)."""
+        available_storages = (
+            self.project.available_storages if self.project_id else None
+        )
+        if not available_storages or storage not in available_storages:
+            raise ValidationError(
+                f"Storage {storage} is not available for project {self.project_id}"
+            )
+
+    def upload_resource(self, storage, filename, multipart=False, **context):
+        """Prepare a presigned upload of ``filename`` to ``storage`` for this dataset.
+
+        ``storage`` must be one of the project's ``available_storages``
+        (explicitly assigned or global); otherwise a ``ValidationError`` is
+        raised.
+
+        When ``multipart`` is ``False`` (the default), returns a dict with the
+        resolved ``key`` and a single presigned PUT ``upload_url``. When
+        ``multipart`` is ``True``, initiates a multipart upload instead and
+        returns a dict with ``key`` and ``upload_id``; use
+        ``sign_upload_part`` to obtain presigned URLs for each part, then
+        ``complete_multipart_upload`` to finish it.
+
+        This never creates a ``Resource`` row: callers must confirm the
+        upload afterwards (see ``confirm_upload``) to avoid orphaned
+        resources for uploads that never complete.
+        """
+        self._validate_storage(storage)
+
+        if multipart:
+            return storage.create_multipart_upload(filename, **context)
+
+        return {
+            "key": filename,
+            "upload_url": storage.get_presigned_upload_url(filename, **context),
+        }
+
+    def sign_upload_part(self, storage, key, upload_id, part_number, **context):
+        """Return a presigned PUT URL for a single part of a multipart upload
+        previously initiated via ``upload_resource(..., multipart=True)``."""
+        self._validate_storage(storage)
+        return {
+            "url": storage.get_presigned_part_upload_url(key, upload_id, part_number)
+        }
+
+    def complete_multipart_upload(self, storage, key, upload_id, parts, **context):
+        """Finish a multipart upload given the collected part ``ETag``s."""
+        self._validate_storage(storage)
+        return storage.complete_multipart_upload(key, upload_id, parts)
+
+    def abort_multipart_upload(self, storage, key, upload_id, **context):
+        """Abort an in-progress multipart upload."""
+        self._validate_storage(storage)
+        storage.abort_multipart_upload(key, upload_id)
+
+    def confirm_upload(self, storage, key, **context):
+        """Confirm a direct-to-storage upload and create the ``Resource``.
+
+        This is a plain HTTP client-driven callback, not an S3 event
+        notification, so it cannot be trusted blindly: it performs a
+        server-side ``head_object`` call against ``storage`` to verify the
+        object actually exists before creating anything. A ``Resource`` with
+        ``storage`` and ``key`` set *is* its own confirmed state -- there is
+        no separate boolean or audit-log field.
+        """
+        self._validate_storage(storage)
+
+        if not storage.head_object(key, **context):
+            raise ValidationError(
+                f"Object {key!r} was not found in storage {storage}; "
+                "upload could not be confirmed."
+            )
+
+        return self.resources.create(
+            id=uuid.uuid4(),
+            storage=storage,
+            key=key,
+            uri=storage.get_http_url(key, **context),
+        )
+
     class Meta:
         rules_permissions = {
             "add": rules.is_authenticated,
@@ -234,6 +317,15 @@ class Resource(LifecycleModelMixin, RulesModel):
         verbose_name="URI of the resource",
         help_text="",
     )
+    storage = models.ForeignKey(
+        "buckets.Storage",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="resources",
+        db_constraint=False,
+    )
+    key = models.CharField(null=True, blank=True)
     dataset = models.ForeignKey(
         "Dataset", on_delete=models.CASCADE, related_name="resources"
     )
