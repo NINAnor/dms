@@ -868,9 +868,9 @@ dependencies = [
     { name = "django" },
     { name = "django-appconf" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/68/e4/0e412ef4fa219db4e0a5f0042aba832030261eab0d7ceb3c5c91df3b74e2/django_cryptography_django5-2.2.tar.gz", hash = "sha256:b149685032cbbaf8b88c1b3ff6d8de7a107bb1b3cff9e84e9b32d0c61ca08346", size = 33400 }
+sdist = { url = "https://files.pythonhosted.org/packages/68/e4/0e412ef4fa219db4e0a5f0042aba832030261eab0d7ceb3c5c91df3b74e2/django_cryptography_django5-2.2.tar.gz", hash = "sha256:b149685032cbbaf8b88c1b3ff6d8de7a107bb1b3cff9e84e9b32d0c61ca08346", size = 33400, upload-time = "2024-06-04T17:28:12.538Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/80/0c/874f03885f20d70ee116cbffb4ea7434fb4c3325baa4015c7bbeb3b7fa6d/django_cryptography_django5-2.2-py2.py3-none-any.whl", hash = "sha256:73b5d4597d2fd4accca0c971dad7aacfcef24cb7322512f4f94b020cd55b57ff", size = 28773 },
+    { url = "https://files.pythonhosted.org/packages/80/0c/874f03885f20d70ee116cbffb4ea7434fb4c3325baa4015c7bbeb3b7fa6d/django_cryptography_django5-2.2-py2.py3-none-any.whl", hash = "sha256:73b5d4597d2fd4accca0c971dad7aacfcef24cb7322512f4f94b020cd55b57ff", size = 28773, upload-time = "2024-06-04T17:28:11.366Z" },
 ]
 
 [[package]]
