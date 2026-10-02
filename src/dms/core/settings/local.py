@@ -51,7 +51,13 @@ def show_toolbar(request):
 
 
 DEBUG_TOOLBAR_CONFIG = {
-    "DISABLE_PANELS": ["debug_toolbar.panels.redirects.RedirectsPanel"],
+    "DISABLE_PANELS": [
+        "debug_toolbar.panels.redirects.RedirectsPanel",
+        # ProfilingPanel uses cProfile, which errors with "Another profiling
+        # tool is already active" when the dev server handles concurrent
+        # requests (each request tries to enable a process-wide profiler).
+        "debug_toolbar.panels.profiling.ProfilingPanel",
+    ],
     "SHOW_TEMPLATE_CONTEXT": True,
     "SHOW_TOOLBAR_CALLBACK": show_toolbar,
 }
