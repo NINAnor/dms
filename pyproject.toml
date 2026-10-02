@@ -17,7 +17,7 @@ dev = [
 ]
 docs = ["mkdocs", "mkdocs-material", "pymdown-extensions", "neoteroi-mkdocs", "mkdocstrings[python]"]
 gis = [
-  "gdal==3.13.0",
+  "gdal==3.13.1",
   "pyproj"
 ]
 ldap = ["python-ldap", "django-auth-ldap"]
