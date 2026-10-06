@@ -40,4 +40,28 @@ if ! rc anonymous set download "local/$BUCKET"; then
   exit 1
 fi
 
+# Allow direct-from-browser uploads (Uppy's AwsS3 plugin with the signRequest
+# strategy PUTs straight to this bucket from the frontend's origin), which
+# requires the bucket to answer CORS preflights.
+CORS_FILE="$(mktemp)"
+cat >"$CORS_FILE" <<'EOF'
+{
+  "rules": [
+    {
+      "allowedOrigins": ["*"],
+      "allowedMethods": ["GET", "PUT", "POST", "DELETE", "HEAD"],
+      "allowedHeaders": ["*"],
+      "exposeHeaders": ["ETag", "Location"],
+      "maxAgeSeconds": 3000
+    }
+  ]
+}
+EOF
+if ! rc bucket cors set "local/$BUCKET" "$CORS_FILE" >/dev/null 2>&1; then
+  echo "rustfs: could not set CORS rules on bucket '$BUCKET'" >&2
+  kill "$SERVER_PID" 2>/dev/null
+  exit 1
+fi
+rm -f "$CORS_FILE"
+
 wait "$SERVER_PID"
