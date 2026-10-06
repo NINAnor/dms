@@ -16,8 +16,4 @@
 
 ::: dms.projects.models.Project
 
-::: dms.projects.models.DMP
-
-
-## Uploads
-::: dms.uploads.models.HookRequest -->
+::: dms.projects.models.DMP -->

@@ -136,7 +136,6 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "buckets",
     "dms.core",
-    "dms.uploads",
     "dms.users",
     "dms.theme",
     "dms.frontend",
