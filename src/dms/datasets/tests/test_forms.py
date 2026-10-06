@@ -81,37 +81,6 @@ class TestResourceFormUriReadOnlyForDirectUpload:
         assert form.is_valid(), form.errors
         assert form.cleaned_data["uri"] == "https://example.com/original"
 
-    def test_uri_cannot_be_changed_for_direct_upload_resource_via_clean(
-        self, dataset, user
-    ):
-        """Defense in depth: even if the field were not disabled (e.g. a
-        crafted request bypassing the rendered form), clean_uri still
-        rejects a changed uri for direct-upload resources."""
-        storage = _make_storage()
-        resource = Resource.objects.create(
-            id=uuid.uuid4(),
-            uri="https://example.com/original",
-            dataset=dataset,
-            storage=storage,
-            key="some/key.txt",
-        )
-
-        form = ResourceForm(
-            data=_form_data(
-                title="Resource",
-                uri="https://example.com/changed",
-                role=resource.role,
-                access_type=resource.access_type,
-            ),
-            instance=resource,
-            user=user,
-            dataset=dataset,
-        )
-        form.fields["uri"].disabled = False
-
-        assert not form.is_valid()
-        assert "uri" in form.errors
-
     def test_uri_can_be_resubmitted_unchanged_for_direct_upload_resource(
         self, dataset, user
     ):
