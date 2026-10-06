@@ -224,7 +224,7 @@ services:
       - "traefik.http.routers.rustfs.rule=Host(`${RUSTFS_HOSTNAME:-rustfs.local}`)"
       - "traefik.http.routers.rustfs.entrypoints=web"
       - "traefik.http.routers.rustfs.priority=100"
-      - "traefik.http.services.rustfs.loadbalancer.server.port=9000"
+      - "traefik.http.services.rustfs.loadbalancer.server.port=9090"
 
   titiler:
     image: ghcr.io/ninanor/titiler-app-titiler:next
