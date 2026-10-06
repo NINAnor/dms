@@ -120,6 +120,17 @@ class ResourceForm(forms.ModelForm):
 
         self.fields["title"].required = True
 
+        if (
+            self.instance.pk
+            and self.instance.storage_id is not None
+            and self.instance.key is not None
+        ):
+            self.fields["uri"].disabled = True
+            self.fields["uri"].help_text = (
+                "This resource was created via direct upload; "
+                "its uri is managed automatically and cannot be edited."
+            )
+
         self.user = user
         self.dataset = dataset
 

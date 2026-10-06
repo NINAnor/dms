@@ -108,20 +108,12 @@ class Storage(models.Model):
             ExpiresIn=expires_in,
         )
 
-    def get_presigned_upload_url(
-        self, key: str, expires_in: int = 3600, **context
-    ) -> str:
-        """Return a single-part presigned PUT URL for uploading to ``key``."""
-        path = self.get_s3_path(key, **context)
-        return self._client().generate_presigned_url(
-            "put_object",
-            Params={
-                "Bucket": self.bucket_name,
-                "Key": path,
-                "ACL": self.canned_acl,
-            },
-            ExpiresIn=expires_in,
-        )
+    def _acl_headers(self) -> dict:
+        """Headers the client must send on a request signed with an ``ACL``
+        param, since boto3 signs ``ACL`` as the ``x-amz-acl`` header (see
+        ``SignedHeaders=host;x-amz-acl`` in the resulting presigned URL) --
+        omitting it on the actual request causes a signature mismatch."""
+        return {"x-amz-acl": self.canned_acl}
 
     def head_object(self, key: str, **context) -> dict | None:
         """Return the object's metadata if it exists in this storage, else None."""
@@ -130,52 +122,3 @@ class Storage(models.Model):
             return self._client().head_object(Bucket=self.bucket_name, Key=path)
         except self._client().exceptions.ClientError:
             return None
-
-    # -- multipart upload lifecycle --------------------------------------
-
-    def create_multipart_upload(self, key: str, **context) -> dict:
-        """Initiate a multipart upload; returns {"key": ..., "upload_id": ...}."""
-        path = self.get_s3_path(key, **context)
-        response = self._client().create_multipart_upload(
-            Bucket=self.bucket_name, Key=path, ACL=self.canned_acl
-        )
-        return {"key": path, "upload_id": response["UploadId"]}
-
-    def get_presigned_part_upload_url(
-        self, key: str, upload_id: str, part_number: int, expires_in: int = 3600
-    ) -> str:
-        """Return a presigned PUT URL for a single part of a multipart upload.
-
-        ``key`` here is expected to already be the fully-rendered S3 path, as
-        returned by ``create_multipart_upload``.
-        """
-        return self._client().generate_presigned_url(
-            "upload_part",
-            Params={
-                "Bucket": self.bucket_name,
-                "Key": key,
-                "UploadId": upload_id,
-                "PartNumber": part_number,
-            },
-            ExpiresIn=expires_in,
-        )
-
-    def complete_multipart_upload(
-        self, key: str, upload_id: str, parts: list[dict]
-    ) -> dict:
-        """Finish a multipart upload.
-
-        ``key`` is the fully-rendered S3 path. ``parts`` is a list of
-        ``{"ETag": ..., "PartNumber": ...}`` dicts, one per uploaded part.
-        """
-        return self._client().complete_multipart_upload(
-            Bucket=self.bucket_name,
-            Key=key,
-            UploadId=upload_id,
-            MultipartUpload={"Parts": parts},
-        )
-
-    def abort_multipart_upload(self, key: str, upload_id: str) -> None:
-        self._client().abort_multipart_upload(
-            Bucket=self.bucket_name, Key=key, UploadId=upload_id
-        )

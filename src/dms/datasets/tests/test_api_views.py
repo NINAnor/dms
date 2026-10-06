@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -59,51 +59,188 @@ def storage(project):
     return storage
 
 
-class TestUploadResourceView:
+class TestSignS3RequestView:
     def test_requires_authentication(self, client, dataset, storage):
-        url = reverse("api_v1:datasets-upload-resource", kwargs={"pk": dataset.pk})
+        url = reverse("api_v1:datasets-sign-s3-request", kwargs={"pk": dataset.pk})
         response = client.post(
             url,
-            {"storage": storage.pk, "filename": "data.csv"},
+            {"storage": storage.pk, "key": "data.csv", "method": "PUT"},
             content_type="application/json",
         )
         assert response.status_code in (401, 403)
 
     def test_requires_project_membership(self, client, user, dataset, storage):
         client.force_login(user)
-        url = reverse("api_v1:datasets-upload-resource", kwargs={"pk": dataset.pk})
+        url = reverse("api_v1:datasets-sign-s3-request", kwargs={"pk": dataset.pk})
         response = client.post(
             url,
-            {"storage": storage.pk, "filename": "data.csv"},
+            {"storage": storage.pk, "key": "data.csv", "method": "PUT"},
             content_type="application/json",
         )
         assert response.status_code == 403
 
-    def test_returns_upload_url_without_creating_resource(
+    def test_put_without_upload_id_signs_simple_upload(
         self, client, user, member, dataset, storage
     ):
         client.force_login(user)
-        url = reverse("api_v1:datasets-upload-resource", kwargs={"pk": dataset.pk})
-        with patch.object(
-            Storage, "get_presigned_upload_url", return_value="https://example.com/put"
-        ) as mocked:
+        url = reverse("api_v1:datasets-sign-s3-request", kwargs={"pk": dataset.pk})
+        mock_client = MagicMock()
+        mock_client.generate_presigned_url.return_value = "https://example.com/put"
+        with patch.object(Storage, "_client", return_value=mock_client):
             response = client.post(
                 url,
-                {"storage": storage.pk, "filename": "data.csv"},
+                {"storage": storage.pk, "key": "data.csv", "method": "PUT"},
                 content_type="application/json",
             )
         assert response.status_code == 200
         assert response.json() == {
+            "url": "https://example.com/put",
+            "headers": {"x-amz-acl": "private"},
             "key": "data.csv",
-            "upload_url": "https://example.com/put",
         }
-        mocked.assert_called_once_with(
-            "data.csv",
-            project_id=dataset.project_id,
-            dataset_id=str(dataset.id),
-            user_id=user.id,
+        mock_client.generate_presigned_url.assert_called_once_with(
+            "put_object",
+            Params={"Bucket": "bucket", "Key": "data.csv", "ACL": "private"},
+            ExpiresIn=3600,
         )
         assert not dataset.resources.exists()
+
+    def test_put_with_upload_id_and_part_number_signs_upload_part(
+        self, client, user, member, dataset, storage
+    ):
+        client.force_login(user)
+        url = reverse("api_v1:datasets-sign-s3-request", kwargs={"pk": dataset.pk})
+        mock_client = MagicMock()
+        mock_client.generate_presigned_url.return_value = "https://example.com/part"
+        with patch.object(Storage, "_client", return_value=mock_client):
+            response = client.post(
+                url,
+                {
+                    "storage": storage.pk,
+                    "key": "big.zip",
+                    "method": "PUT",
+                    "uploadId": "upload-1",
+                    "partNumber": 1,
+                },
+                content_type="application/json",
+            )
+        assert response.status_code == 200
+        assert response.json() == {"url": "https://example.com/part"}
+        mock_client.generate_presigned_url.assert_called_once_with(
+            "upload_part",
+            Params={
+                "Bucket": "bucket",
+                "Key": "big.zip",
+                "UploadId": "upload-1",
+                "PartNumber": 1,
+            },
+            ExpiresIn=3600,
+        )
+
+    def test_post_without_upload_id_signs_create_multipart_upload(
+        self, client, user, member, dataset, storage
+    ):
+        client.force_login(user)
+        url = reverse("api_v1:datasets-sign-s3-request", kwargs={"pk": dataset.pk})
+        mock_client = MagicMock()
+        mock_client.generate_presigned_url.return_value = "https://example.com/create"
+        with patch.object(Storage, "_client", return_value=mock_client):
+            response = client.post(
+                url,
+                {"storage": storage.pk, "key": "big.zip", "method": "POST"},
+                content_type="application/json",
+            )
+        assert response.status_code == 200
+        assert response.json() == {
+            "url": "https://example.com/create",
+            "key": "big.zip",
+            "headers": {"x-amz-acl": "private"},
+        }
+        mock_client.generate_presigned_url.assert_called_once_with(
+            "create_multipart_upload",
+            Params={"Bucket": "bucket", "Key": "big.zip", "ACL": "private"},
+            ExpiresIn=3600,
+        )
+
+    def test_post_with_upload_id_signs_complete_multipart_upload(
+        self, client, user, member, dataset, storage
+    ):
+        client.force_login(user)
+        url = reverse("api_v1:datasets-sign-s3-request", kwargs={"pk": dataset.pk})
+        mock_client = MagicMock()
+        mock_client.generate_presigned_url.return_value = "https://example.com/complete"
+        with patch.object(Storage, "_client", return_value=mock_client):
+            response = client.post(
+                url,
+                {
+                    "storage": storage.pk,
+                    "key": "big.zip",
+                    "method": "POST",
+                    "uploadId": "upload-1",
+                },
+                content_type="application/json",
+            )
+        assert response.status_code == 200
+        assert response.json() == {"url": "https://example.com/complete"}
+        mock_client.generate_presigned_url.assert_called_once_with(
+            "complete_multipart_upload",
+            Params={"Bucket": "bucket", "Key": "big.zip", "UploadId": "upload-1"},
+            ExpiresIn=3600,
+        )
+
+    def test_delete_with_upload_id_signs_abort_multipart_upload(
+        self, client, user, member, dataset, storage
+    ):
+        client.force_login(user)
+        url = reverse("api_v1:datasets-sign-s3-request", kwargs={"pk": dataset.pk})
+        mock_client = MagicMock()
+        mock_client.generate_presigned_url.return_value = "https://example.com/abort"
+        with patch.object(Storage, "_client", return_value=mock_client):
+            response = client.post(
+                url,
+                {
+                    "storage": storage.pk,
+                    "key": "big.zip",
+                    "method": "DELETE",
+                    "uploadId": "upload-1",
+                },
+                content_type="application/json",
+            )
+        assert response.status_code == 200
+        assert response.json() == {"url": "https://example.com/abort"}
+        mock_client.generate_presigned_url.assert_called_once_with(
+            "abort_multipart_upload",
+            Params={"Bucket": "bucket", "Key": "big.zip", "UploadId": "upload-1"},
+            ExpiresIn=3600,
+        )
+
+    def test_get_with_upload_id_signs_list_parts(
+        self, client, user, member, dataset, storage
+    ):
+        client.force_login(user)
+        url = reverse("api_v1:datasets-sign-s3-request", kwargs={"pk": dataset.pk})
+        mock_client = MagicMock()
+        mock_client.generate_presigned_url.return_value = (
+            "https://example.com/list-parts"
+        )
+        with patch.object(Storage, "_client", return_value=mock_client):
+            response = client.post(
+                url,
+                {
+                    "storage": storage.pk,
+                    "key": "big.zip",
+                    "method": "GET",
+                    "uploadId": "upload-1",
+                },
+                content_type="application/json",
+            )
+        assert response.status_code == 200
+        assert response.json() == {"url": "https://example.com/list-parts"}
+        mock_client.generate_presigned_url.assert_called_once_with(
+            "list_parts",
+            Params={"Bucket": "bucket", "Key": "big.zip", "UploadId": "upload-1"},
+            ExpiresIn=3600,
+        )
 
     def test_rejects_storage_not_available_to_project(
         self, client, user, member, dataset
@@ -119,10 +256,24 @@ class TestUploadResourceView:
             is_global=False,
         )
         client.force_login(user)
-        url = reverse("api_v1:datasets-upload-resource", kwargs={"pk": dataset.pk})
+        url = reverse("api_v1:datasets-sign-s3-request", kwargs={"pk": dataset.pk})
         response = client.post(
             url,
-            {"storage": other_storage.pk, "filename": "data.csv"},
+            {"storage": other_storage.pk, "key": "data.csv", "method": "PUT"},
+            content_type="application/json",
+        )
+        assert response.status_code == 400
+
+    def test_unsupported_combo_returns_400(
+        self, client, user, member, dataset, storage
+    ):
+        """GET without an uploadId has no dispatch branch and raises
+        ValueError in Storage.presign_s3_request, mapped to 400."""
+        client.force_login(user)
+        url = reverse("api_v1:datasets-sign-s3-request", kwargs={"pk": dataset.pk})
+        response = client.post(
+            url,
+            {"storage": storage.pk, "key": "data.csv", "method": "GET"},
             content_type="application/json",
         )
         assert response.status_code == 400
@@ -134,7 +285,7 @@ class TestUploadResourceView:
         thus rendered into the prefix template) must include
         project_id/dataset_id/user_id, never trusting client input for it."""
         client.force_login(user)
-        url = reverse("api_v1:datasets-upload-resource", kwargs={"pk": dataset.pk})
+        url = reverse("api_v1:datasets-sign-s3-request", kwargs={"pk": dataset.pk})
         with patch.object(
             Storage, "get_s3_path", return_value="rendered/data.csv"
         ) as mocked_get_s3_path:
@@ -142,7 +293,8 @@ class TestUploadResourceView:
                 url,
                 {
                     "storage": storage.pk,
-                    "filename": "data.csv",
+                    "key": "data.csv",
+                    "method": "PUT",
                     # client-supplied context must be ignored
                     "project_id": "attacker-project",
                     "user_id": "999999",
@@ -150,7 +302,9 @@ class TestUploadResourceView:
                 content_type="application/json",
             )
         assert response.status_code == 200
-        mocked_get_s3_path.assert_called_once_with(
+        # called once by the dispatcher (to compute the resolved key) and
+        # once by get_presigned_upload_url (both using the same context)
+        mocked_get_s3_path.assert_called_with(
             "data.csv",
             project_id=dataset.project_id,
             dataset_id=str(dataset.id),

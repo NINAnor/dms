@@ -267,118 +267,37 @@ class TestResourceStorageFields:
 
 
 @pytest.mark.django_db(transaction=True)
-class TestDatasetUploadResource:
-    """Test cases for Dataset.upload_resource."""
+class TestDatasetValidateStorage:
+    """Test cases for Dataset._validate_storage."""
 
-    def test_upload_resource_allowed_storage(self, dataset_with_project, project):
+    def test_validate_storage_allowed(self, dataset_with_project, project):
         """A storage present in the project's available_storages is accepted."""
         storage = _make_storage(name="assigned")
         ProjectStorage.objects.create(project=project, storage=storage)
 
-        result = dataset_with_project.upload_resource(storage, "data.csv")
+        dataset_with_project._validate_storage(storage)  # should not raise
 
-        assert result["key"] == "data.csv"
-        assert "upload_url" in result
-
-    def test_upload_resource_allowed_global_storage(
+    def test_validate_storage_allowed_global_storage(
         self, dataset_with_project, project
     ):
         """A global storage, even without an explicit assignment, is accepted."""
         storage = _make_storage(name="global", is_global=True)
 
-        result = dataset_with_project.upload_resource(storage, "data.csv")
+        dataset_with_project._validate_storage(storage)  # should not raise
 
-        assert result["key"] == "data.csv"
-        assert "upload_url" in result
-
-    def test_upload_resource_rejected_storage(self, dataset_with_project):
+    def test_validate_storage_rejected(self, dataset_with_project):
         """A storage not available to the project's project is rejected."""
         storage = _make_storage(name="unassigned")
 
         with pytest.raises(ValidationError):
-            dataset_with_project.upload_resource(storage, "data.csv")
+            dataset_with_project._validate_storage(storage)
 
-    def test_upload_resource_rejected_without_project(self, dataset):
+    def test_validate_storage_rejected_without_project(self, dataset):
         """A dataset with no project has no available storages at all."""
         storage = _make_storage(name="any")
 
         with pytest.raises(ValidationError):
-            dataset.upload_resource(storage, "data.csv")
-
-
-@pytest.mark.django_db(transaction=True)
-class TestDatasetMultipartUpload:
-    """Test cases for Dataset multipart-upload helper methods."""
-
-    def test_upload_resource_multipart_delegates_to_storage(
-        self, dataset_with_project, project
-    ):
-        storage = _make_storage(name="assigned")
-        ProjectStorage.objects.create(project=project, storage=storage)
-        with patch.object(
-            storage,
-            "create_multipart_upload",
-            return_value={"key": "big.zip", "upload_id": "upload-1"},
-        ) as mocked:
-            result = dataset_with_project.upload_resource(
-                storage, "big.zip", multipart=True
-            )
-
-        assert result == {"key": "big.zip", "upload_id": "upload-1"}
-        mocked.assert_called_once_with("big.zip")
-
-    def test_upload_resource_multipart_rejected_storage(self, dataset_with_project):
-        storage = _make_storage(name="unassigned")
-
-        with pytest.raises(ValidationError):
-            dataset_with_project.upload_resource(storage, "big.zip", multipart=True)
-
-    def test_sign_upload_part_delegates_to_storage(self, dataset_with_project, project):
-        storage = _make_storage(name="assigned")
-        ProjectStorage.objects.create(project=project, storage=storage)
-        with patch.object(
-            storage,
-            "get_presigned_part_upload_url",
-            return_value="https://example.com/part-url",
-        ) as mocked:
-            result = dataset_with_project.sign_upload_part(
-                storage, "big.zip", "upload-1", 1
-            )
-
-        assert result == {"url": "https://example.com/part-url"}
-        mocked.assert_called_once_with("big.zip", "upload-1", 1)
-
-    def test_sign_upload_part_rejected_storage(self, dataset_with_project):
-        storage = _make_storage(name="unassigned")
-
-        with pytest.raises(ValidationError):
-            dataset_with_project.sign_upload_part(storage, "big.zip", "upload-1", 1)
-
-    def test_complete_multipart_upload_delegates_to_storage(
-        self, dataset_with_project, project
-    ):
-        storage = _make_storage(name="assigned")
-        ProjectStorage.objects.create(project=project, storage=storage)
-        parts = [{"ETag": "etag-1", "PartNumber": 1}]
-        with patch.object(
-            storage, "complete_multipart_upload", return_value={"key": "big.zip"}
-        ) as mocked:
-            result = dataset_with_project.complete_multipart_upload(
-                storage, "big.zip", "upload-1", parts
-            )
-
-        assert result == {"key": "big.zip"}
-        mocked.assert_called_once_with("big.zip", "upload-1", parts)
-
-    def test_abort_multipart_upload_delegates_to_storage(
-        self, dataset_with_project, project
-    ):
-        storage = _make_storage(name="assigned")
-        ProjectStorage.objects.create(project=project, storage=storage)
-        with patch.object(storage, "abort_multipart_upload") as mocked:
-            dataset_with_project.abort_multipart_upload(storage, "big.zip", "upload-1")
-
-        mocked.assert_called_once_with("big.zip", "upload-1")
+            dataset._validate_storage(storage)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -403,9 +322,84 @@ class TestDatasetConfirmUpload:
         assert resource.pk is not None
         assert resource.storage == storage
         assert resource.key == "data.csv"
+        assert resource.title == "data.csv"
         assert resource.uri == "https://example.com/data.csv"
         assert resource.dataset == dataset_with_project
         mocked_head.assert_called_once_with("data.csv")
+
+    def test_confirm_upload_derives_title_from_key_basename(
+        self, dataset_with_project, project
+    ):
+        storage = _make_storage(name="assigned")
+        ProjectStorage.objects.create(project=project, storage=storage)
+        with (
+            patch.object(storage, "head_object", return_value={"ContentLength": 1}),
+            patch.object(
+                storage, "get_http_url", return_value="https://example.com/data.csv"
+            ),
+        ):
+            resource = dataset_with_project.confirm_upload(
+                storage, "some/prefix/data.csv"
+            )
+
+        assert resource.title == "data.csv"
+
+    def test_confirm_upload_twice_updates_existing_resource(
+        self, dataset_with_project, project
+    ):
+        storage = _make_storage(name="assigned")
+        ProjectStorage.objects.create(project=project, storage=storage)
+        with (
+            patch.object(storage, "head_object", return_value={"ContentLength": 1}),
+            patch.object(
+                storage, "get_http_url", return_value="https://example.com/data.csv"
+            ),
+        ):
+            first = dataset_with_project.confirm_upload(storage, "data.csv")
+
+        with (
+            patch.object(storage, "head_object", return_value={"ContentLength": 2}),
+            patch.object(
+                storage, "get_http_url", return_value="https://example.com/data-v2.csv"
+            ),
+        ):
+            second = dataset_with_project.confirm_upload(storage, "data.csv")
+
+        assert str(second.pk) == str(first.pk)
+        assert second.uri == "https://example.com/data-v2.csv"
+        assert dataset_with_project.resources.filter(key="data.csv").count() == 1
+
+    def test_confirm_upload_stores_and_matches_on_resolved_s3_key(
+        self, dataset_with_project, project
+    ):
+        storage = _make_storage(name="assigned", prefix="{dataset_id}")
+        ProjectStorage.objects.create(project=project, storage=storage)
+        expected_key = f"{dataset_with_project.pk}/data.csv"
+
+        with (
+            patch.object(storage, "head_object", return_value={"ContentLength": 1}),
+            patch.object(
+                storage, "get_http_url", return_value="https://example.com/data.csv"
+            ),
+        ):
+            first = dataset_with_project.confirm_upload(
+                storage, "data.csv", dataset_id=dataset_with_project.pk
+            )
+
+        assert first.key == expected_key
+
+        with (
+            patch.object(storage, "head_object", return_value={"ContentLength": 2}),
+            patch.object(
+                storage, "get_http_url", return_value="https://example.com/data-v2.csv"
+            ),
+        ):
+            second = dataset_with_project.confirm_upload(
+                storage, "data.csv", dataset_id=dataset_with_project.pk
+            )
+
+        assert str(second.pk) == str(first.pk)
+        assert dataset_with_project.resources.filter(key=expected_key).count() == 1
 
     def test_confirm_upload_rejects_missing_object(self, dataset_with_project, project):
         storage = _make_storage(name="assigned")
