@@ -15,4 +15,10 @@ alias dpcli_test="docker compose --profile dev exec -it django-dev uv run pytest
 [ ! -f oidc.key ] && openssl genrsa -out oidc.key 4096
 export OIDC_RSA_PRIVATE_KEY=$(cat oidc.key)
 
-[ -f aliases-private.sh ] && source aliases-private.sh || true
+if docker info 2>/dev/null | grep -q "rootless"; then
+    export DOCKER_SOCK=/run/user/$(id -u)/docker.sock
+else
+    export DOCKER_SOCK=/var/run/docker.sock
+fi
+
+export HOSTNAME=$(hostname)
