@@ -57,7 +57,6 @@ A super user is created on first run with the following credentials:
 - **nginx**: Nginx for static file serving (prod only)
 - **traefik**: Reverse proxy
 - **rustfs**: S3-compatible object storage (dev only)
-- **tusd**: S3 upload service
 - **frontend**: Frontend development server for high interaction pages (dev only)
 - **titiler**: A TMS service to provide previews of COG files
 - **fastdoc**: pandoc converter API (for generating nice documents in multi formats, pdf generation)
