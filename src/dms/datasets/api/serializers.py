@@ -65,7 +65,30 @@ class DatasetListSerializer(DatasetSerializer):
         )
 
 
-class ResourceListSerializer(serializers.HyperlinkedModelSerializer):
+class DirectUploadUriReadOnlyMixin:
+    """Prevent editing `uri` for resources created via direct upload.
+
+    Such resources have both `storage` and `key` set server-side when the
+    upload is confirmed; their `uri` is derived from storage/key and must
+    not be overwritten by the client afterwards.
+    """
+
+    def validate_uri(self, value):
+        if (
+            self.instance is not None
+            and self.instance.storage_id is not None
+            and self.instance.key is not None
+            and value != self.instance.uri
+        ):
+            raise serializers.ValidationError(
+                "uri cannot be changed for resources created via direct upload."
+            )
+        return value
+
+
+class ResourceListSerializer(
+    DirectUploadUriReadOnlyMixin, serializers.HyperlinkedModelSerializer
+):
     dataset = serializers.HyperlinkedRelatedField(
         view_name="api_v1:datasets-detail", read_only=True
     )
@@ -156,7 +179,9 @@ class DatasetRelationshipCreateSerializer(serializers.ModelSerializer):
         }
 
 
-class MapResourceSerializer(serializers.HyperlinkedModelSerializer):
+class MapResourceSerializer(
+    DirectUploadUriReadOnlyMixin, serializers.HyperlinkedModelSerializer
+):
     dataset = serializers.HyperlinkedRelatedField(
         view_name="api_v1:datasets-detail", read_only=True
     )
@@ -168,7 +193,9 @@ class MapResourceSerializer(serializers.HyperlinkedModelSerializer):
         fields = ResourceSerializer.Meta.fields + ("map_type",)
 
 
-class RasterResourceSerializer(serializers.HyperlinkedModelSerializer):
+class RasterResourceSerializer(
+    DirectUploadUriReadOnlyMixin, serializers.HyperlinkedModelSerializer
+):
     dataset = serializers.HyperlinkedRelatedField(
         view_name="api_v1:datasets-detail", read_only=True
     )
@@ -182,7 +209,9 @@ class RasterResourceSerializer(serializers.HyperlinkedModelSerializer):
         fields = ResourceSerializer.Meta.fields + ("titiler",)
 
 
-class TabularResourceSerializer(serializers.HyperlinkedModelSerializer):
+class TabularResourceSerializer(
+    DirectUploadUriReadOnlyMixin, serializers.HyperlinkedModelSerializer
+):
     dataset = serializers.HyperlinkedRelatedField(
         view_name="api_v1:datasets-detail", read_only=True
     )
@@ -196,7 +225,9 @@ class TabularResourceSerializer(serializers.HyperlinkedModelSerializer):
         fields = ResourceSerializer.Meta.fields
 
 
-class PartitionedResourceSerializer(serializers.HyperlinkedModelSerializer):
+class PartitionedResourceSerializer(
+    DirectUploadUriReadOnlyMixin, serializers.HyperlinkedModelSerializer
+):
     dataset = serializers.HyperlinkedRelatedField(
         view_name="api_v1:datasets-detail", read_only=True
     )
@@ -253,45 +284,6 @@ class StorageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Storage
         fields = ("id", "name")
-
-
-class UploadResourceRequestSerializer(serializers.Serializer):
-    """Request body for ``DatasetViewSet.upload_resource``."""
-
-    storage = serializers.PrimaryKeyRelatedField(queryset=Storage.objects.all())
-    filename = serializers.CharField()
-    multipart = serializers.BooleanField(default=False)
-
-
-class SignUploadPartRequestSerializer(serializers.Serializer):
-    """Request body for ``DatasetViewSet.sign_upload_part``."""
-
-    storage = serializers.PrimaryKeyRelatedField(queryset=Storage.objects.all())
-    key = serializers.CharField()
-    upload_id = serializers.CharField()
-    part_number = serializers.IntegerField(min_value=1)
-
-
-class MultipartPartSerializer(serializers.Serializer):
-    ETag = serializers.CharField()
-    PartNumber = serializers.IntegerField(min_value=1)
-
-
-class CompleteMultipartUploadRequestSerializer(serializers.Serializer):
-    """Request body for ``DatasetViewSet.complete_multipart_upload``."""
-
-    storage = serializers.PrimaryKeyRelatedField(queryset=Storage.objects.all())
-    key = serializers.CharField()
-    upload_id = serializers.CharField()
-    parts = MultipartPartSerializer(many=True)
-
-
-class AbortMultipartUploadRequestSerializer(serializers.Serializer):
-    """Request body for ``DatasetViewSet.abort_multipart_upload``."""
-
-    storage = serializers.PrimaryKeyRelatedField(queryset=Storage.objects.all())
-    key = serializers.CharField()
-    upload_id = serializers.CharField()
 
 
 class ConfirmUploadRequestSerializer(serializers.Serializer):

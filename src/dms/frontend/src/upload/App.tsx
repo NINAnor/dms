@@ -1,7 +1,8 @@
 import { UppyContextProvider } from '@uppy/react';
 import { useEffect, useState } from 'react';
-import { Uppy, type UppyFile } from '@uppy/core';
+import { Uppy } from '@uppy/core';
 import AwsS3 from '@uppy/aws-s3';
+import toast, { Toaster } from 'react-hot-toast';
 import { Dashboard } from './Dashboard';
 
 import '@uppy/core/css/style.min.css';
@@ -11,7 +12,6 @@ import { client, config } from './config';
 import type { Storage } from './types';
 
 interface Meta {
-  key?: string;
   [key: string]: unknown;
 }
 
@@ -43,48 +43,17 @@ export default function App() {
 
     uppy.use(AwsS3, {
       shouldUseMultipart: file => (file.size ?? 0) > MULTIPART_THRESHOLD,
-      getUploadParameters: async file => {
-        const { data } = await client.post(uploadUrl('upload-url/'), {
+      // Preserve the filename as the S3 key (no randomization), matching the
+      // backend's previous behavior.
+      generateObjectKey: file => file.name ?? file.id,
+      // The backend presigns each raw S3 request behind a single endpoint,
+      // so we can forward Uppy's request almost verbatim.
+      signRequest: async request => {
+        const { data } = await client.post(uploadUrl('sign-s3-request/'), {
           storage: storageId,
-          filename: file.name,
+          ...request,
         });
-        uppy.setFileMeta(file.id, { key: data.key });
-        return { method: 'PUT', url: data.upload_url };
-      },
-      createMultipartUpload: async file => {
-        const { data } = await client.post(uploadUrl('upload-url/'), {
-          storage: storageId,
-          filename: file.name,
-          multipart: true,
-        });
-        uppy.setFileMeta(file.id, { key: data.key });
-        return { uploadId: data.upload_id, key: data.key };
-      },
-      listParts: async () => [],
-      signPart: async (_file, { uploadId, key, partNumber }) => {
-        const { data } = await client.post(uploadUrl('upload-url/sign-part/'), {
-          storage: storageId,
-          key,
-          upload_id: uploadId,
-          part_number: partNumber,
-        });
-        return { method: 'PUT', url: data.url };
-      },
-      abortMultipartUpload: async (_file, { key, uploadId }) => {
-        await client.post(uploadUrl('upload-url/abort-multipart/'), {
-          storage: storageId,
-          key,
-          upload_id: uploadId,
-        });
-      },
-      completeMultipartUpload: async (_file, { key, uploadId, parts }) => {
-        await client.post(uploadUrl('upload-url/complete-multipart/'), {
-          storage: storageId,
-          key,
-          upload_id: uploadId,
-          parts,
-        });
-        return {};
+        return data;
       },
     });
 
@@ -95,13 +64,21 @@ export default function App() {
   }, [uppy, storageId]);
 
   useEffect(() => {
-    const handler = (file?: UppyFile<Meta, Record<string, never>>) => {
-      const key = file?.meta?.key;
+    const handler = (file?: { id: string; name?: string | null }) => {
+      // Use the original filename (matching `generateObjectKey` above), not
+      // the resolved S3 path from the upload-success event -- the backend
+      // re-applies the storage's prefix template to whatever key we send
+      // here, so sending the already-prefixed path would double it.
+      const key = file?.name ?? file?.id;
       if (!key || !storageId) return;
-      client.post(uploadUrl('resources/confirm-upload/'), {
-        storage: storageId,
-        key,
-      });
+      client
+        .post(uploadUrl('resources/confirm-upload/'), {
+          storage: storageId,
+          key,
+        })
+        .then(() => {
+          toast.success(`"${key}" uploaded and queued for processing.`);
+        });
     };
     uppy.on('upload-success', handler);
     return () => {
@@ -124,6 +101,7 @@ export default function App() {
 
   return (
     <UppyContextProvider uppy={uppy}>
+      <Toaster position="top-right" />
       <div>
         {storages.length > 1 && (
           <div className="mb-3">
