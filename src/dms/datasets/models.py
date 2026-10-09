@@ -425,6 +425,36 @@ class Resource(LifecycleModelMixin, RulesModel):
     def edit_url(self):
         return self.__class__.objects.get_subclass(id=self.pk).get_edit_url()
 
+    def move_to_storage(self, target_storage):
+        """Move this resource's file to a different storage.
+
+        Validates that the target storage is allowed for the resource's
+        dataset/project, rejects moves to the current storage, and enqueues
+        a background task to perform the actual file move.
+
+        Args:
+            target_storage: Target buckets.Storage instance
+
+        Raises:
+            ValidationError: If target_storage is not allowed or is the same
+                as the current storage
+        """
+        if not self.storage or not self.key:
+            raise ValidationError("Cannot move a resource without storage and key set")
+
+        if self.storage_id == target_storage.id:
+            raise ValidationError("Target storage is the same as current storage")
+
+        self.dataset._validate_storage(target_storage)
+
+        # Enqueue background task
+        app.configure_task(
+            name="dms.datasets.tasks.move_resource_to_storage_task"
+        ).defer(
+            resource_id=self.pk,
+            target_storage_id=target_storage.id,
+        )
+
     @transaction.atomic()
     def to_class(self, cls):
         """

@@ -291,3 +291,9 @@ class ConfirmUploadRequestSerializer(serializers.Serializer):
 
     storage = serializers.PrimaryKeyRelatedField(queryset=Storage.objects.all())
     key = serializers.CharField()
+
+
+class MoveResourceRequestSerializer(serializers.Serializer):
+    """Request body for ``ResourceViewSet.move_to_storage``."""
+
+    target_storage = serializers.PrimaryKeyRelatedField(queryset=Storage.objects.all())
