@@ -77,18 +77,6 @@ paths:
         Returns the success/fail message.
       tags:
       - auth
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PasswordChange'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PasswordChange'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PasswordChange'
-        required: true
       security:
       - cookieAuth: []
       - tokenAuth: []
@@ -751,6 +739,33 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/datasets/{id}/available-storages/:
+    get:
+      operationId: datasets_available_storages_retrieve
+      description: List the storages this dataset's project may upload files to.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this dataset.
+        required: true
+      tags:
+      - datasets
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - jwtAuth: []
+      - jwtHeaderAuth: []
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+          description: ''
   /api/v1/datasets/{id}/feature/:
     get:
       operationId: datasets_feature_retrieve
@@ -826,127 +841,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/Dataset'
           description: ''
-  /api/v1/datasets/{id}/upload-url/:
+  /api/v1/datasets/{id}/sign-s3-request/:
     post:
-      operationId: datasets_upload_url_create
+      operationId: datasets_sign_s3_request_create
       description: |-
-        Return a presigned upload URL (or multipart upload id) for a new
-        resource file. This never creates a ``Resource`` row -- callers must
-        confirm the upload afterwards via ``confirm_upload``.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        description: A unique value identifying this dataset.
-        required: true
-      tags:
-      - datasets
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Dataset'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Dataset'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Dataset'
-        required: true
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      - jwtAuth: []
-      - jwtHeaderAuth: []
-      - jwtCookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Dataset'
-          description: ''
-  /api/v1/datasets/{id}/upload-url/abort-multipart/:
-    post:
-      operationId: datasets_upload_url_abort_multipart_create
-      description: Abort an in-progress multipart upload.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        description: A unique value identifying this dataset.
-        required: true
-      tags:
-      - datasets
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Dataset'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Dataset'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Dataset'
-        required: true
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      - jwtAuth: []
-      - jwtHeaderAuth: []
-      - jwtCookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Dataset'
-          description: ''
-  /api/v1/datasets/{id}/upload-url/complete-multipart/:
-    post:
-      operationId: datasets_upload_url_complete_multipart_create
-      description: Finish a multipart upload given the collected part ETags.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        description: A unique value identifying this dataset.
-        required: true
-      tags:
-      - datasets
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Dataset'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Dataset'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Dataset'
-        required: true
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      - jwtAuth: []
-      - jwtHeaderAuth: []
-      - jwtCookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Dataset'
-          description: ''
-  /api/v1/datasets/{id}/upload-url/sign-part/:
-    post:
-      operationId: datasets_upload_url_sign_part_create
-      description: Return a presigned PUT URL for a single part of a multipart upload.
+        Enforces object-level permissions in ``rest_framework.viewsets.ViewSet``,
+        deriving the permission type from the particular action to be performed..
+
+        As with ``rules.contrib.views.AutoPermissionRequiredMixin``, this only works when
+        model permissions are registered using ``rules.contrib.models.RulesModelMixin``.
       parameters:
       - in: path
         name: id
@@ -2683,21 +2586,6 @@ paths:
       responses:
         '204':
           description: No response body
-  /api/v1/uploads/tusd/webhook/:
-    post:
-      operationId: uploads_tusd_webhook_create
-      tags:
-      - uploads
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      - jwtAuth: []
-      - jwtHeaderAuth: []
-      - jwtCookieAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
 components:
   schemas:
     AccessTypeEnum:
@@ -3025,14 +2913,23 @@ components:
         username:
           type: string
         email:
-          type: string
-          format: email
+          oneOf:
+          - type: string
+            format: email
+          - type: string
+            maxLength: 0
         password:
           type: string
       required:
       - password
     MapResource:
       type: object
+      description: |-
+        Prevent editing `uri` for resources created via direct upload.
+
+        Such resources have both `storage` and `key` set server-side when the
+        upload is confirmed; their `uri` is derived from storage/key and must
+        not be overwritten by the client afterwards.
       properties:
         url:
           type: string
@@ -3303,6 +3200,12 @@ components:
             $ref: '#/components/schemas/TabularResource'
     PartitionedResource:
       type: object
+      description: |-
+        Prevent editing `uri` for resources created via direct upload.
+
+        Such resources have both `storage` and `key` set server-side when the
+        upload is confirmed; their `uri` is derived from storage/key and must
+        not be overwritten by the client afterwards.
       properties:
         url:
           type: string
@@ -3360,18 +3263,6 @@ components:
       - last_modified_at
       - uri
       - url
-    PasswordChange:
-      type: object
-      properties:
-        new_password1:
-          type: string
-          maxLength: 128
-        new_password2:
-          type: string
-          maxLength: 128
-      required:
-      - new_password1
-      - new_password2
     PasswordReset:
       type: object
       description: Serializer for requesting a password reset e-mail.
@@ -3444,6 +3335,12 @@ components:
           nullable: true
     PatchedMapResource:
       type: object
+      description: |-
+        Prevent editing `uri` for resources created via direct upload.
+
+        Such resources have both `storage` and `key` set server-side when the
+        upload is confirmed; their `uri` is derived from storage/key and must
+        not be overwritten by the client afterwards.
       properties:
         url:
           type: string
@@ -3498,6 +3395,12 @@ components:
           $ref: '#/components/schemas/MapTypeEnum'
     PatchedPartitionedResource:
       type: object
+      description: |-
+        Prevent editing `uri` for resources created via direct upload.
+
+        Such resources have both `storage` and `key` set server-side when the
+        upload is confirmed; their `uri` is derived from storage/key and must
+        not be overwritten by the client afterwards.
       properties:
         url:
           type: string
@@ -3580,6 +3483,12 @@ components:
           nullable: true
     PatchedRasterResource:
       type: object
+      description: |-
+        Prevent editing `uri` for resources created via direct upload.
+
+        Such resources have both `storage` and `key` set server-side when the
+        upload is confirmed; their `uri` is derived from storage/key and must
+        not be overwritten by the client afterwards.
       properties:
         url:
           type: string
@@ -3634,6 +3543,12 @@ components:
           title: Titiler configuration
     PatchedResource:
       type: object
+      description: |-
+        Prevent editing `uri` for resources created via direct upload.
+
+        Such resources have both `storage` and `key` set server-side when the
+        upload is confirmed; their `uri` is derived from storage/key and must
+        not be overwritten by the client afterwards.
       properties:
         url:
           type: string
@@ -3686,6 +3601,12 @@ components:
           nullable: true
     PatchedTabularResource:
       type: object
+      description: |-
+        Prevent editing `uri` for resources created via direct upload.
+
+        Such resources have both `storage` and `key` set server-side when the
+        upload is confirmed; their `uri` is derived from storage/key and must
+        not be overwritten by the client afterwards.
       properties:
         url:
           type: string
@@ -3797,6 +3718,12 @@ components:
       - start_date
     RasterResource:
       type: object
+      description: |-
+        Prevent editing `uri` for resources created via direct upload.
+
+        Such resources have both `storage` and `key` set server-side when the
+        upload is confirmed; their `uri` is derived from storage/key and must
+        not be overwritten by the client afterwards.
       properties:
         url:
           type: string
@@ -3858,6 +3785,12 @@ components:
       - url
     Resource:
       type: object
+      description: |-
+        Prevent editing `uri` for resources created via direct upload.
+
+        Such resources have both `storage` and `key` set server-side when the
+        upload is confirmed; their `uri` is derived from storage/key and must
+        not be overwritten by the client afterwards.
       properties:
         url:
           type: string
@@ -4020,6 +3953,12 @@ components:
               description: A name that describes the resource
     ResourceList:
       type: object
+      description: |-
+        Prevent editing `uri` for resources created via direct upload.
+
+        Such resources have both `storage` and `key` set server-side when the
+        upload is confirmed; their `uri` is derived from storage/key and must
+        not be overwritten by the client afterwards.
       properties:
         url:
           type: string
@@ -4103,6 +4042,12 @@ components:
         * `C` - Not completed
     TabularResource:
       type: object
+      description: |-
+        Prevent editing `uri` for resources created via direct upload.
+
+        Such resources have both `storage` and `key` set server-side when the
+        upload is confirmed; their `uri` is derived from storage/key and must
+        not be overwritten by the client afterwards.
       properties:
         url:
           type: string
@@ -4301,6 +4246,9 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    oauth2:
+      type: oauth2
+      flows: {}
     tokenAuth:
       type: apiKey
       in: header
