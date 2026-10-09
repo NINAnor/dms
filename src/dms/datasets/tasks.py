@@ -1,10 +1,11 @@
+from crontask import cron
 from django.db import close_old_connections
-from procrastinate.contrib.django import app
+from django.tasks import task
 
 from .models import Resource
 
 
-@app.task
+@task
 def infer_metadata_task(resource_id: str):
     close_old_connections()
     try:
@@ -14,8 +15,8 @@ def infer_metadata_task(resource_id: str):
         close_old_connections()
 
 
-@app.periodic(cron="0 * * * *")
-@app.task
+@cron("0 * * * *")
+@task
 def update_metadata(timestamp: int):
     close_old_connections()
     resources = Resource.objects.select_subclasses().filter(is_metadata_manual=False)

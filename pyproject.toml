@@ -76,7 +76,8 @@ dependencies = [
   "drf-standardized-errors[openapi]",
   "djangorestframework-simplejwt",
   # queue
-  "procrastinate[django]>=3.0.0",
+  "django-tasks-db>=0.1.0",
+  "django-crontask>=1.0.0",
   "setuptools>=83.0.0",
   "django-storages[s3]>=1.14.5",
   "boto3>=1.40.4",

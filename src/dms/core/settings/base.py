@@ -115,7 +115,6 @@ THIRD_PARTY_APPS = [
     "widget_tweaks",
     "fontawesomefree",
     "leaflet",
-    "procrastinate.contrib.django",
     "taggit",
     "dal",
     "dal_select2",
@@ -131,6 +130,8 @@ THIRD_PARTY_APPS = [
     "hijack",
     "hijack.contrib.admin",
     "oauth2_provider",
+    "django_tasks_db",
+    "crontask",
 ]
 
 LOCAL_APPS = [
@@ -620,4 +621,11 @@ LEAFLET_CONFIG = {
             },
         )
     ],
+}
+
+# Django Tasks Configuration
+TASKS = {
+    "default": {
+        "BACKEND": "django_tasks_db.DatabaseBackend",
+    }
 }
