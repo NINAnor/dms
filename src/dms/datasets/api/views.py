@@ -27,7 +27,10 @@ from . import serializers
 
 def _django_validation_error_detail(exc):
     """Extract a DRF-friendly detail from a Django ``ValidationError``."""
-    return exc.messages if hasattr(exc, "messages") else str(exc)
+    if hasattr(exc, "messages"):
+        # exc.messages is a list, join them
+        return " ".join(exc.messages)
+    return str(exc)
 
 
 class DefaultCursorPagination(CursorPagination):
@@ -116,7 +119,9 @@ class DatasetViewSet(AutoPermissionViewSetMixin, PresignedS3UploadMixin, ModelVi
                 data["storage"], data["key"], **_upload_context(dataset, request)
             )
         except DjangoValidationError as exc:
-            raise DRFValidationError(_django_validation_error_detail(exc)) from exc
+            raise DRFValidationError(
+                {"non_field_errors": [_django_validation_error_detail(exc)]}
+            ) from exc
         return Response(
             serializers.ResourceSerializer(
                 resource, context=self.get_serializer_context()
@@ -144,6 +149,7 @@ class ResourceViewSet(AutoPermissionViewSetMixin, ModelViewSet):
     permission_type_map = {
         **AutoPermissionViewSetMixin.permission_type_map,
         "geojson": "view",
+        "move_to_storage": "change",
     }
 
     def get_serializer_class(self):
@@ -158,6 +164,30 @@ class ResourceViewSet(AutoPermissionViewSetMixin, ModelViewSet):
     )
     def geojson(self, request, pk):
         return self.retrieve(request=request, pk=pk)
+
+    @action(detail=True, methods=["post"], url_path="move-to-storage")
+    def move_to_storage(self, request, pk=None):
+        """Move a resource's file to a different storage.
+
+        Enqueues a background task to perform the actual file move.
+        Returns 202 Accepted status code.
+        """
+        resource = self.get_object()
+        serializer = serializers.MoveResourceRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        try:
+            resource.move_to_storage(data["target_storage"])
+        except DjangoValidationError as exc:
+            raise DRFValidationError(
+                {"non_field_errors": [_django_validation_error_detail(exc)]}
+            ) from exc
+        return Response(
+            serializers.ResourceSerializer(
+                resource, context=self.get_serializer_context()
+            ).data,
+            status=202,
+        )
 
 
 class RelCursorPagination(CursorPagination):

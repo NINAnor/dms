@@ -417,3 +417,135 @@ class TestDatasetConfirmUpload:
 
         with pytest.raises(ValidationError):
             dataset_with_project.confirm_upload(storage, "data.csv")
+
+
+@pytest.mark.django_db(transaction=True)
+class TestResourceMoveToStorage:
+    """Test cases for Resource.move_to_storage."""
+
+    def test_move_to_storage_rejects_same_storage(self, dataset_with_project, project):
+        storage = _make_storage(name="assigned")
+        ProjectStorage.objects.create(project=project, storage=storage)
+        with (
+            patch.object(storage, "head_object", return_value={"ContentLength": 1}),
+            patch.object(
+                storage, "get_http_url", return_value="https://example.com/data.csv"
+            ),
+        ):
+            resource = dataset_with_project.confirm_upload(storage, "data.csv")
+
+        with pytest.raises(ValidationError) as exc_info:
+            resource.move_to_storage(storage)
+
+        assert "same as current storage" in str(exc_info.value)
+
+    def test_move_to_storage_rejects_unallowed_storage(
+        self, dataset_with_project, project
+    ):
+        storage1 = _make_storage(name="assigned")
+        ProjectStorage.objects.create(project=project, storage=storage1)
+        storage2 = _make_storage(name="unassigned")
+
+        with (
+            patch.object(storage1, "head_object", return_value={"ContentLength": 1}),
+            patch.object(
+                storage1, "get_http_url", return_value="https://example.com/data.csv"
+            ),
+        ):
+            resource = dataset_with_project.confirm_upload(storage1, "data.csv")
+
+        with pytest.raises(ValidationError) as exc_info:
+            resource.move_to_storage(storage2)
+
+        assert "not available" in str(exc_info.value)
+
+    def test_move_to_storage_enqueues_background_task(
+        self, dataset_with_project, project
+    ):
+        storage1 = _make_storage(name="assigned1")
+        storage2 = _make_storage(name="assigned2")
+        ProjectStorage.objects.create(project=project, storage=storage1)
+        ProjectStorage.objects.create(project=project, storage=storage2)
+
+        with (
+            patch.object(storage1, "head_object", return_value={"ContentLength": 1}),
+            patch.object(
+                storage1, "get_http_url", return_value="https://example.com/data.csv"
+            ),
+        ):
+            resource = dataset_with_project.confirm_upload(storage1, "data.csv")
+
+        with patch("dms.datasets.models.app.configure_task") as mock_task:
+            mock_defer = mock_task.return_value.defer
+            resource.move_to_storage(storage2)
+
+            mock_task.assert_called_once_with(
+                name="dms.datasets.tasks.move_resource_to_storage_task"
+            )
+            mock_defer.assert_called_once_with(
+                resource_id=resource.pk, target_storage_id=storage2.id
+            )
+
+    def test_move_to_storage_rejects_resource_without_storage_or_key(
+        self, dataset_with_project, project
+    ):
+        """Resource without storage or key cannot be moved."""
+        storage = _make_storage(name="assigned")
+        ProjectStorage.objects.create(project=project, storage=storage)
+
+        resource = dataset_with_project.resources.create(
+            id=uuid.uuid4(),
+            title="External",
+            uri="https://example.com/external.csv",
+            # storage and key are None
+        )
+
+        with pytest.raises(ValidationError) as exc_info:
+            resource.move_to_storage(storage)
+
+        assert "storage and key" in str(exc_info.value)
+
+
+@pytest.mark.django_db(transaction=True)
+class TestMoveResourceToStorageTask:
+    """Test cases for the move_resource_to_storage_task background task."""
+
+    def test_task_moves_object_and_updates_resource(
+        self, dataset_with_project, project
+    ):
+        from dms.datasets.tasks import move_resource_to_storage_task
+
+        storage1 = _make_storage(name="assigned1")
+        storage2 = _make_storage(name="assigned2")
+        ProjectStorage.objects.create(project=project, storage=storage1)
+        ProjectStorage.objects.create(project=project, storage=storage2)
+
+        with (
+            patch.object(storage1, "head_object", return_value={"ContentLength": 1}),
+            patch.object(
+                storage1, "get_http_url", return_value="https://example.com/data.csv"
+            ),
+        ):
+            resource = dataset_with_project.confirm_upload(storage1, "data.csv")
+
+        with (
+            patch.object(Storage, "move_object_between_storages") as mock_move_object,
+            patch.object(
+                Storage,
+                "get_http_url",
+                return_value="https://example.com/new/data.csv",
+            ),
+        ):
+            move_resource_to_storage_task(
+                resource_id=resource.pk, target_storage_id=storage2.id
+            )
+
+            mock_move_object.assert_called_once_with(
+                source_key=resource.key,
+                target_storage=storage2,
+                target_key=resource.key,
+            )
+
+        resource.refresh_from_db()
+        assert resource.storage_id == storage2.id
+        assert resource.uri == "https://example.com/new/data.csv"
