@@ -119,21 +119,47 @@ services:
       - "traefik.http.middlewares.upload-limit-dev.buffering.maxRequestBodyBytes=8000000000"
       - "traefik.http.routers.django-dev.middlewares=upload-limit-dev"
 
-  queue:
+  db-worker:
     <<: *django-prod
     environment:
       <<: *django-prod-env
       WAIT_FOR_HTTP: http://django:8000/ht/
       CONN_MAX_AGE: 60
-    command: uv run manage.py procrastinate worker
+    command: uv run manage.py db_worker
 
-  queue-dev:
+  crontask:
+    <<: *django-prod
+    environment:
+      <<: *django-prod-env
+      WAIT_FOR_HTTP: http://django:8000/ht/
+      CONN_MAX_AGE: 60
+    command: uv run manage.py crontask
+
+  db-worker-dev:
     <<: *django-dev
     environment:
       <<: *django-dev-env
       WAIT_FOR_HTTP: http://django:8000/ht/
       INSTALL_CERTS: 1
-    command: uv run manage.py procrastinate worker
+    command: uv run manage.py db_worker
+    develop:
+      watch:
+        - action: restart
+          path: ./src
+        - action: rebuild
+          path: ./Dockerfile
+        - action: rebuild
+          path: ./uv.lock
+        - action: rebuild
+          path: ./.env
+
+  crontask-dev:
+    <<: *django-dev
+    environment:
+      <<: *django-dev-env
+      WAIT_FOR_HTTP: http://django:8000/ht/
+      INSTALL_CERTS: 1
+    command: uv run manage.py crontask
     develop:
       watch:
         - action: restart

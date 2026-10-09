@@ -24,7 +24,6 @@ from django_lifecycle import AFTER_SAVE, LifecycleModelMixin, hook
 from django_lifecycle.conditions import WhenFieldHasChanged
 from model_utils.managers import InheritanceManager
 from osgeo import gdal  # type: ignore[import]
-from procrastinate.contrib.django import app
 from rules.contrib.models import RulesModel
 from taggit.managers import TaggableManager
 
@@ -389,9 +388,9 @@ class Resource(LifecycleModelMixin, RulesModel):
             return
 
         if deferred:
-            app.configure_task(name="dms.datasets.tasks.infer_metadata_task").defer(
-                resource_id=self.pk
-            )
+            from dms.datasets.tasks import infer_metadata_task
+
+            infer_metadata_task.enqueue(resource_id=self.pk)
             return
 
         http_headers = self._get_http_headers()
@@ -551,9 +550,9 @@ class RasterResource(Resource):
             return
 
         if deferred:
-            app.configure_task(name="dms.datasets.tasks.infer_metadata_task").defer(
-                resource_id=self.pk
-            )
+            from dms.datasets.tasks import infer_metadata_task
+
+            infer_metadata_task.enqueue(resource_id=self.pk)
             return
 
         if not re.search(r"^https?://", self.uri):
@@ -662,9 +661,9 @@ class TabularResource(Resource):
             return
 
         if deferred:
-            app.configure_task(name="dms.datasets.tasks.infer_metadata_task").defer(
-                resource_id=self.pk
-            )
+            from dms.datasets.tasks import infer_metadata_task
+
+            infer_metadata_task.enqueue(resource_id=self.pk)
             return
 
         if not re.search(r"^https?://", self.uri):
