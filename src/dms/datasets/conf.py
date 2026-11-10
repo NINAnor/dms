@@ -5,4 +5,3 @@ from django.conf import settings  # noqa: F401
 class DatasetsConf(AppConf):
     TITILER_URL = "/titiler"
     NINA_MAP_PREVIEW = None
-    DUCKUI_URL = "/duckui/"
