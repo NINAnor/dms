@@ -16,6 +16,7 @@ export default defineConfig({
       input: {
         relationships: resolve(__dirname, 'src/relationships/main.tsx'),
         upload: resolve(__dirname, 'src/upload/main.tsx'),
+        preview: resolve(__dirname, 'src/preview/main.tsx'),
       },
     },
   },

@@ -1,7 +1,6 @@
 {% extends 'datasets/resource_detail_base.html' %}
-{% load static %}
 {% load render_table from django_tables2 %}
-
+{% load django_vite %}
 
 {% block resource_specific_content %}
 {% if data_table %}
@@ -12,37 +11,22 @@
     </c-accordion.content>
 </c-accordion.item>
 {% endif %}
-{% if object.metadata.driverShortName == 'Parquet' and not object.dataset.under_embargo %}
+{% if object.metadata.layers and not object.dataset.under_embargo %}
 <c-accordion.item value='preview'>
     <c-accordion.trigger value='preview' class="text-2xl font-bold">Preview</c-accordion.trigger>
     <c-accordion.content value='preview'>
-        <iframe id="parquet-preview" style="width:100%; height:800px; border:none;" loading="lazy">
-        </iframe>
-    </c-accordion.content>
+        <div
+            id="resource-preview"
+            data-preview-kind="tabular"
+            data-preview-type="{{ object.metadata.driverShortName }}"
+            data-resource-id="{{ object.id }}"
+            data-resource-title="{{ object.title }}"
+            data-resource-uri="{{ object.uri }}"
+        ></div>
+        {{ object.metadata|json_script:"resource-preview-metadata" }}
+      </c-accordion.content>
 </c-accordion.item>
-<script>
-    const query = btoa(document.getElementById('datasets/snippets/duckdb-sql-code').textContent.trim());
-    const title = "{{ object.title }} - {{ object.id }}";
-    const params = new URLSearchParams({
-        query: query,
-        execute: 'true',
-        title: title
-    });
-
-    const iframeElement = document.getElementById('parquet-preview');
-    const iframeUrl = "{{ DUCKUI_URL }}?" + params.toString();
-
-    // Use Intersection Observer to load iframe lazily when visible
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !iframeElement.src) {
-                iframeElement.src = iframeUrl;
-                observer.unobserve(iframeElement);
-            }
-        });
-    });
-
-    observer.observe(iframeElement);
-</script>
+{% vite_react_refresh %}
+{% vite_asset 'src/preview/main.tsx' %}
 {% endif %}
 {% endblock resource_specific_content %}

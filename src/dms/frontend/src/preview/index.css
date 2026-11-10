@@ -1,0 +1,79 @@
+.preview {
+  min-height: 3rem;
+}
+
+.preview-table-wrap {
+  max-height: 40rem;
+  overflow: auto;
+}
+
+.preview-layer-select {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  max-width: 100%;
+}
+
+.preview-layer-select select {
+  color-scheme: light;
+}
+
+.preview-layer-select option {
+  color: #111827;
+  background-color: #fff;
+}
+
+.preview table {
+  width: 100%;
+}
+
+.preview th,
+.preview td {
+  max-width: 480px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: var(--color-base-100, #fff);
+}
+
+.preview-column-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0.75rem;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.preview-column-resizer::after {
+  position: absolute;
+  top: 20%;
+  right: 0.25rem;
+  height: 60%;
+  border-right: 2px solid transparent;
+  content: '';
+}
+
+.preview-column-resizer:hover::after,
+.preview-column-resizer:focus-visible::after {
+  border-color: currentColor;
+}
+
+.preview-error {
+  color: var(--color-error, #b91c1c);
+}
+
+.preview-error p + p {
+  margin-top: 0.5rem;
+}
