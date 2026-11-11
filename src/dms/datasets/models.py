@@ -496,15 +496,7 @@ class RasterResource(Resource):
         default=dict, verbose_name="Titiler configuration", blank=True
     )
 
-    @property
-    def preview_url(self):
-        """
-        Return a URL to preview the resource using titiler
-        **NOTE** this only works for cloud optimized geotiffs
-
-        Returns:
-            url (str): the url of the preview as a TMS endpoint
-        """
+    def _preview_titiler_params(self):
         params = {
             **self.titiler,
             "url": self.uri,
@@ -538,7 +530,28 @@ class RasterResource(Resource):
                     for band in self.metadata["bands"]
                 ]
             )
-        return settings.DATASETS_TITILER_URL + "/cog/preview/?" + urlencode(params)
+        return params
+
+    @property
+    def preview_url(self):
+        """Return a preview image URL from TiTiler."""
+        return (
+            settings.DATASETS_TITILER_URL
+            + "/cog/preview/?"
+            + urlencode(self._preview_titiler_params())
+        )
+
+    @property
+    def preview_tilejson_url(self):
+        """Return a Web Mercator TileJSON URL from TiTiler for MapLibre."""
+        params = self._preview_titiler_params()
+        if not any(name == "minzoom" for name, _ in params):
+            params.append(("minzoom", "0"))
+        return (
+            settings.DATASETS_TITILER_URL
+            + "/cog/WebMercatorQuad/tilejson.json?"
+            + urlencode(params)
+        )
 
     def infer_metadata(self, deferred=True):
         """

@@ -1,7 +1,9 @@
 import uuid
 from unittest.mock import patch
+from urllib.parse import parse_qs, urlsplit
 
 import pytest
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -175,6 +177,24 @@ def test_resource_convert(resource):
     MapResource.objects.get().to_class(TabularResource)
     TabularResource.objects.get().to_class(RasterResource)
     RasterResource.objects.get().to_class(MapResource)
+
+
+def test_raster_preview_tilejson_url_uses_existing_titiler_parameters():
+    resource = RasterResource(
+        uri="https://example.com/image.tif",
+        titiler={"resampling": "bilinear"},
+        metadata={"bands": [{"band": 1, "minimum": 0, "maximum": 255}]},
+    )
+
+    tilejson_url = urlsplit(resource.preview_tilejson_url)
+    preview_url = urlsplit(resource.preview_url)
+    expected_prefix = settings.DATASETS_TITILER_URL.rstrip("/")
+
+    assert tilejson_url.path == f"{expected_prefix}/cog/WebMercatorQuad/tilejson.json"
+    assert preview_url.path == f"{expected_prefix}/cog/preview/"
+    tilejson_params = parse_qs(tilejson_url.query)
+    assert tilejson_params.pop("minzoom") == ["0"]
+    assert tilejson_params == parse_qs(preview_url.query)
 
 
 def _make_storage(**kwargs):

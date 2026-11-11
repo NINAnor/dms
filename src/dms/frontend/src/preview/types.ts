@@ -8,7 +8,19 @@ export interface PreviewResource {
 export type PreviewKind = 'tabular' | 'raster';
 
 export interface GdalMetadata {
+  bands?: GdalRasterBand[];
+  metadata?: {
+    IMAGE_STRUCTURE?: { LAYOUT?: string };
+  };
+  wgs84Extent?: { coordinates?: unknown };
   layers?: GdalLayer[];
+}
+
+export interface GdalRasterBand {
+  band: number;
+  colorInterpretation?: string;
+  minimum?: number;
+  maximum?: number;
 }
 
 export interface GdalLayer {
