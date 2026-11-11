@@ -7,7 +7,8 @@ ENV UV_COMPILE_BYTECODE=1
 COPY --from=ghcr.io/astral-sh/uv:0.5.31 /uv /uvx /bin/
 RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     --mount=target=/var/cache/apt,type=cache,sharing=locked \
-    apt-get update && apt-get install --no-install-recommends -yq \
+    apt-get -o Acquire::Retries=3 update && \
+    apt-get -o Acquire::Retries=3 install --no-install-recommends -yq \
     gettext curl build-essential python3-dev libldap2-dev libsasl2-dev ldap-utils git
 WORKDIR /app
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh && bash nodesource_setup.sh
