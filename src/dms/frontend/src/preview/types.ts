@@ -1,3 +1,5 @@
+import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
+
 export interface PreviewResource {
   id: string;
   title: string;
@@ -6,6 +8,8 @@ export interface PreviewResource {
 }
 
 export type PreviewKind = 'tabular' | 'raster';
+
+export type PreviewFeatureCollection = FeatureCollection<Geometry, GeoJsonProperties>;
 
 export interface GdalMetadata {
   bands?: GdalRasterBand[];
@@ -25,5 +29,8 @@ export interface GdalRasterBand {
 
 export interface GdalLayer {
   name: string;
-  geometryFields?: Array<{ name: string }>;
+  geometryFields?: Array<{
+    name: string;
+    coordinateSystem?: { projjson?: { id?: { authority?: string; code?: number | string } } };
+  }>;
 }
