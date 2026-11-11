@@ -7,16 +7,20 @@ import {
   type ColumnSizingState,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, type RefObject } from 'react';
 
 import duckdbMvpWasm from '@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url';
 import duckdbMvpWorker from '@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url';
 import duckdbEhWasm from '@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url';
 import duckdbEhWorker from '@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url';
 
-import type { PreviewResource } from './types';
+import type { PreviewFeatureCollection, PreviewResource } from './types';
+
+const GeoJsonPreview = lazy(() => import('./GeoJsonPreview'));
 
 const ROWS_PER_PAGE = 100;
+const DEFAULT_MAP_FEATURE_LIMIT = 5000;
+const GEOJSON_COLUMN = '__preview_geometry';
 
 const bundles: duckdb.DuckDBBundles = {
   mvp: {
@@ -91,7 +95,7 @@ async function executePreview(
   resource: PreviewResource,
   driver: string,
   layerIndex: number,
-): Promise<{ iterator: AsyncIterator<PreviewBatch>; geometryColumns: string[] }> {
+): Promise<{ previewQuery: string; geometryColumns: string[]; source: string }> {
   const layer = resource.metadata.layers?.[layerIndex] ?? resource.metadata.layers?.[0];
   const geometryColumns = [
     ...new Set(layer?.geometryFields?.map(field => field.name).filter(Boolean) ?? []),
@@ -132,8 +136,43 @@ async function executePreview(
   }
 
   const previewQuery = `SELECT *${geometryReplacements ? ` REPLACE (${geometryReplacements})` : ''} FROM ${source}`;
-  const batches = await connection.send(previewQuery);
-  return { iterator: batches[Symbol.asyncIterator](), geometryColumns };
+  return { previewQuery, geometryColumns, source };
+}
+
+async function readGeoJsonPreview(
+  connection: duckdb.AsyncDuckDBConnection,
+  source: string,
+  geometryColumn: string,
+  sourceCrs?: string,
+  featureLimit = DEFAULT_MAP_FEATURE_LIMIT,
+): Promise<PreviewFeatureCollection> {
+  const quotedColumn = `"${geometryColumn.replace(/"/g, '""')}"`;
+  const geometryExpression =
+    sourceCrs && sourceCrs !== 'OGC:CRS84'
+      ? `ST_Transform(${quotedColumn}, '${sourceCrs.replace(/'/g, "''")}', 'EPSG:4326', always_xy := true)`
+      : quotedColumn;
+  const result = await connection.query(
+    `SELECT ST_AsGeoJSON(${geometryExpression}) AS "${GEOJSON_COLUMN}" FROM ${source} WHERE ${quotedColumn} IS NOT NULL LIMIT ${featureLimit}`,
+  );
+  const features: PreviewFeatureCollection['features'] = [];
+
+  for (const row of result.toArray()) {
+    const geoJson = row.toJSON()[GEOJSON_COLUMN];
+    if (typeof geoJson !== 'string') continue;
+
+    try {
+      const geometry = JSON.parse(
+        geoJson,
+      ) as PreviewFeatureCollection['features'][number]['geometry'];
+      if (geometry && typeof geometry.type === 'string') {
+        features.push({ type: 'Feature', geometry, properties: {} });
+      }
+    } catch {
+      // Skip malformed geometries without making the tabular preview unavailable.
+    }
+  }
+
+  return { type: 'FeatureCollection', features };
 }
 
 async function readPreviewPage(
@@ -197,7 +236,23 @@ export default function TabularPreview({
   const layers = resource.metadata.layers ?? [];
   const [selectedLayerIndex, setSelectedLayerIndex] = useState(0);
   const activeLayerIndex = layers[selectedLayerIndex] ? selectedLayerIndex : 0;
+  const activeLayer = layers[activeLayerIndex];
+  const canRenderMap = Boolean(activeLayer?.geometryFields?.length);
+  const [previewView, setPreviewView] = useState<'table' | 'map'>(() =>
+    layers[0]?.geometryFields?.length ? 'map' : 'table',
+  );
+  const [mapFeatureLimit, setMapFeatureLimit] = useState(DEFAULT_MAP_FEATURE_LIMIT);
+  const [mapFeatureLimitInput, setMapFeatureLimitInput] = useState(
+    String(DEFAULT_MAP_FEATURE_LIMIT),
+  );
+  const requestedMapFeatureLimit = Number(mapFeatureLimitInput);
+  const isValidMapFeatureLimit =
+    Number.isSafeInteger(requestedMapFeatureLimit) && requestedMapFeatureLimit > 0;
+  const hasChangedMapFeatureLimit =
+    isValidMapFeatureLimit && requestedMapFeatureLimit !== mapFeatureLimit;
   const [result, setResult] = useState<QueryResult | null>(null);
+  const [geoJsonData, setGeoJsonData] = useState<PreviewFeatureCollection | null>(null);
+  const [mapError, setMapError] = useState<PreviewError | null>(null);
   const [error, setError] = useState<PreviewError | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -273,6 +328,8 @@ export default function TabularPreview({
     let connection: duckdb.AsyncDuckDBConnection | undefined;
 
     setResult(null);
+    setGeoJsonData(null);
+    setMapError(null);
     setError(null);
     setLoading(true);
     setLoadingMore(false);
@@ -338,8 +395,33 @@ export default function TabularPreview({
 
         connection = await db.connect();
         const preview = await executePreview(connection, resource, driver, activeLayerIndex);
-        iterator = preview.iterator;
         geometryColumns = preview.geometryColumns;
+
+        if (geometryColumns[0]) {
+          const coordinateSystem = activeLayer?.geometryFields?.find(
+            field => field.name === geometryColumns[0],
+          )?.coordinateSystem?.projjson?.id;
+          const sourceCrs =
+            coordinateSystem?.authority && coordinateSystem.code !== undefined
+              ? `${coordinateSystem.authority}:${coordinateSystem.code}`
+              : undefined;
+
+          try {
+            const mapData = await readGeoJsonPreview(
+              connection,
+              preview.source,
+              geometryColumns[0],
+              sourceCrs,
+              mapFeatureLimit,
+            );
+            if (!cancelled) setGeoJsonData(mapData);
+          } catch (caught) {
+            if (!cancelled) setMapError(toPreviewError(caught));
+          }
+        }
+
+        const batches = await connection.send(preview.previewQuery);
+        iterator = batches[Symbol.asyncIterator]();
         if (!cancelled) await loadMoreRef.current?.();
       } catch (caught) {
         if (!cancelled) {
@@ -360,7 +442,7 @@ export default function TabularPreview({
       if (db) void db.terminate();
       worker?.terminate();
     };
-  }, [activeLayerIndex, driver, resource, visible]);
+  }, [activeLayerIndex, driver, mapFeatureLimit, resource, visible]);
 
   return (
     <div
@@ -376,7 +458,12 @@ export default function TabularPreview({
           <select
             className="select"
             value={activeLayerIndex}
-            onChange={event => setSelectedLayerIndex(Number(event.target.value))}
+            onChange={event => {
+              const nextIndex = Number(event.target.value);
+              const nextLayer = layers[nextIndex];
+              setSelectedLayerIndex(nextIndex);
+              setPreviewView(nextLayer?.geometryFields?.length ? 'map' : 'table');
+            }}
           >
             {layers.map((layer, index) => (
               <option key={`${layer.name}-${index}`} value={index}>
@@ -386,9 +473,75 @@ export default function TabularPreview({
           </select>
         </label>
       )}
+      {canRenderMap && (
+        <div className="preview-map-controls">
+          <div className="preview-view-toggle" role="group" aria-label="Preview view">
+            <button
+              className={`btn btn-sm ${previewView === 'map' ? 'btn-primary' : 'btn-ghost'}`}
+              type="button"
+              aria-pressed={previewView === 'map'}
+              onClick={() => setPreviewView('map')}
+            >
+              Map
+            </button>
+            <button
+              className={`btn btn-sm ${previewView === 'table' ? 'btn-primary' : 'btn-ghost'}`}
+              type="button"
+              aria-pressed={previewView === 'table'}
+              onClick={() => setPreviewView('table')}
+            >
+              Table
+            </button>
+          </div>
+          <div className="preview-map-limit">
+            <label htmlFor="preview-map-feature-limit">Map feature limit</label>
+            <input
+              id="preview-map-feature-limit"
+              className="input input-bordered input-sm"
+              type="number"
+              min="1"
+              step="1"
+              value={mapFeatureLimitInput}
+              onChange={event => setMapFeatureLimitInput(event.target.value)}
+              aria-describedby="preview-map-feature-limit-help"
+              aria-invalid={!isValidMapFeatureLimit}
+            />
+            <button
+              className="btn btn-sm btn-primary"
+              type="button"
+              disabled={!hasChangedMapFeatureLimit}
+              onClick={() => setMapFeatureLimit(requestedMapFeatureLimit)}
+            >
+              Apply
+            </button>
+            <span id="preview-map-feature-limit-help" className="preview-map-limit-help">
+              {isValidMapFeatureLimit
+                ? 'Larger values may take longer to load.'
+                : 'Enter a positive whole number.'}
+            </span>
+          </div>
+        </div>
+      )}
       {loading && <p role="status">Loading data preview…</p>}
       {error && <ErrorMessage error={error} />}
-      {result && (
+      {canRenderMap && previewView === 'map' && (
+        <>
+          {mapError && <ErrorMessage error={mapError} />}
+          {!mapError && !geoJsonData && loading && <p role="status">Loading map preview…</p>}
+          {geoJsonData && geoJsonData.features.length === 0 && <p>No geometries found.</p>}
+          {geoJsonData && geoJsonData.features.length > 0 && (
+            <>
+              <Suspense fallback={<p role="status">Loading map renderer…</p>}>
+                <GeoJsonPreview key={`${resource.id}-${activeLayerIndex}`} data={geoJsonData} />
+              </Suspense>
+              {geoJsonData.features.length === mapFeatureLimit && (
+                <p>Map preview limited to the first {mapFeatureLimit.toLocaleString()} features.</p>
+              )}
+            </>
+          )}
+        </>
+      )}
+      {result && (previewView === 'table' || !canRenderMap) && (
         <>
           {result.columns.length > 0 && result.rows.length > 0 ? (
             <div ref={tableContainerRef} className="preview-table-wrap">
