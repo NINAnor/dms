@@ -1,28 +1,23 @@
 {% extends 'datasets/resource_detail_base.html' %}
+{% load django_vite %}
 
 {% block resource_specific_content %}
 {% if object.metadata.driverShortName == 'GTiff' and object.metadata.metadata.IMAGE_STRUCTURE.LAYOUT == 'COG' and not object.dataset.under_embargo %}
 <c-accordion.item value='preview'>
     <c-accordion.trigger value='preview' class="text-2xl font-bold">Preview</c-accordion.trigger>
     <c-accordion.content value='preview'>
-        <img id="raster-preview" loading="lazy" />
+        <div
+            id="resource-preview"
+            data-preview-kind="raster"
+            data-preview-type="{{ object.metadata.driverShortName }}"
+            data-resource-id="{{ object.id }}"
+            data-resource-title="{{ object.title }}"
+            data-resource-uri="{{ object.preview_tilejson_url }}"
+        ></div>
+        {{ object.metadata|json_script:"resource-preview-metadata" }}
     </c-accordion.content>
 </c-accordion.item>
-<script>
-    const imgElement = document.getElementById('raster-preview');
-    const imgUrl = "{{object.preview_url}}";
-
-    // Use Intersection Observer to load image lazily when visible
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !imgElement.src) {
-                imgElement.src = imgUrl;
-                observer.unobserve(imgElement);
-            }
-        });
-    });
-
-    observer.observe(imgElement);
-</script>
+{% vite_react_refresh %}
+{% vite_asset 'src/preview/main.tsx' %}
 {% endif %}
 {% endblock resource_specific_content %}
