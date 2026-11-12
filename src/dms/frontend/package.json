@@ -30,7 +30,7 @@
     "@uppy/status-bar": "^6.0.0",
     "@uppy/tus": "^6.0.0",
     "@xyflow/react": "^12.12.0",
-    "axios": "^1.20.0",
+    "axios": "^1.21.1",
     "classnames": "^2.5.1",
     "maplibre-gl": "^5.24.0",
     "react": "^19.3.0",
@@ -52,6 +52,6 @@
     "oxfmt": "^0.48.0",
     "oxlint": "^1.86.0",
     "typescript": "~5.9.3",
-    "vite": "^8.3.1"
+    "vite": "^8.3.8"
   }
 }
