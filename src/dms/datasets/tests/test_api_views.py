@@ -1,3 +1,4 @@
+import uuid
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -382,4 +383,133 @@ class TestConfirmUploadView:
             {"storage": storage.pk, "key": "data.csv"},
             content_type="application/json",
         )
+        assert response.status_code == 403
+
+
+class TestMoveResourceToStorageView:
+    def test_enqueues_background_task_and_returns_202(
+        self, client, user, member, dataset, storage
+    ):
+        """API should enqueue background task and return 202 Accepted."""
+        client.force_login(user)
+
+        # First create a resource
+        with (
+            patch.object(Storage, "head_object", return_value={"ContentLength": 1}),
+            patch.object(
+                Storage, "get_http_url", return_value="https://example.com/data.csv"
+            ),
+        ):
+            resource = dataset.confirm_upload(storage, "data.csv")
+
+        # Now move it to another storage
+        storage2 = Storage.objects.create(
+            name="storage2",
+            bucket_name="bucket2",
+            access_key_id="key2",
+            secret_access_key="secret2",  # noqa: S106
+        )
+        ProjectStorage.objects.create(project=dataset.project, storage=storage2)
+
+        url = reverse("api_v1:resources-move-to-storage", kwargs={"pk": resource.pk})
+        with patch("dms.datasets.models.app.configure_task") as mock_task:
+            response = client.post(
+                url,
+                {"target_storage": storage2.pk},
+                content_type="application/json",
+            )
+
+        assert response.status_code == 202
+        mock_task.assert_called_once_with(
+            name="dms.datasets.tasks.move_resource_to_storage_task"
+        )
+        mock_task.return_value.defer.assert_called_once()
+
+    def test_rejects_same_storage(self, client, user, member, dataset, storage):
+        """API should reject moving to same storage with 400."""
+        client.force_login(user)
+
+        # Create a resource
+        with (
+            patch.object(Storage, "head_object", return_value={"ContentLength": 1}),
+            patch.object(
+                Storage, "get_http_url", return_value="https://example.com/data.csv"
+            ),
+        ):
+            resource = dataset.confirm_upload(storage, "data.csv")
+
+        url = reverse("api_v1:resources-move-to-storage", kwargs={"pk": resource.pk})
+        response = client.post(
+            url,
+            {"target_storage": storage.pk},
+            content_type="application/json",
+        )
+
+        assert response.status_code == 400
+        assert "same as current storage" in response.json()["errors"][0]["detail"]
+
+    def test_rejects_disallowed_storage(self, client, user, member, dataset, storage):
+        """API should reject moving to storage not in allowlist with 400."""
+        client.force_login(user)
+
+        # Create a resource
+        with (
+            patch.object(Storage, "head_object", return_value={"ContentLength": 1}),
+            patch.object(
+                Storage, "get_http_url", return_value="https://example.com/data.csv"
+            ),
+        ):
+            resource = dataset.confirm_upload(storage, "data.csv")
+
+        # Try to move to unallowed storage
+        storage_unallowed = Storage.objects.create(
+            name="unallowed",
+            bucket_name="bucket_unallowed",
+            access_key_id="key_unallowed",
+            secret_access_key="secret_unallowed",  # noqa: S106
+        )
+
+        url = reverse("api_v1:resources-move-to-storage", kwargs={"pk": resource.pk})
+        response = client.post(
+            url,
+            {"target_storage": storage_unallowed.pk},
+            content_type="application/json",
+        )
+
+        assert response.status_code == 400
+        assert "not available" in response.json()["errors"][0]["detail"]
+
+    def test_requires_project_membership(self, client, user, dataset, storage):
+        """API should require project membership (change permission)."""
+        client.force_login(user)
+
+        # Test permission requirement (no membership)
+        storage2 = Storage.objects.create(
+            name="storage2",
+            bucket_name="bucket2",
+            access_key_id="key2",
+            secret_access_key="secret2",  # noqa: S106
+        )
+
+        with (
+            patch.object(Storage, "head_object", return_value={"ContentLength": 1}),
+            patch.object(
+                Storage, "get_http_url", return_value="https://example.com/data.csv"
+            ),
+        ):
+            resource = dataset.resources.create(
+                id=uuid.uuid4(),
+                title="test",
+                uri="https://example.com/test.csv",
+                storage=storage,
+                key="test.csv",
+            )
+
+        url = reverse("api_v1:resources-move-to-storage", kwargs={"pk": resource.pk})
+        response = client.post(
+            url,
+            {"target_storage": storage2.pk},
+            content_type="application/json",
+        )
+
         assert response.status_code == 403
