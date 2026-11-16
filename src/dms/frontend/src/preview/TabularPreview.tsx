@@ -132,7 +132,9 @@ async function executePreview(
         `DuckDB Spatial does not support the GDAL driver “${driver}”.`,
       );
     }
-    source = `ST_Read(${quotedUri}, layer := ${quoteLiteral(layer?.name ?? '')})`;
+    const openOptions =
+      driver.toUpperCase() === 'GPKG' ? `, open_options := ['IMMUTABLE=YES']` : '';
+    source = `ST_Read(${quotedUri}, layer := ${quoteLiteral(layer?.name ?? '')}${openOptions})`;
   }
 
   const previewQuery = `SELECT *${geometryReplacements ? ` REPLACE (${geometryReplacements})` : ''} FROM ${source}`;
