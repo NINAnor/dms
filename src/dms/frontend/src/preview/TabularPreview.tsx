@@ -14,13 +14,18 @@ import duckdbMvpWorker from '@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.
 import duckdbEhWasm from '@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url';
 import duckdbEhWorker from '@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url';
 
-import type { PreviewFeatureCollection, PreviewResource } from './types';
+import type { GdalLayer, PreviewFeatureCollection, PreviewResource } from './types';
 
 const GeoJsonPreview = lazy(() => import('./GeoJsonPreview'));
 
 const ROWS_PER_PAGE = 100;
 const DEFAULT_MAP_FEATURE_LIMIT = 5000;
 const GEOJSON_COLUMN = '__preview_geometry';
+const MAP_PREVIEW_DRIVERS = new Set(['parquet', 'flatgeobuf', 'fgb']);
+
+function canPreviewMap(driver: string, geometryFields?: GdalLayer['geometryFields']) {
+  return Boolean(geometryFields?.length && MAP_PREVIEW_DRIVERS.has(driver.toLowerCase()));
+}
 
 const bundles: duckdb.DuckDBBundles = {
   mvp: {
@@ -132,9 +137,11 @@ async function executePreview(
         `DuckDB Spatial does not support the GDAL driver “${driver}”.`,
       );
     }
-    const openOptions =
-      driver.toUpperCase() === 'GPKG' ? `, open_options := ['IMMUTABLE=YES']` : '';
-    source = `ST_Read(${quotedUri}, layer := ${quoteLiteral(layer?.name ?? '')}${openOptions})`;
+    const isGeoPackage = driver.toUpperCase() === 'GPKG';
+    const openOptions = isGeoPackage ? `, open_options := ['IMMUTABLE=YES']` : '';
+    // GeoPackages are stored as single-file resources; avoid probing remote sidecars.
+    const siblingFiles = isGeoPackage ? `, sibling_files := [${quotedUri}]` : '';
+    source = `ST_Read(${quotedUri}, layer := ${quoteLiteral(layer?.name ?? '')}${openOptions}${siblingFiles})`;
   }
 
   const previewQuery = `SELECT *${geometryReplacements ? ` REPLACE (${geometryReplacements})` : ''} FROM ${source}`;
@@ -239,9 +246,9 @@ export default function TabularPreview({
   const [selectedLayerIndex, setSelectedLayerIndex] = useState(0);
   const activeLayerIndex = layers[selectedLayerIndex] ? selectedLayerIndex : 0;
   const activeLayer = layers[activeLayerIndex];
-  const canRenderMap = Boolean(activeLayer?.geometryFields?.length);
+  const canRenderMap = canPreviewMap(driver, activeLayer?.geometryFields);
   const [previewView, setPreviewView] = useState<'table' | 'map'>(() =>
-    layers[0]?.geometryFields?.length ? 'map' : 'table',
+    canPreviewMap(driver, layers[0]?.geometryFields) ? 'map' : 'table',
   );
   const [mapFeatureLimit, setMapFeatureLimit] = useState(DEFAULT_MAP_FEATURE_LIMIT);
   const [mapFeatureLimitInput, setMapFeatureLimitInput] = useState(
@@ -399,7 +406,7 @@ export default function TabularPreview({
         const preview = await executePreview(connection, resource, driver, activeLayerIndex);
         geometryColumns = preview.geometryColumns;
 
-        if (geometryColumns[0]) {
+        if (canRenderMap && geometryColumns[0]) {
           const coordinateSystem = activeLayer?.geometryFields?.find(
             field => field.name === geometryColumns[0],
           )?.coordinateSystem?.projjson?.id;
@@ -464,7 +471,7 @@ export default function TabularPreview({
               const nextIndex = Number(event.target.value);
               const nextLayer = layers[nextIndex];
               setSelectedLayerIndex(nextIndex);
-              setPreviewView(nextLayer?.geometryFields?.length ? 'map' : 'table');
+              setPreviewView(canPreviewMap(driver, nextLayer?.geometryFields) ? 'map' : 'table');
             }}
           >
             {layers.map((layer, index) => (
@@ -526,6 +533,9 @@ export default function TabularPreview({
       )}
       {loading && <p role="status">Loading data preview…</p>}
       {error && <ErrorMessage error={error} />}
+      {activeLayer?.geometryFields?.length && !canRenderMap && (
+        <p>Map preview is available for GeoParquet and FlatGeobuf files.</p>
+      )}
       {canRenderMap && previewView === 'map' && (
         <>
           {mapError && <ErrorMessage error={mapError} />}
