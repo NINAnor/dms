@@ -21,25 +21,12 @@
   background: #e5e7eb;
 }
 
-.preview-map-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.preview-view-toggle {
-  display: flex;
-  gap: 0.25rem;
-}
-
 .preview-map-limit {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 .preview-map-limit input {

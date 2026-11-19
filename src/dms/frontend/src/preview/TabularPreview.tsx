@@ -1,4 +1,5 @@
 import * as duckdb from '@duckdb/duckdb-wasm';
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import {
   flexRender,
   getCoreRowModel,
@@ -21,7 +22,10 @@ const GeoJsonPreview = lazy(() => import('./GeoJsonPreview'));
 const ROWS_PER_PAGE = 100;
 const DEFAULT_MAP_FEATURE_LIMIT = 5000;
 const GEOJSON_COLUMN = '__preview_geometry';
-const MAP_PREVIEW_DRIVERS = new Set(['parquet', 'flatgeobuf', 'fgb']);
+const PREVIEW_DATA_TABLE = '__preview_data';
+const PREVIEW_TABLE_VIEW = '__preview_table';
+const PREVIEW_MAP_VIEW = '__preview_map';
+const MAP_PREVIEW_DRIVERS = new Set(['parquet']);
 
 function canPreviewMap(driver: string, geometryFields?: GdalLayer['geometryFields']) {
   return Boolean(geometryFields?.length && MAP_PREVIEW_DRIVERS.has(driver.toLowerCase()));
@@ -100,7 +104,13 @@ async function executePreview(
   resource: PreviewResource,
   driver: string,
   layerIndex: number,
-): Promise<{ previewQuery: string; geometryColumns: string[]; source: string }> {
+): Promise<{
+  dataQuery: string;
+  tableViewQuery: string;
+  tableQuery: string;
+  mapViewQuery?: string;
+  geometryColumns: string[];
+}> {
   const layer = resource.metadata.layers?.[layerIndex] ?? resource.metadata.layers?.[0];
   const geometryColumns = [
     ...new Set(layer?.geometryFields?.map(field => field.name).filter(Boolean) ?? []),
@@ -137,31 +147,47 @@ async function executePreview(
         `DuckDB Spatial does not support the GDAL driver “${driver}”.`,
       );
     }
-    const isGeoPackage = driver.toUpperCase() === 'GPKG';
-    const openOptions = isGeoPackage ? `, open_options := ['IMMUTABLE=YES']` : '';
-    // GeoPackages are stored as single-file resources; avoid probing remote sidecars.
-    const siblingFiles = isGeoPackage ? `, sibling_files := [${quotedUri}]` : '';
-    source = `ST_Read(${quotedUri}, layer := ${quoteLiteral(layer?.name ?? '')}${openOptions}${siblingFiles})`;
+    source = `ST_Read(${quotedUri}, layer := ${quoteLiteral(layer?.name ?? '')})`;
   }
 
-  const previewQuery = `SELECT *${geometryReplacements ? ` REPLACE (${geometryReplacements})` : ''} FROM ${source}`;
-  return { previewQuery, geometryColumns, source };
+  const quotedDataTable = quoteIdentifier(PREVIEW_DATA_TABLE);
+  const quotedTableView = quoteIdentifier(PREVIEW_TABLE_VIEW);
+  const dataQuery = `CREATE TABLE ${quotedDataTable} AS SELECT * FROM ${source}`;
+  const tableViewQuery = `CREATE VIEW ${quotedTableView} AS SELECT *${geometryReplacements ? ` REPLACE (${geometryReplacements})` : ''} FROM ${quotedDataTable}`;
+  const geometryColumn = geometryColumns[0];
+  let mapViewQuery: string | undefined;
+
+  if (canPreviewMap(driver, layer?.geometryFields) && geometryColumn) {
+    const quotedColumn = quoteIdentifier(geometryColumn);
+    const coordinateSystem = layer?.geometryFields?.find(field => field.name === geometryColumn)
+      ?.coordinateSystem?.projjson?.id;
+    const sourceCrs =
+      coordinateSystem?.authority && coordinateSystem.code !== undefined
+        ? `${coordinateSystem.authority}:${coordinateSystem.code}`
+        : undefined;
+    const geometryExpression =
+      sourceCrs && sourceCrs !== 'OGC:CRS84'
+        ? `ST_Transform(${quotedColumn}, ${quoteLiteral(sourceCrs)}, 'EPSG:4326', always_xy := true)`
+        : quotedColumn;
+
+    mapViewQuery = `CREATE VIEW ${quoteIdentifier(PREVIEW_MAP_VIEW)} AS SELECT ST_AsGeoJSON(${geometryExpression}) AS ${quoteIdentifier(GEOJSON_COLUMN)} FROM ${quotedDataTable} WHERE ${quotedColumn} IS NOT NULL`;
+  }
+
+  return {
+    dataQuery,
+    tableViewQuery,
+    tableQuery: `SELECT * FROM ${quotedTableView}`,
+    mapViewQuery,
+    geometryColumns,
+  };
 }
 
 async function readGeoJsonPreview(
   connection: duckdb.AsyncDuckDBConnection,
-  source: string,
-  geometryColumn: string,
-  sourceCrs?: string,
   featureLimit = DEFAULT_MAP_FEATURE_LIMIT,
 ): Promise<PreviewFeatureCollection> {
-  const quotedColumn = `"${geometryColumn.replace(/"/g, '""')}"`;
-  const geometryExpression =
-    sourceCrs && sourceCrs !== 'OGC:CRS84'
-      ? `ST_Transform(${quotedColumn}, '${sourceCrs.replace(/'/g, "''")}', 'EPSG:4326', always_xy := true)`
-      : quotedColumn;
   const result = await connection.query(
-    `SELECT ST_AsGeoJSON(${geometryExpression}) AS "${GEOJSON_COLUMN}" FROM ${source} WHERE ${quotedColumn} IS NOT NULL LIMIT ${featureLimit}`,
+    `SELECT "${GEOJSON_COLUMN}" FROM "${PREVIEW_MAP_VIEW}" LIMIT ${featureLimit}`,
   );
   const features: PreviewFeatureCollection['features'] = [];
 
@@ -240,6 +266,8 @@ export default function TabularPreview({
   const previewRef = useRef<HTMLDivElement>(null);
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef<(() => Promise<void>) | null>(null);
+  const mapConnectionRef = useRef<duckdb.AsyncDuckDBConnection | null>(null);
+  const loadVersionRef = useRef(0);
   const hasManuallyResizedColumns = useRef(false);
   const visible = useVisible(previewRef);
   const layers = resource.metadata.layers ?? [];
@@ -262,6 +290,8 @@ export default function TabularPreview({
   const [result, setResult] = useState<QueryResult | null>(null);
   const [geoJsonData, setGeoJsonData] = useState<PreviewFeatureCollection | null>(null);
   const [mapError, setMapError] = useState<PreviewError | null>(null);
+  const [mapLoading, setMapLoading] = useState(false);
+  const [loadedDataVersion, setLoadedDataVersion] = useState(0);
   const [error, setError] = useState<PreviewError | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -318,11 +348,11 @@ export default function TabularPreview({
   }, [result?.columns]);
 
   useEffect(() => {
-    if (!visible || loading || !result?.hasMore || loadingMore) return;
+    if (previewView !== 'table' || !visible || loading || !result?.hasMore || loadingMore) return;
     if ((lastVirtualRow?.index ?? -1) < result.rows.length - 20) return;
 
     void loadMoreRef.current?.();
-  }, [lastVirtualRow?.index, loading, loadingMore, result, visible]);
+  }, [lastVirtualRow?.index, loading, loadingMore, previewView, result, visible]);
 
   useEffect(() => {
     if (!visible) return;
@@ -335,10 +365,15 @@ export default function TabularPreview({
     let worker: Worker | undefined;
     let db: duckdb.AsyncDuckDB | undefined;
     let connection: duckdb.AsyncDuckDBConnection | undefined;
+    let mapConnection: duckdb.AsyncDuckDBConnection | undefined;
+    const loadVersion = ++loadVersionRef.current;
 
+    mapConnectionRef.current = null;
+    setLoadedDataVersion(0);
     setResult(null);
     setGeoJsonData(null);
     setMapError(null);
+    setMapLoading(false);
     setError(null);
     setLoading(true);
     setLoadingMore(false);
@@ -406,30 +441,29 @@ export default function TabularPreview({
         const preview = await executePreview(connection, resource, driver, activeLayerIndex);
         geometryColumns = preview.geometryColumns;
 
-        if (canRenderMap && geometryColumns[0]) {
-          const coordinateSystem = activeLayer?.geometryFields?.find(
-            field => field.name === geometryColumns[0],
-          )?.coordinateSystem?.projjson?.id;
-          const sourceCrs =
-            coordinateSystem?.authority && coordinateSystem.code !== undefined
-              ? `${coordinateSystem.authority}:${coordinateSystem.code}`
-              : undefined;
-
+        await connection.query(preview.dataQuery);
+        await connection.query(preview.tableViewQuery);
+        if (preview.mapViewQuery) {
           try {
-            const mapData = await readGeoJsonPreview(
-              connection,
-              preview.source,
-              geometryColumns[0],
-              sourceCrs,
-              mapFeatureLimit,
-            );
-            if (!cancelled) setGeoJsonData(mapData);
+            await connection.query(preview.mapViewQuery);
           } catch (caught) {
             if (!cancelled) setMapError(toPreviewError(caught));
           }
         }
 
-        const batches = await connection.send(preview.previewQuery);
+        if (preview.mapViewQuery) {
+          try {
+            mapConnection = await db.connect();
+          } catch (caught) {
+            if (!cancelled) setMapError(toPreviewError(caught));
+          }
+        }
+        if (cancelled) return;
+
+        mapConnectionRef.current = mapConnection ?? null;
+        setLoadedDataVersion(loadVersion);
+
+        const batches = await connection.send(preview.tableQuery);
         iterator = batches[Symbol.asyncIterator]();
         if (!cancelled) await loadMoreRef.current?.();
       } catch (caught) {
@@ -448,10 +482,152 @@ export default function TabularPreview({
       loadMoreRef.current = null;
       if (iterator?.return) void iterator.return();
       if (connection) void connection.close();
+      if (mapConnection) void mapConnection.close();
+      if (mapConnectionRef.current === mapConnection) mapConnectionRef.current = null;
       if (db) void db.terminate();
       worker?.terminate();
     };
-  }, [activeLayerIndex, driver, mapFeatureLimit, resource, visible]);
+  }, [activeLayerIndex, driver, resource, visible]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const connection = mapConnectionRef.current;
+
+    if (!loadedDataVersion || !canRenderMap || previewView !== 'map') {
+      setMapLoading(false);
+      setGeoJsonData(null);
+      setMapError(null);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    if (!connection) {
+      setMapLoading(false);
+      return;
+    }
+
+    setMapLoading(true);
+    setGeoJsonData(null);
+    setMapError(null);
+
+    void readGeoJsonPreview(connection, mapFeatureLimit)
+      .then(data => {
+        if (!cancelled) setGeoJsonData(data);
+      })
+      .catch(caught => {
+        if (!cancelled) setMapError(toPreviewError(caught));
+      })
+      .finally(() => {
+        if (!cancelled) setMapLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    activeLayerIndex,
+    canRenderMap,
+    loadedDataVersion,
+    mapFeatureLimit,
+    previewView,
+    resource.id,
+  ]);
+
+  const tablePreview = result ? (
+    result.columns.length > 0 && result.rows.length > 0 ? (
+      <div ref={tableContainerRef} className="preview-table-wrap">
+        <table
+          className="table table-zebra table-sm"
+          style={{
+            width: `${table.getTotalSize()}px`,
+            minWidth: '100%',
+            tableLayout: 'fixed',
+          }}
+        >
+          <thead>
+            {table.getHeaderGroups().map(headerGroup => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map(header => (
+                  <th
+                    key={header.id}
+                    scope="col"
+                    style={{ width: `${header.getSize()}px` }}
+                    title={header.column.id}
+                  >
+                    {!header.isPlaceholder && (
+                      <>
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                        <button
+                          type="button"
+                          className="preview-column-resizer"
+                          aria-label={`Resize ${header.column.id} column`}
+                          onMouseDown={header.getResizeHandler()}
+                          onTouchStart={header.getResizeHandler()}
+                          onKeyDown={event => {
+                            if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+                            event.preventDefault();
+                            const change = event.key === 'ArrowRight' ? 16 : -16;
+                            const nextSize = Math.max(
+                              header.column.columnDef.minSize ?? 80,
+                              Math.min(
+                                header.column.columnDef.maxSize ?? 480,
+                                header.getSize() + change,
+                              ),
+                            );
+                            table.setColumnSizing(current => ({
+                              ...current,
+                              [header.column.id]: nextSize,
+                            }));
+                          }}
+                        />
+                      </>
+                    )}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {paddingTop > 0 && (
+              <tr aria-hidden="true">
+                <td colSpan={columns.length} style={{ height: `${paddingTop}px`, padding: 0 }} />
+              </tr>
+            )}
+            {virtualRows.map(virtualRow => {
+              const row = rows[virtualRow.index];
+              if (!row) return null;
+
+              return (
+                <tr key={row.id} style={{ height: `${virtualRow.size}px` }}>
+                  {row.getVisibleCells().map(cell => (
+                    <td
+                      key={cell.id}
+                      style={{ width: `${cell.column.getSize()}px` }}
+                      title={formatCell(
+                        cell.getValue(),
+                        result.geometryColumns.includes(cell.column.id),
+                      )}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+            {paddingBottom > 0 && (
+              <tr aria-hidden="true">
+                <td colSpan={columns.length} style={{ height: `${paddingBottom}px`, padding: 0 }} />
+              </tr>
+            )}
+          </tbody>
+        </table>
+        {loadingMore && <p role="status">Loading more rows…</p>}
+      </div>
+    ) : (
+      <p>No rows returned.</p>
+    )
+  ) : null;
 
   return (
     <div
@@ -482,180 +658,69 @@ export default function TabularPreview({
           </select>
         </label>
       )}
-      {canRenderMap && (
-        <div className="preview-map-controls">
-          <div className="preview-view-toggle" role="group" aria-label="Preview view">
-            <button
-              className={`btn btn-sm ${previewView === 'map' ? 'btn-primary' : 'btn-ghost'}`}
-              type="button"
-              aria-pressed={previewView === 'map'}
-              onClick={() => setPreviewView('map')}
-            >
-              Map
-            </button>
-            <button
-              className={`btn btn-sm ${previewView === 'table' ? 'btn-primary' : 'btn-ghost'}`}
-              type="button"
-              aria-pressed={previewView === 'table'}
-              onClick={() => setPreviewView('table')}
-            >
-              Table
-            </button>
-          </div>
-          <div className="preview-map-limit">
-            <label htmlFor="preview-map-feature-limit">Map feature limit</label>
-            <input
-              id="preview-map-feature-limit"
-              className="input input-bordered input-sm"
-              type="number"
-              min="1"
-              step="1"
-              value={mapFeatureLimitInput}
-              onChange={event => setMapFeatureLimitInput(event.target.value)}
-              aria-describedby="preview-map-feature-limit-help"
-              aria-invalid={!isValidMapFeatureLimit}
-            />
-            <button
-              className="btn btn-sm btn-primary"
-              type="button"
-              disabled={!hasChangedMapFeatureLimit}
-              onClick={() => setMapFeatureLimit(requestedMapFeatureLimit)}
-            >
-              Apply
-            </button>
-            <span id="preview-map-feature-limit-help" className="preview-map-limit-help">
-              {isValidMapFeatureLimit
-                ? 'Larger values may take longer to load.'
-                : 'Enter a positive whole number.'}
-            </span>
-          </div>
-        </div>
-      )}
       {loading && <p role="status">Loading data preview…</p>}
       {error && <ErrorMessage error={error} />}
-      {activeLayer?.geometryFields?.length && !canRenderMap && (
-        <p>Map preview is available for GeoParquet and FlatGeobuf files.</p>
-      )}
-      {canRenderMap && previewView === 'map' && (
-        <>
-          {mapError && <ErrorMessage error={mapError} />}
-          {!mapError && !geoJsonData && loading && <p role="status">Loading map preview…</p>}
-          {geoJsonData && geoJsonData.features.length === 0 && <p>No geometries found.</p>}
-          {geoJsonData && geoJsonData.features.length > 0 && (
-            <>
-              <Suspense fallback={<p role="status">Loading map renderer…</p>}>
-                <GeoJsonPreview key={`${resource.id}-${activeLayerIndex}`} data={geoJsonData} />
-              </Suspense>
-              {geoJsonData.features.length === mapFeatureLimit && (
-                <p>Map preview limited to the first {mapFeatureLimit.toLocaleString()} features.</p>
+      {canRenderMap && (
+        <TabGroup
+          selectedIndex={previewView === 'map' ? 0 : 1}
+          onChange={index => setPreviewView(index === 0 ? 'map' : 'table')}
+        >
+          <TabList className="tabs tabs-bordered" aria-label="Preview mode">
+            <Tab className={({ selected }) => `tab ${selected ? 'tab-active' : ''}`}>Map</Tab>
+            <Tab className={({ selected }) => `tab ${selected ? 'tab-active' : ''}`}>Table</Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              {mapLoading && <p role="status">Loading map preview…</p>}
+              {mapError && <ErrorMessage error={mapError} />}
+              {!mapError && !mapLoading && geoJsonData?.features.length === 0 && (
+                <p>No geometries found.</p>
               )}
-            </>
-          )}
-        </>
-      )}
-      {result && (previewView === 'table' || !canRenderMap) && (
-        <>
-          {result.columns.length > 0 && result.rows.length > 0 ? (
-            <div ref={tableContainerRef} className="preview-table-wrap">
-              <table
-                className="table table-zebra table-sm"
-                style={{
-                  width: `${table.getTotalSize()}px`,
-                  minWidth: '100%',
-                  tableLayout: 'fixed',
-                }}
-              >
-                <thead>
-                  {table.getHeaderGroups().map(headerGroup => (
-                    <tr key={headerGroup.id}>
-                      {headerGroup.headers.map(header => (
-                        <th
-                          key={header.id}
-                          scope="col"
-                          style={{ width: `${header.getSize()}px` }}
-                          title={header.column.id}
-                        >
-                          {!header.isPlaceholder && (
-                            <>
-                              {flexRender(header.column.columnDef.header, header.getContext())}
-                              <button
-                                type="button"
-                                className="preview-column-resizer"
-                                aria-label={`Resize ${header.column.id} column`}
-                                onMouseDown={header.getResizeHandler()}
-                                onTouchStart={header.getResizeHandler()}
-                                onKeyDown={event => {
-                                  if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')
-                                    return;
-                                  event.preventDefault();
-                                  const change = event.key === 'ArrowRight' ? 16 : -16;
-                                  const nextSize = Math.max(
-                                    header.column.columnDef.minSize ?? 80,
-                                    Math.min(
-                                      header.column.columnDef.maxSize ?? 480,
-                                      header.getSize() + change,
-                                    ),
-                                  );
-                                  table.setColumnSizing(current => ({
-                                    ...current,
-                                    [header.column.id]: nextSize,
-                                  }));
-                                }}
-                              />
-                            </>
-                          )}
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody>
-                  {paddingTop > 0 && (
-                    <tr aria-hidden="true">
-                      <td
-                        colSpan={columns.length}
-                        style={{ height: `${paddingTop}px`, padding: 0 }}
-                      />
-                    </tr>
+              {geoJsonData && geoJsonData.features.length > 0 && (
+                <>
+                  <Suspense fallback={<p role="status">Loading map renderer…</p>}>
+                    <GeoJsonPreview key={`${resource.id}-${activeLayerIndex}`} data={geoJsonData} />
+                  </Suspense>
+                  {geoJsonData.features.length === mapFeatureLimit && (
+                    <p>
+                      Map preview limited to the first {mapFeatureLimit.toLocaleString()} features.
+                    </p>
                   )}
-                  {virtualRows.map(virtualRow => {
-                    const row = rows[virtualRow.index];
-                    if (!row) return null;
-
-                    return (
-                      <tr key={row.id} style={{ height: `${virtualRow.size}px` }}>
-                        {row.getVisibleCells().map(cell => (
-                          <td
-                            key={cell.id}
-                            style={{ width: `${cell.column.getSize()}px` }}
-                            title={formatCell(
-                              cell.getValue(),
-                              result.geometryColumns.includes(cell.column.id),
-                            )}
-                          >
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </td>
-                        ))}
-                      </tr>
-                    );
-                  })}
-                  {paddingBottom > 0 && (
-                    <tr aria-hidden="true">
-                      <td
-                        colSpan={columns.length}
-                        style={{ height: `${paddingBottom}px`, padding: 0 }}
-                      />
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-              {loadingMore && <p role="status">Loading more rows…</p>}
-            </div>
-          ) : (
-            <p>No rows returned.</p>
-          )}
-        </>
+                </>
+              )}
+              <div className="preview-map-limit">
+                <label htmlFor="preview-map-feature-limit">Map feature limit</label>
+                <input
+                  id="preview-map-feature-limit"
+                  className="input input-bordered input-sm"
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={mapFeatureLimitInput}
+                  onChange={event => setMapFeatureLimitInput(event.target.value)}
+                  aria-describedby="preview-map-feature-limit-help"
+                  aria-invalid={!isValidMapFeatureLimit}
+                />
+                <button
+                  className="btn btn-sm btn-primary"
+                  type="button"
+                  disabled={!hasChangedMapFeatureLimit}
+                  onClick={() => setMapFeatureLimit(requestedMapFeatureLimit)}
+                >
+                  Apply
+                </button>
+                <span id="preview-map-feature-limit-help" className="preview-map-limit-help">
+                  {isValidMapFeatureLimit
+                    ? 'Larger values may take longer to load.'
+                    : 'Enter a positive whole number.'}
+                </span>
+              </div>
+            </TabPanel>
+            <TabPanel>{tablePreview}</TabPanel>
+          </TabPanels>
+        </TabGroup>
       )}
+      {!canRenderMap && tablePreview}
       {!visible && <p>Open this section to load the data preview.</p>}
     </div>
   );
