@@ -4,6 +4,7 @@ import TabularPreview from './TabularPreview';
 import type { PreviewKind, PreviewResource } from './types';
 
 const RasterPreview = lazy(() => import('./RasterPreview'));
+const PMTilesPreview = lazy(() => import('./PMTilesPreview'));
 
 interface AppProps {
   resource: PreviewResource;
@@ -14,6 +15,13 @@ interface AppProps {
 export default function App({ resource, kind, driver }: AppProps) {
   switch (kind) {
     case 'tabular':
+      if (driver.toUpperCase() === 'PMTILES') {
+        return (
+          <Suspense fallback={<p role="status">Loading map preview…</p>}>
+            <PMTilesPreview resource={resource} />
+          </Suspense>
+        );
+      }
       return <TabularPreview resource={resource} driver={driver} />;
     case 'raster':
       if (

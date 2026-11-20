@@ -21,6 +21,14 @@
   background: #e5e7eb;
 }
 
+.pmtiles-preview-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
 .preview-map-limit {
   display: flex;
   flex-wrap: wrap;

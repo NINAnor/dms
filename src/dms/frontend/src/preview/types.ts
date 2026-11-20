@@ -31,6 +31,7 @@ export interface GdalLayer {
   name: string;
   geometryFields?: Array<{
     name: string;
+    type?: string;
     coordinateSystem?: { projjson?: { id?: { authority?: string; code?: number | string } } };
   }>;
 }

@@ -11,7 +11,8 @@
     </c-accordion.content>
 </c-accordion.item>
 {% endif %}
-{% if object.metadata.layers and object.metadata.driverShortName == "Parquet" and not object.dataset.under_embargo %}
+{% if not object.dataset.under_embargo %}
+{% if object.metadata.driverShortName == "PMTiles" or object.metadata.driverShortName == "Parquet" %}
 <c-accordion.item value='preview'>
     <c-accordion.trigger value='preview' class="text-2xl font-bold">Preview</c-accordion.trigger>
     <c-accordion.content value='preview'>
@@ -28,5 +29,6 @@
 </c-accordion.item>
 {% vite_react_refresh %}
 {% vite_asset 'src/preview/main.tsx' %}
+{% endif %}
 {% endif %}
 {% endblock resource_specific_content %}

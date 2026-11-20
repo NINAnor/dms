@@ -33,6 +33,7 @@
     "axios": "^1.21.1",
     "classnames": "^2.5.1",
     "maplibre-gl": "^5.24.0",
+    "pmtiles": "^4.5.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-hot-toast": "^2.6.1",
