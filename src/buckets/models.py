@@ -6,11 +6,15 @@ This module must never import from any other app in this project (no
 pip-installable package.
 """
 
+import logging
+
 import boto3
 from botocore.client import Config
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_cryptography.fields import encrypt
+
+logger = logging.getLogger(__name__)
 
 
 class CannedACL(models.TextChoices):
@@ -122,3 +126,62 @@ class Storage(models.Model):
             return self._client().head_object(Bucket=self.bucket_name, Key=path)
         except self._client().exceptions.ClientError:
             return None
+
+    def move_object_between_storages(
+        self,
+        source_key: str,
+        target_storage: "Storage",
+        target_key: str,
+    ) -> None:
+        """Move an object from this storage to target_storage.
+
+        Process:
+        1. Copy object from this storage to target_storage
+        2. Verify copy succeeded via head_object on target
+        3. Delete source object (best-effort; failures are logged/ignored)
+
+        Args:
+            source_key: Source object's final S3 key in this storage
+            target_storage: Destination Storage instance
+            target_key: Destination object's final S3 key in target_storage
+
+        Raises:
+            Exception: If copy fails or target verification fails (blocks operation)
+        """
+        source_client = self._client()
+        target_client = target_storage._client()
+
+        # Copy object to destination
+        copy_source = {"Bucket": self.bucket_name, "Key": source_key}
+        try:
+            target_client.copy_object(
+                CopySource=copy_source,
+                Bucket=target_storage.bucket_name,
+                Key=target_key,
+                ACL=target_storage.canned_acl,
+            )
+        except Exception as e:
+            logger.error(
+                f"Failed to copy object from {self.name} ({source_key}) "
+                f"to {target_storage.name} ({target_key}): {e}"
+            )
+            raise
+
+        # Verify copy succeeded
+        try:
+            target_storage.head_object(target_key)
+        except Exception as e:
+            logger.error(
+                f"Failed to verify copied object in {target_storage.name} "
+                f"({target_key}): {e}"
+            )
+            raise
+
+        # Delete source object (best-effort)
+        try:
+            source_client.delete_object(Bucket=self.bucket_name, Key=source_key)
+        except Exception as e:
+            logger.warning(
+                f"Failed to delete source object from {self.name} ({source_key}), "
+                f"orphaned object may exist: {e}"
+            )
