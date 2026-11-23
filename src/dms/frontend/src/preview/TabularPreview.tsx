@@ -25,7 +25,8 @@ const GEOJSON_COLUMN = '__preview_geometry';
 const PREVIEW_DATA_TABLE = '__preview_data';
 const PREVIEW_TABLE_VIEW = '__preview_table';
 const PREVIEW_MAP_VIEW = '__preview_map';
-const MAP_PREVIEW_DRIVERS = new Set(['parquet']);
+// Map previews are temporarily disabled for tabular datasets.
+const MAP_PREVIEW_DRIVERS = new Set<string>();
 
 function canPreviewMap(driver: string, geometryFields?: GdalLayer['geometryFields']) {
   return Boolean(geometryFields?.length && MAP_PREVIEW_DRIVERS.has(driver.toLowerCase()));
