@@ -222,13 +222,9 @@ export default function GeoParquetPreview({ resource }: { resource: PreviewResou
       )}
       {table && table.numRows > 0 && (
         <TabGroup>
-          <TabList className="preview-view-tabs">
-            <Tab className={({ selected }) => `btn btn-sm ${selected ? 'btn-primary' : ''}`}>
-              Map
-            </Tab>
-            <Tab className={({ selected }) => `btn btn-sm ${selected ? 'btn-primary' : ''}`}>
-              Table
-            </Tab>
+          <TabList className="tabs tabs-bordered" aria-label="Preview mode">
+            <Tab className={({ selected }) => `tab ${selected ? 'tab-active' : ''}`}>Map</Tab>
+            <Tab className={({ selected }) => `tab ${selected ? 'tab-active' : ''}`}>Table</Tab>
           </TabList>
           <TabPanels>
             <TabPanel>
