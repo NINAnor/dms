@@ -5,6 +5,7 @@ import type { PreviewKind, PreviewResource } from './types';
 const GeoJsonResourcePreview = lazy(() => import('./GeoJsonResourcePreview'));
 const RasterPreview = lazy(() => import('./RasterPreview'));
 const PMTilesPreview = lazy(() => import('./PMTilesPreview'));
+const GeoParquetPreview = lazy(() => import('./GeoParquetPreview'));
 const TabularPreview = lazy(() => import('./TabularPreview'));
 
 interface AppProps {
@@ -27,6 +28,16 @@ export default function App({ resource, kind, driver }: AppProps) {
         return (
           <Suspense fallback={<p role="status">Loading map preview…</p>}>
             <PMTilesPreview resource={resource} />
+          </Suspense>
+        );
+      }
+      if (
+        driver.toUpperCase() === 'PARQUET' &&
+        resource.metadata.layers?.some(layer => layer.geometryFields?.length)
+      ) {
+        return (
+          <Suspense fallback={<p role="status">Loading GeoParquet preview…</p>}>
+            <GeoParquetPreview resource={resource} />
           </Suspense>
         );
       }

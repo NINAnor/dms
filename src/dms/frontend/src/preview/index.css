@@ -46,6 +46,12 @@
   font-size: 0.875rem;
 }
 
+.preview-view-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
 .raster-preview-controls {
   display: flex;
   flex-wrap: wrap;
