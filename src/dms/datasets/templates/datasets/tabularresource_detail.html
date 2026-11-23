@@ -12,7 +12,7 @@
 </c-accordion.item>
 {% endif %}
 {% if not object.dataset.under_embargo %}
-{% if object.metadata.driverShortName == "PMTiles" or object.metadata.driverShortName == "Parquet" %}
+{% if object.metadata.driverShortName == "PMTiles" or object.metadata.driverShortName == "Parquet" or object.metadata.driverShortName == "GeoJSON" %}
 <c-accordion.item value='preview'>
     <c-accordion.trigger value='preview' class="text-2xl font-bold">Preview</c-accordion.trigger>
     <c-accordion.content value='preview'>

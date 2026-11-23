@@ -1,10 +1,11 @@
 import { lazy, Suspense } from 'react';
 
-import TabularPreview from './TabularPreview';
 import type { PreviewKind, PreviewResource } from './types';
 
+const GeoJsonResourcePreview = lazy(() => import('./GeoJsonResourcePreview'));
 const RasterPreview = lazy(() => import('./RasterPreview'));
 const PMTilesPreview = lazy(() => import('./PMTilesPreview'));
+const TabularPreview = lazy(() => import('./TabularPreview'));
 
 interface AppProps {
   resource: PreviewResource;
@@ -15,6 +16,13 @@ interface AppProps {
 export default function App({ resource, kind, driver }: AppProps) {
   switch (kind) {
     case 'tabular':
+      if (driver.toUpperCase() === 'GEOJSON') {
+        return (
+          <Suspense fallback={<p role="status">Loading GeoJSON preview…</p>}>
+            <GeoJsonResourcePreview resource={resource} />
+          </Suspense>
+        );
+      }
       if (driver.toUpperCase() === 'PMTILES') {
         return (
           <Suspense fallback={<p role="status">Loading map preview…</p>}>
@@ -22,7 +30,11 @@ export default function App({ resource, kind, driver }: AppProps) {
           </Suspense>
         );
       }
-      return <TabularPreview resource={resource} driver={driver} />;
+      return (
+        <Suspense fallback={<p role="status">Loading data preview…</p>}>
+          <TabularPreview resource={resource} driver={driver} />
+        </Suspense>
+      );
     case 'raster':
       if (
         driver === 'GTiff' &&

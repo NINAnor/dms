@@ -44,7 +44,7 @@ function getInitialViewState(data: PreviewFeatureCollection) {
 
 export default function GeoJsonPreview({ data }: { data: PreviewFeatureCollection }) {
   const layer = new GeoJsonLayer({
-    id: 'geoparquet-features',
+    id: 'geojson-features',
     data,
     filled: true,
     stroked: true,
@@ -57,7 +57,7 @@ export default function GeoJsonPreview({ data }: { data: PreviewFeatureCollectio
   });
 
   return (
-    <div className="geo-preview-map" aria-label="GeoParquet map preview">
+    <div className="geo-preview-map" aria-label="GeoJSON map preview">
       <DeckGL
         initialViewState={getInitialViewState(data)}
         controller
