@@ -385,7 +385,7 @@ ACCOUNT_ALLOW_REGISTRATION = False
 
 ACCOUNT_SIGNUP_FIELDS = ["username*", "password1*", "password2*"]
 
-ACCOUNT_LOGIN_METHODS = {"username"}
+ACCOUNT_LOGIN_METHODS = {"username", "email"}
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
@@ -544,7 +544,7 @@ if AUTH_LDAP_SERVER_URI:
             map(lambda x: ldap.dn.str2dn(x)[0][0][1], groups_list)
         )
 
-    AUTHENTICATION_BACKENDS += ("django_auth_ldap.backend.LDAPBackend",)
+    AUTHENTICATION_BACKENDS += ("dms.users.backends.LDAPBackend",)
     LOGGING["loggers"]["django_auth_ldap"] = {"level": "DEBUG", "handlers": ["console"]}
 
 
