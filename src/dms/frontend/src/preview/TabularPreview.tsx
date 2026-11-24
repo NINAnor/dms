@@ -1,25 +1,17 @@
 import * as duckdb from '@duckdb/duckdb-wasm';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-  type ColumnSizingState,
-} from '@tanstack/react-table';
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { lazy, Suspense, useEffect, useRef, useState, type RefObject } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 
 import duckdbMvpWasm from '@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url';
 import duckdbMvpWorker from '@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url';
 import duckdbEhWasm from '@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url';
 import duckdbEhWorker from '@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url';
 
+import PreviewTable, { type PreviewRow, type PreviewTableLoader } from './PreviewTable';
 import type { GdalLayer, PreviewFeatureCollection, PreviewResource } from './types';
 
 const GeoJsonPreview = lazy(() => import('./GeoJsonPreview'));
 
-const ROWS_PER_PAGE = 100;
 const DEFAULT_MAP_FEATURE_LIMIT = 5000;
 const GEOJSON_COLUMN = '__preview_geometry';
 const PREVIEW_DATA_TABLE = '__preview_data';
@@ -42,15 +34,6 @@ const bundles: duckdb.DuckDBBundles = {
     mainWorker: new URL(duckdbEhWorker, import.meta.url).toString(),
   },
 };
-
-type PreviewRow = Record<string, unknown>;
-
-interface QueryResult {
-  columns: string[];
-  geometryColumns: string[];
-  rows: PreviewRow[];
-  hasMore: boolean;
-}
 
 interface PreviewBatch {
   schema: { fields: Array<{ name: string }> };
@@ -214,12 +197,13 @@ async function readGeoJsonPreview(
 async function readPreviewPage(
   iterator: AsyncIterator<PreviewBatch>,
   pendingRows: PreviewRow[],
+  pageSize: number,
 ): Promise<{ columns: string[]; rows: PreviewRow[]; done: boolean }> {
   const rows: PreviewRow[] = [];
   let columns: string[] = [];
   let done = false;
 
-  while (rows.length < ROWS_PER_PAGE) {
+  while (rows.length < pageSize) {
     if (pendingRows.length === 0) {
       const next = await iterator.next();
       if (next.done) {
@@ -234,18 +218,10 @@ async function readPreviewPage(
       continue;
     }
 
-    rows.push(...pendingRows.splice(0, ROWS_PER_PAGE - rows.length));
+    rows.push(...pendingRows.splice(0, pageSize - rows.length));
   }
 
   return { columns, rows, done };
-}
-
-function formatCell(value: unknown, isGeometry: boolean): string {
-  if (value === null || value === undefined) return 'NULL';
-  if (value instanceof Date) return value.toLocaleString();
-  if (isGeometry) return String(value);
-  if (typeof value === 'object') return JSON.stringify(value) ?? String(value);
-  return String(value);
 }
 
 function ErrorMessage({ error }: { error: PreviewError }) {
@@ -265,11 +241,9 @@ export default function TabularPreview({
   driver: string;
 }) {
   const previewRef = useRef<HTMLDivElement>(null);
-  const tableContainerRef = useRef<HTMLDivElement>(null);
-  const loadMoreRef = useRef<(() => Promise<void>) | null>(null);
+  const tableLoaderRef = useRef<PreviewTableLoader | null>(null);
   const mapConnectionRef = useRef<duckdb.AsyncDuckDBConnection | null>(null);
   const loadVersionRef = useRef(0);
-  const hasManuallyResizedColumns = useRef(false);
   const visible = useVisible(previewRef);
   const layers = resource.metadata.layers ?? [];
   const [selectedLayerIndex, setSelectedLayerIndex] = useState(0);
@@ -288,72 +262,18 @@ export default function TabularPreview({
     Number.isSafeInteger(requestedMapFeatureLimit) && requestedMapFeatureLimit > 0;
   const hasChangedMapFeatureLimit =
     isValidMapFeatureLimit && requestedMapFeatureLimit !== mapFeatureLimit;
-  const [result, setResult] = useState<QueryResult | null>(null);
   const [geoJsonData, setGeoJsonData] = useState<PreviewFeatureCollection | null>(null);
   const [mapError, setMapError] = useState<PreviewError | null>(null);
   const [mapLoading, setMapLoading] = useState(false);
   const [loadedDataVersion, setLoadedDataVersion] = useState(0);
+  const [tableLoaderVersion, setTableLoaderVersion] = useState(0);
   const [error, setError] = useState<PreviewError | null>(null);
   const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
-  const columns: ColumnDef<PreviewRow, unknown>[] = (result?.columns ?? []).map(column => ({
-    id: column,
-    accessorFn: row => row[column],
-    header: column,
-    cell: info => formatCell(info.getValue(), result?.geometryColumns.includes(column) ?? false),
-  }));
-  const table = useReactTable({
-    data: result?.rows ?? [],
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    defaultColumn: { size: 240, minSize: 80, maxSize: 480 },
-    columnResizeMode: 'onChange',
-    onColumnSizingChange: updater => {
-      hasManuallyResizedColumns.current = true;
-      setColumnSizing(updater);
-    },
-    state: { columnSizing },
-  });
-  const rows = table.getRowModel().rows;
-  const rowVirtualizer = useVirtualizer({
-    count: rows.length,
-    getScrollElement: () => tableContainerRef.current,
-    estimateSize: () => 36,
-    overscan: 10,
-  });
-  const virtualRows = rowVirtualizer.getVirtualItems();
-  const paddingTop = virtualRows[0]?.start ?? 0;
-  const lastVirtualRow = virtualRows[virtualRows.length - 1];
-  const paddingBottom = lastVirtualRow ? rowVirtualizer.getTotalSize() - lastVirtualRow.end : 0;
-
-  useEffect(() => {
-    const container = tableContainerRef.current;
-    const columnNames = result?.columns;
-    if (!container || !columnNames?.length || hasManuallyResizedColumns.current) return;
-
-    const fitColumns = () => {
-      if (hasManuallyResizedColumns.current) return;
-      const availableWidth = container.clientWidth;
-      if (availableWidth <= 0) return;
-
-      const size = Math.max(80, Math.min(480, availableWidth / columnNames.length));
-      setColumnSizing(Object.fromEntries(columnNames.map(column => [column, size])));
-    };
-
-    fitColumns();
-    if (typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(fitColumns);
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, [result?.columns]);
-
-  useEffect(() => {
-    if (previewView !== 'table' || !visible || loading || !result?.hasMore || loadingMore) return;
-    if ((lastVirtualRow?.index ?? -1) < result.rows.length - 20) return;
-
-    void loadMoreRef.current?.();
-  }, [lastVirtualRow?.index, loading, loadingMore, previewView, result, visible]);
+  const loadTablePage = useCallback((offset: number, limit: number) => {
+    const loader = tableLoaderRef.current;
+    if (!loader) return Promise.reject(new Error('Tabular preview is not ready.'));
+    return loader(offset, limit);
+  }, []);
 
   useEffect(() => {
     if (!visible) return;
@@ -362,51 +282,21 @@ export default function TabularPreview({
     let iterator: AsyncIterator<PreviewBatch> | undefined;
     let geometryColumns: string[] = [];
     const pendingRows: PreviewRow[] = [];
-    let isLoadingMore = false;
     let worker: Worker | undefined;
     let db: duckdb.AsyncDuckDB | undefined;
     let connection: duckdb.AsyncDuckDBConnection | undefined;
     let mapConnection: duckdb.AsyncDuckDBConnection | undefined;
     const loadVersion = ++loadVersionRef.current;
 
+    tableLoaderRef.current = null;
     mapConnectionRef.current = null;
     setLoadedDataVersion(0);
-    setResult(null);
+    setTableLoaderVersion(0);
     setGeoJsonData(null);
     setMapError(null);
     setMapLoading(false);
     setError(null);
     setLoading(true);
-    setLoadingMore(false);
-    setColumnSizing({});
-    hasManuallyResizedColumns.current = false;
-    loadMoreRef.current = async () => {
-      if (cancelled || !iterator || isLoadingMore) return;
-
-      isLoadingMore = true;
-      setLoadingMore(true);
-      try {
-        const page = await readPreviewPage(iterator, pendingRows);
-        if (cancelled) return;
-
-        setResult(current => ({
-          columns: current?.columns.length ? current.columns : page.columns,
-          geometryColumns: current?.geometryColumns.length
-            ? current.geometryColumns
-            : geometryColumns,
-          rows: [...(current?.rows ?? []), ...page.rows],
-          hasMore: !page.done,
-        }));
-      } catch (caught) {
-        if (!cancelled) {
-          setError(toPreviewError(caught));
-          setResult(current => (current ? { ...current, hasMore: false } : current));
-        }
-      } finally {
-        isLoadingMore = false;
-        if (!cancelled) setLoadingMore(false);
-      }
-    };
 
     async function run() {
       if (!resource.uri) {
@@ -466,7 +356,17 @@ export default function TabularPreview({
 
         const batches = await connection.send(preview.tableQuery);
         iterator = batches[Symbol.asyncIterator]();
-        if (!cancelled) await loadMoreRef.current?.();
+        tableLoaderRef.current = async (_offset, limit) => {
+          if (!iterator) throw new Error('Tabular data iterator is unavailable.');
+          const page = await readPreviewPage(iterator, pendingRows, limit);
+          return {
+            columns: page.columns,
+            geometryColumns,
+            rows: page.rows,
+            hasMore: !page.done,
+          };
+        };
+        if (!cancelled) setTableLoaderVersion(loadVersion);
       } catch (caught) {
         if (!cancelled) {
           setError(toPreviewError(caught));
@@ -480,7 +380,7 @@ export default function TabularPreview({
 
     return () => {
       cancelled = true;
-      loadMoreRef.current = null;
+      tableLoaderRef.current = null;
       if (iterator?.return) void iterator.return();
       if (connection) void connection.close();
       if (mapConnection) void mapConnection.close();
@@ -534,101 +434,6 @@ export default function TabularPreview({
     previewView,
     resource.id,
   ]);
-
-  const tablePreview = result ? (
-    result.columns.length > 0 && result.rows.length > 0 ? (
-      <div ref={tableContainerRef} className="preview-table-wrap">
-        <table
-          className="table table-zebra table-sm"
-          style={{
-            width: `${table.getTotalSize()}px`,
-            minWidth: '100%',
-            tableLayout: 'fixed',
-          }}
-        >
-          <thead>
-            {table.getHeaderGroups().map(headerGroup => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
-                  <th
-                    key={header.id}
-                    scope="col"
-                    style={{ width: `${header.getSize()}px` }}
-                    title={header.column.id}
-                  >
-                    {!header.isPlaceholder && (
-                      <>
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                        <button
-                          type="button"
-                          className="preview-column-resizer"
-                          aria-label={`Resize ${header.column.id} column`}
-                          onMouseDown={header.getResizeHandler()}
-                          onTouchStart={header.getResizeHandler()}
-                          onKeyDown={event => {
-                            if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-                            event.preventDefault();
-                            const change = event.key === 'ArrowRight' ? 16 : -16;
-                            const nextSize = Math.max(
-                              header.column.columnDef.minSize ?? 80,
-                              Math.min(
-                                header.column.columnDef.maxSize ?? 480,
-                                header.getSize() + change,
-                              ),
-                            );
-                            table.setColumnSizing(current => ({
-                              ...current,
-                              [header.column.id]: nextSize,
-                            }));
-                          }}
-                        />
-                      </>
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {paddingTop > 0 && (
-              <tr aria-hidden="true">
-                <td colSpan={columns.length} style={{ height: `${paddingTop}px`, padding: 0 }} />
-              </tr>
-            )}
-            {virtualRows.map(virtualRow => {
-              const row = rows[virtualRow.index];
-              if (!row) return null;
-
-              return (
-                <tr key={row.id} style={{ height: `${virtualRow.size}px` }}>
-                  {row.getVisibleCells().map(cell => (
-                    <td
-                      key={cell.id}
-                      style={{ width: `${cell.column.getSize()}px` }}
-                      title={formatCell(
-                        cell.getValue(),
-                        result.geometryColumns.includes(cell.column.id),
-                      )}
-                    >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
-              );
-            })}
-            {paddingBottom > 0 && (
-              <tr aria-hidden="true">
-                <td colSpan={columns.length} style={{ height: `${paddingBottom}px`, padding: 0 }} />
-              </tr>
-            )}
-          </tbody>
-        </table>
-        {loadingMore && <p role="status">Loading more rows…</p>}
-      </div>
-    ) : (
-      <p>No rows returned.</p>
-    )
-  ) : null;
 
   return (
     <div
@@ -717,11 +522,27 @@ export default function TabularPreview({
                 </span>
               </div>
             </TabPanel>
-            <TabPanel>{tablePreview}</TabPanel>
+            <TabPanel unmount={false}>
+              {tableLoaderVersion > 0 && (
+                <PreviewTable
+                  key={`${resource.id}-${activeLayerIndex}-${tableLoaderVersion}`}
+                  resetKey={`${resource.id}-${activeLayerIndex}-${tableLoaderVersion}`}
+                  loadPage={loadTablePage}
+                  onError={caught => setError(toPreviewError(caught))}
+                />
+              )}
+            </TabPanel>
           </TabPanels>
         </TabGroup>
       )}
-      {!canRenderMap && tablePreview}
+      {!canRenderMap && tableLoaderVersion > 0 && (
+        <PreviewTable
+          key={`${resource.id}-${activeLayerIndex}-${tableLoaderVersion}`}
+          resetKey={`${resource.id}-${activeLayerIndex}-${tableLoaderVersion}`}
+          loadPage={loadTablePage}
+          onError={caught => setError(toPreviewError(caught))}
+        />
+      )}
       {!visible && <p>Open this section to load the data preview.</p>}
     </div>
   );

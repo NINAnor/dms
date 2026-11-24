@@ -10,14 +10,14 @@ import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import wasmInit, { readParquet } from 'parquet-wasm';
 import DeckGL from '@deck.gl/react';
 import MaplibreMap from 'react-map-gl/maplibre';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import 'maplibre-gl/dist/maplibre-gl.css';
 
+import PreviewTable, { type PreviewTablePage } from './PreviewTable';
 import type { GdalLayer, PreviewResource } from './types';
 
 const MAX_PREVIEW_FEATURES = 5000;
-const MAX_TABLE_ROWS = 100;
 const CORS_HINT =
   'Remote files must allow cross-origin requests (CORS) from this site. Check the dataset storage’s CORS configuration if the file could not be fetched.';
 
@@ -131,20 +131,6 @@ function createLayer(table: Table, geometryKind: GeometryKind): Layer {
   }
 }
 
-function formatCell(value: unknown, geometryType?: string): string {
-  if (value === null || value === undefined) return 'NULL';
-  if (geometryType) return geometryType;
-  if (value instanceof Date) return value.toLocaleString();
-  if (value instanceof Uint8Array) return `[binary: ${value.byteLength} bytes]`;
-  if (typeof value !== 'object') return String(value);
-
-  const formatted = JSON.stringify(value, (_, item: unknown) =>
-    typeof item === 'bigint' ? item.toString() : item,
-  );
-  if (!formatted) return String(value);
-  return formatted.length > 240 ? `${formatted.slice(0, 237)}…` : formatted;
-}
-
 function getGeometryTypes(layers: GdalLayer[] | undefined): Map<string, string> {
   return new Map(
     layers?.flatMap(
@@ -154,6 +140,32 @@ function getGeometryTypes(layers: GdalLayer[] | undefined): Map<string, string> 
         ) ?? [],
     ) ?? [],
   );
+}
+
+function loadArrowPreviewPage(
+  table: Table,
+  geometryTypes: Map<string, string>,
+  offset: number,
+  limit: number,
+): PreviewTablePage {
+  const columns = table.schema.fields.map(field => field.name);
+  const geometryColumns = columns.filter(column => geometryTypes.has(column));
+  const columnVectors = columns.map(column => table.getChild(column));
+  const end = Math.min(offset + limit, table.numRows);
+  const rows = Array.from({ length: Math.max(0, end - offset) }, (_, rowOffset) => {
+    const rowIndex = offset + rowOffset;
+    return Object.fromEntries(
+      columns.map((column, columnIndex) => {
+        const value = columnVectors[columnIndex]?.get(rowIndex);
+        return [
+          column,
+          value === null || value === undefined ? value : (geometryTypes.get(column) ?? value),
+        ];
+      }),
+    );
+  });
+
+  return { columns, geometryColumns, rows, hasMore: end < table.numRows };
 }
 
 export default function GeoParquetPreview({ resource }: { resource: PreviewResource }) {
@@ -188,18 +200,16 @@ export default function GeoParquetPreview({ resource }: { resource: PreviewResou
     () => getGeometryTypes(resource.metadata.layers),
     [resource.metadata.layers],
   );
-  const tableColumns = useMemo(
-    () =>
-      table?.schema.fields.map(field => ({
-        name: field.name,
-        values: table.getChild(field.name),
-        geometryType: geometryTypes.get(field.name),
-      })) ?? [],
-    [geometryTypes, table],
-  );
   const layer = useMemo(
     () => (table && table.numRows > 0 && geometryKind ? createLayer(table, geometryKind) : null),
     [geometryKind, table],
+  );
+  const loadTablePage = useCallback(
+    async (offset: number, limit: number) => {
+      if (!table) throw new Error('GeoParquet table is not ready.');
+      return loadArrowPreviewPage(table, geometryTypes, offset, limit);
+    },
+    [geometryTypes, table],
   );
 
   return (
@@ -253,39 +263,14 @@ export default function GeoParquetPreview({ resource }: { resource: PreviewResou
                 </div>
               )}
             </TabPanel>
-            <TabPanel>
-              <div className="preview-table-wrap">
-                <table className="table table-zebra table-sm">
-                  <thead>
-                    <tr>
-                      {tableColumns.map(column => (
-                        <th key={column.name} scope="col" title={column.name}>
-                          {column.name}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Array.from(
-                      { length: Math.min(table.numRows, MAX_TABLE_ROWS) },
-                      (_, rowIndex) => (
-                        <tr key={rowIndex}>
-                          {tableColumns.map(column => (
-                            <td key={column.name} title={column.name}>
-                              {formatCell(column.values?.get(rowIndex), column.geometryType)}
-                            </td>
-                          ))}
-                        </tr>
-                      ),
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              {table.numRows > MAX_TABLE_ROWS && (
-                <p role="status">
-                  Showing first {MAX_TABLE_ROWS} of {table.numRows.toLocaleString()} rows.
-                </p>
-              )}
+            <TabPanel unmount={false}>
+              <PreviewTable
+                resetKey={`${resource.id}-${resource.uri}-${table.numRows}`}
+                loadPage={loadTablePage}
+                onError={caught =>
+                  setError(caught instanceof Error ? caught.message : String(caught))
+                }
+              />
             </TabPanel>
           </TabPanels>
         </TabGroup>
